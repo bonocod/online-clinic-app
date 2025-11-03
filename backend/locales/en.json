@@ -1,0 +1,31 @@
+{
+  "auth": {
+    "register_success": "User registered successfully",
+    "login_success": "Login successful",
+    "invalid_credentials": "Invalid credentials",
+    "user_exists": "User already exists",
+    "name_required": "Name is required",
+    "email_required": "Email is required",
+    "password_required": "Password is required"
+  },
+  "profile": {
+    "updated": "Profile updated successfully",
+    "not_found": "User not found"
+  },
+  "diseases": {
+    "symptoms_required": "Symptoms array is required",
+    "no_diseases_found": "No diseases found for given symptoms",
+    "disease_not_found": "Disease not found",
+    "search_query_required": "Search query is required"
+  },
+  "logs": {
+    "log_created": "Health log created",
+    "vitals_required": "Vitals object is required",
+    "log_not_found": "Log not found or unauthorized"
+  },
+  "common": {
+    "server_error": "Server error",
+    "unauthorized": "No token, authorization denied",
+    "invalid_token": "Token is invalid"
+  }
+}

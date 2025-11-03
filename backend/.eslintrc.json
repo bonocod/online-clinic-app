@@ -1,0 +1,10 @@
+{
+  "extends": ["eslint:recommended", "prettier"],
+  "rules": {
+    "no-console": "warn"
+  },
+  "env": {
+    "node": true,
+    "es2021": true
+  }
+}
