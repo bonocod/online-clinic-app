@@ -11,6 +11,14 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 app.use(i18n.init)  
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`);
+  console.log("JWT_SECRET used:", process.env.JWT_SECRET);
+  next();
+
+});
+
+
 
 // Routes
 app.use('/api/auth', require('./routes/auth'))

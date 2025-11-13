@@ -1,4 +1,6 @@
 const jwt = require('jsonwebtoken')
+const User = require('../models/User');
+
 
 const authMiddleware = async (req, res, next) => {
   try {
@@ -12,6 +14,7 @@ const authMiddleware = async (req, res, next) => {
     if (user?.profile?.preferredLanguage) {
       req.setLocale(user.profile.preferredLanguage)
     }
+    console.log('done');
     next()
   } catch (err) {
     res.status(401).json({ msg: req.__('common.invalid_token') })

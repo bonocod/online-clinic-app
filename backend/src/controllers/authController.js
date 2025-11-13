@@ -14,7 +14,7 @@ const register = async (req, res, next) => {
     let user = await User.findOne({ email })
     if (user) return res.status(400).json({ msg: req.__('auth.user_exists') })
 
-    user = new User({ name, email, password: await bcrypt.hash(password, 10) })
+    user = new User({ name, email, password: await bcrypt.hash(password, 10), })
     await user.save()
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' })

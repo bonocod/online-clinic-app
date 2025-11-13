@@ -1,0 +1,293 @@
+[
+  {
+    "name": { "en": "Influenza", "rw": "Influenza", "fr": "Grippe" },
+    "symptoms": ["fever", "cough", "sore throat", "fatigue", "body aches"],
+    "causes": {
+      "en": "Influenza virus, spread through droplets",
+      "rw": "Influenza virus, spread through droplets",
+      "fr": "Virus de la grippe, propagé par les gouttelettes"
+    },
+    "effects": {
+      "en": "Fever, muscle pain, fatigue",
+      "rw": "Fever, muscle pain, fatigue",
+      "fr": "Fièvre, douleurs musculaires, fatigue"
+    },
+    "prevention": {
+      "en": "Vaccination, hand washing, avoid crowds",
+      "rw": "Vaccination, hand washing, avoid crowds",
+      "fr": "Vaccination, lavage des mains, éviter les foules"
+    },
+    "behaviorGuidelines": {
+      "en": "Rest, stay hydrated, avoid contact",
+      "rw": "Rest, stay hydrated, avoid contact",
+      "fr": "Repos, hydratation, éviter le contact"
+    },
+    "treatment": {
+      "en": "Antivirals, rest, fluids",
+      "rw": "Antivirals, rest, fluids",
+      "fr": "Antiviraux, repos, hydratation"
+    }
+  },
+  {
+    "name": { "en": "Common Cold", "rw": "Icyorezo gisanzwe", "fr": "Rhume" },
+    "symptoms": ["cough", "runny nose", "sore throat", "sneezing"],
+    "causes": {
+      "en": "Rhinoviruses, spread through contact",
+      "rw": "Rhinoviruses, spread through contact",
+      "fr": "Rhinovirus, propagé par contact"
+    },
+    "effects": {
+      "en": "Nasal congestion, mild fever",
+      "rw": "Nasal congestion, mild fever",
+      "fr": "Nez bouché, légère fièvre"
+    },
+    "prevention": {
+      "en": "Hand washing, avoid touching face",
+      "rw": "Hand washing, avoid touching face",
+      "fr": "Lavage des mains, éviter de toucher le visage"
+    },
+    "behaviorGuidelines": {
+      "en": "Rest, use tissues",
+      "rw": "Rest, use tissues",
+      "fr": "Repos, utiliser des mouchoirs"
+    },
+    "treatment": {
+      "en": "Over-the-counter meds, hydration",
+      "rw": "Over-the-counter meds, hydration",
+      "fr": "Médicaments en vente libre, hydratation"
+    }
+  },
+  {
+    "name": { "en": "Malaria", "rw": "Malariya", "fr": "Paludisme" },
+    "symptoms": ["fever", "chills", "sweats", "headache", "nausea"],
+    "causes": {
+      "en": "Plasmodium parasite transmitted by mosquito bites",
+      "rw": "Plasmodium parasite transmitted by mosquito bites",
+      "fr": "Parasite Plasmodium transmis par les piqûres de moustiques"
+    },
+    "effects": {
+      "en": "Fever, anemia, weakness",
+      "rw": "Fever, anemia, weakness",
+      "fr": "Fièvre, anémie, faiblesse"
+    },
+    "prevention": {
+      "en": "Use mosquito nets, insect repellent",
+      "rw": "Use mosquito nets, insect repellent",
+      "fr": "Utiliser des moustiquaires, répulsifs anti-moustiques"
+    },
+    "behaviorGuidelines": {
+      "en": "Seek treatment early, avoid stagnant water",
+      "rw": "Seek treatment early, avoid stagnant water",
+      "fr": "Chercher un traitement tôt, éviter les eaux stagnantes"
+    },
+    "treatment": {
+      "en": "Antimalarial drugs",
+      "rw": "Antimalarial drugs",
+      "fr": "Médicaments antipaludiques"
+    }
+  },
+  {
+    "name": { "en": "Tuberculosis", "rw": "Igituntu", "fr": "Tuberculose" },
+    "symptoms": ["cough", "fever", "night sweats", "weight loss"],
+    "causes": {
+      "en": "Mycobacterium tuberculosis bacteria",
+      "rw": "Mycobacterium tuberculosis bacteria",
+      "fr": "Bactérie Mycobacterium tuberculosis"
+    },
+    "effects": {
+      "en": "Lung damage, weakness",
+      "rw": "Lung damage, weakness",
+      "fr": "Lésions pulmonaires, faiblesse"
+    },
+    "prevention": {
+      "en": "BCG vaccination, avoid close contact",
+      "rw": "BCG vaccination, avoid close contact",
+      "fr": "Vaccination BCG, éviter le contact étroit"
+    },
+    "behaviorGuidelines": {
+      "en": "Cover mouth when coughing",
+      "rw": "Cover mouth when coughing",
+      "fr": "Couvrir la bouche en toussant"
+    },
+    "treatment": {
+      "en": "Antibiotics for 6-9 months",
+      "rw": "Antibiotics for 6-9 months",
+      "fr": "Antibiotiques pendant 6 à 9 mois"
+    }
+  },
+  {
+    "name": { "en": "COVID-19", "rw": "COVID-19", "fr": "COVID-19" },
+    "symptoms": ["fever", "cough", "shortness of breath", "loss of taste", "loss of smell"],
+    "causes": {
+      "en": "Coronavirus SARS-CoV-2, spread through droplets",
+      "rw": "Coronavirus SARS-CoV-2, spread through droplets",
+      "fr": "Coronavirus SARS-CoV-2, propagé par les gouttelettes"
+    },
+    "effects": {
+      "en": "Respiratory distress, fatigue",
+      "rw": "Respiratory distress, fatigue",
+      "fr": "Détresse respiratoire, fatigue"
+    },
+    "prevention": {
+      "en": "Mask wearing, vaccination, social distancing",
+      "rw": "Mask wearing, vaccination, social distancing",
+      "fr": "Port du masque, vaccination, distanciation sociale"
+    },
+    "behaviorGuidelines": {
+      "en": "Isolate when sick, test regularly",
+      "rw": "Isolate when sick, test regularly",
+      "fr": "S’isoler en cas de maladie, se tester régulièrement"
+    },
+    "treatment": {
+      "en": "Supportive care, antivirals in severe cases",
+      "rw": "Supportive care, antivirals in severe cases",
+      "fr": "Soins de soutien, antiviraux dans les cas graves"
+    }
+  },
+
+  {
+    "name": { "en": "Chickenpox", "rw": "Chickenpox", "fr": "Varicelle" },
+    "symptoms": ["fever", "itchy rash", "blisters", "fatigue", "loss of appetite"],
+    "causes": {
+      "en": "Varicella-zoster virus, spread through droplets and direct contact",
+      "rw": "Varicella-zoster virus, spread through droplets and direct contact",
+      "fr": "Virus varicelle-zona, transmis par contact direct et gouttelettes"
+    },
+    "effects": {
+      "en": "Itchy rash, possible scarring, fever",
+      "rw": "Itchy rash, possible scarring, fever",
+      "fr": "Éruption cutanée prurigineuse, cicatrices possibles, fièvre"
+    },
+    "prevention": {
+      "en": "Vaccination (varicella vaccine), avoid contact with infected people",
+      "rw": "Vaccination (varicella vaccine), avoid contact with infected people",
+      "fr": "Vaccination, éviter le contact avec les personnes infectées"
+    },
+    "behaviorGuidelines": {
+      "en": "Isolate until lesions crust over, avoid scratching",
+      "rw": "Isolate until lesions crust over, avoid scratching",
+      "fr": "S’isoler jusqu’à la formation de croûtes, éviter de gratter"
+    },
+    "treatment": {
+      "en": "Antiviral for severe cases, calamine lotion, fluids",
+      "rw": "Antiviral for severe cases, calamine lotion, fluids",
+      "fr": "Antiviral dans les cas sévères, lotions apaisantes, hydratation"
+    }
+  },
+  {
+    "name": { "en": "Measles", "rw": "Measles", "fr": "Rougeole" },
+    "symptoms": ["high fever", "cough", "runny nose", "red eyes", "rash"],
+    "causes": {
+      "en": "Measles virus, highly contagious airborne transmission",
+      "rw": "Measles virus, highly contagious airborne transmission",
+      "fr": "Virus de la rougeole, transmission aérienne hautement contagieuse"
+    },
+    "effects": {
+      "en": "Pneumonia, ear infections, encephalitis in severe cases",
+      "rw": "Pneumonia, ear infections, encephalitis in severe cases",
+      "fr": "Pneumonie, otites, encéphalite dans les cas graves"
+    },
+    "prevention": {
+      "en": "MMR vaccination, avoid contact with infected individuals",
+      "rw": "MMR vaccination, avoid contact with infected individuals",
+      "fr": "Vaccination ROR (MMR), éviter le contact avec les malades"
+    },
+    "behaviorGuidelines": {
+      "en": "Isolate, seek medical care if breathing difficulty occurs",
+      "rw": "Isolate, seek medical care if breathing difficulty occurs",
+      "fr": "S’isoler, consulter en cas de difficultés respiratoires"
+    },
+    "treatment": {
+      "en": "Supportive care, vitamin A for children in severe cases",
+      "rw": "Supportive care, vitamin A for children in severe cases",
+      "fr": "Soins de soutien, vitamine A pour les enfants dans les cas graves"
+    }
+  },
+  {
+    "name": { "en": "Typhoid Fever", "rw": "Typhoid Fever", "fr": "Fièvre typhoïde" },
+    "symptoms": ["high fever", "weakness", "stomach pain", "headache", "loss of appetite"],
+    "causes": {
+      "en": "Salmonella Typhi bacteria, contaminated food or water",
+      "rw": "Salmonella Typhi bacteria, contaminated food or water",
+      "fr": "Bactérie Salmonella Typhi, aliments ou eau contaminés"
+    },
+    "effects": {
+      "en": "Prolonged fever, intestinal complications, severe weakness",
+      "rw": "Prolonged fever, intestinal complications, severe weakness",
+      "fr": "Fièvre prolongée, complications intestinales, grande faiblesse"
+    },
+    "prevention": {
+      "en": "Safe food and water, hand hygiene, vaccination where available",
+      "rw": "Safe food and water, hand hygiene, vaccination where available",
+      "fr": "Aliments et eau sûrs, hygiène des mains, vaccination si disponible"
+    },
+    "behaviorGuidelines": {
+      "en": "Seek medical care early, avoid preparing food for others while ill",
+      "rw": "Seek medical care early, avoid preparing food for others while ill",
+      "fr": "Consulter rapidement, éviter de préparer de la nourriture pour les autres"
+    },
+    "treatment": {
+      "en": "Appropriate antibiotics as prescribed, hydration",
+      "rw": "Appropriate antibiotics as prescribed, hydration",
+      "fr": "Antibiotiques adaptés prescrits, hydratation"
+    }
+  },
+  {
+    "name": { "en": "Hepatitis A", "rw": "Hepatitis A", "fr": "Hépatite A" },
+    "symptoms": ["fever", "fatigue", "jaundice", "abdominal pain", "nausea"],
+    "causes": {
+      "en": "Hepatitis A virus, transmitted via contaminated food or water (faecal-oral)",
+      "rw": "Hepatitis A virus, transmitted via contaminated food or water (faecal-oral)",
+      "fr": "Virus de l’hépatite A, transmis par aliments/eau contaminés (voie fécale-orale)"
+    },
+    "effects": {
+      "en": "Liver inflammation, jaundice, possible hospitalization",
+      "rw": "Liver inflammation, jaundice, possible hospitalization",
+      "fr": "Inflammation du foie, jaunisse, hospitalisation possible"
+    },
+    "prevention": {
+      "en": "Vaccination, safe water and food, hand washing",
+      "rw": "Vaccination, safe water and food, hand washing",
+      "fr": "Vaccination, eau et alimentation sûres, lavage des mains"
+    },
+    "behaviorGuidelines": {
+      "en": "Avoid alcohol, practice good hygiene, isolate if advised",
+      "rw": "Avoid alcohol, practice good hygiene, isolate if advised",
+      "fr": "Éviter l’alcool, bonne hygiène, isolement si recommandé"
+    },
+    "treatment": {
+      "en": "Supportive care, rest, hydration (usually self-limiting)",
+      "rw": "Supportive care, rest, hydration (usually self-limiting)",
+      "fr": "Soins de soutien, repos, hydratation (généralement spontanée)"
+    }
+  },
+  {
+    "name": { "en": "Dengue Fever", "rw": "Dengue Fever", "fr": "Dengue" },
+    "symptoms": ["high fever", "severe headache", "pain behind the eyes", "joint and muscle pain", "rash"],
+    "causes": {
+      "en": "Dengue virus transmitted by infected Aedes mosquitoes",
+      "rw": "Dengue virus transmitted by infected Aedes mosquitoes",
+      "fr": "Virus de la dengue transmis par les moustiques Aedes infectés"
+    },
+    "effects": {
+      "en": "Severe pain, dehydration; severe forms can cause hemorrhage or shock",
+      "rw": "Severe pain, dehydration; severe forms can cause hemorrhage or shock",
+      "fr": "Douleurs intenses, déshydratation ; formes graves: hémorragies ou choc"
+    },
+    "prevention": {
+      "en": "Mosquito control, avoid mosquito bites, remove standing water",
+      "rw": "Mosquito control, avoid mosquito bites, remove standing water",
+      "fr": "Lutte anti-moustiques, éviter les piqûres, éliminer les eaux stagnantes"
+    },
+    "behaviorGuidelines": {
+      "en": "Seek urgent care for severe symptoms, avoid NSAIDs (risk of bleeding)",
+      "rw": "Seek urgent care for severe symptoms, avoid NSAIDs (risk of bleeding)",
+      "fr": "Consulter d’urgence en cas de symptômes graves, éviter les AINS (risque hémorragique)"
+    },
+    "treatment": {
+      "en": "Supportive care, fluids, hospitalization for severe cases",
+      "rw": "Supportive care, fluids, hospitalization for severe cases",
+      "fr": "Soins de soutien, hydratation, hospitalisation pour les cas graves"
+    }
+  }
+]
