@@ -25,6 +25,7 @@ app.use('/api/auth', require('./routes/auth'))
 app.use('/api/diseases', require('./routes/diseases'))
 app.use('/api/logs', require('./routes/logs'))
 app.use('/api/users', require('./routes/users'))
+app.use('/api/special-cases', require('./routes/specialCases'));
 
 // Global error handler
 app.use(require('./utils/errorHandler'))

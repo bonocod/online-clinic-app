@@ -10,6 +10,7 @@ import DiseaseList from './pages/DiseaseList'
 import HealthTracker from './pages/HealthTracker'
 import Profile from './pages/Profile'
 import DiseaseDetail from './pages/DiseaseDetail'
+import SpecialCases from './pages/SpecialCases';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="/health-tracker" element={<HealthTracker />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/diseases/:id" element={<DiseaseDetail />} />
+          <Route path="/special-cases" element={<SpecialCases />} />
         </Routes>
       </div>
     </Router>
