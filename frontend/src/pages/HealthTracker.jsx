@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { Line } from 'react-chartjs-2';
+import { useTranslation } from 'react-i18next';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,13 +16,12 @@ import {
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const HealthTracker = () => {
+  const { t } = useTranslation();
   const [logs, setLogs] = useState([]);
   const [vitals, setVitals] = useState({ bp: '', temp: '', heartRate: '' });
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
-
-  const lang = localStorage.getItem('lang') || 'en';
 
   useEffect(() => {
     fetchLogs();
@@ -50,7 +50,6 @@ const HealthTracker = () => {
     }
   };
 
-  // Chart data for BP trend (example)
   const chartData = {
     labels: logs.slice(0, 5).map(log => new Date(log.date).toLocaleDateString()),
     datasets: [
@@ -68,55 +67,55 @@ const HealthTracker = () => {
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl mb-4">Health Tracker</h1>
+      <h1 className="text-2xl mb-4">{t('healthTracker.title')}</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4 mb-8">
         <input
           type="text"
-          placeholder="BP (e.g., 120/80)"
+          placeholder={t('healthTracker.bpPlaceholder')}
           value={vitals.bp}
           onChange={(e) => setVitals({ ...vitals, bp: e.target.value })}
           className="w-full p-2 border rounded"
         />
         <input
           type="number"
-          placeholder="Temperature (°C)"
+          placeholder={t('healthTracker.tempPlaceholder')}
           value={vitals.temp}
           onChange={(e) => setVitals({ ...vitals, temp: e.target.value })}
           className="w-full p-2 border rounded"
         />
         <input
           type="number"
-          placeholder="Heart Rate (bpm)"
+          placeholder={t('healthTracker.heartRatePlaceholder')}
           value={vitals.heartRate}
           onChange={(e) => setVitals({ ...vitals, heartRate: e.target.value })}
           className="w-full p-2 border rounded"
         />
         <textarea
-          placeholder="Notes"
+          placeholder={t('healthTracker.notesPlaceholder')}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           className="w-full p-2 border rounded"
         />
         <button type="submit" className="w-full bg-green-600 text-white p-2 rounded">
-          Add Log
+          {t('healthTracker.addLog')}
         </button>
       </form>
 
-      <h2 className="text-xl mb-2">Recent Logs</h2>
+      <h2 className="text-xl mb-2">{t('healthTracker.recentLogs')}</h2>
       <div className="space-y-2 mb-8">
         {logs.slice(0, 5).map((log) => (
           <div key={log._id} className="border p-2 rounded">
-            <p>Date: {new Date(log.date).toLocaleDateString()}</p>
-            <p>BP: {log.vitals.bp}</p>
-            <p>Temp: {log.vitals.temp}°C</p>
-            <p>Heart Rate: {log.vitals.heartRate} bpm</p>
-            <p>Notes: {log.notes}</p>
+            <p>{t('healthTracker.date')}: {new Date(log.date).toLocaleDateString()}</p>
+            <p>{t('healthTracker.bp')}: {log.vitals.bp}</p>
+            <p>{t('healthTracker.temp')}: {log.vitals.temp}°C</p>
+            <p>{t('healthTracker.heartRateLabel')}: {log.vitals.heartRate} bpm</p>
+            <p>{t('healthTracker.notesLabel')}: {log.notes}</p>
           </div>
         ))}
       </div>
 
-      <h2 className="text-xl mb-2">BP Trend</h2>
+      <h2 className="text-xl mb-2">{t('healthTracker.bpTrend')}</h2>
       <Line data={chartData} />
     </div>
   );

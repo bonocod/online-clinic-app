@@ -1,10 +1,11 @@
-// frontend/src/pages/SpecialCases.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import SpecialCaseModal from '../components/SpecialCaseModal';
 
 const SpecialCases = () => {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -16,11 +17,11 @@ const SpecialCases = () => {
   const navigate = useNavigate();
 
   const specialCases = [
-    { id: 'pregnancy', label: 'Pregnancy', icon: '🤰' }, // Use emoji or replace with SVG icon
-    { id: 'mental-health', label: 'Mental Health', icon: '🧠' },
-    { id: 'hiv', label: 'HIV', icon: '🦠' },
-    { id: 'cancer', label: 'Cancer', icon: '🧫' },
-    { id: 'diabetes', label: 'Diabetes', icon: '💉' },
+    { id: 'pregnancy', label: t('specialCases.pregnancy'), icon: '🤰' },
+    { id: 'mental-health', label: t('specialCases.mentalHealth'), icon: '🧠' },
+    { id: 'hiv', label: t('specialCases.hiv'), icon: '🦠' },
+    { id: 'cancer', label: t('specialCases.cancer'), icon: '🧫' },
+    { id: 'diabetes', label: t('specialCases.diabetes'), icon: '💉' },
   ];
 
   useEffect(() => {
@@ -100,21 +101,25 @@ const SpecialCases = () => {
 
   return (
     <div className="p-4">
-      {/* Back Button */}
       <button onClick={() => navigate('/dashboard')} className="flex items-center mb-6 text-blue-600 hover:underline">
-        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
         </svg>
-        Back to Dashboard
+        {t('specialCases.back')}
       </button>
 
-      <h1 className="text-2xl mb-6">Special Cases</h1>
+      <h1 className="text-2xl mb-6">{t('specialCases.title')}</h1>
 
-      {/* Info Card */}
-      {infoLoading && <div className="p-4 bg-gray-100 rounded mb-4">Loading information...</div>}
-
-      {infoError && <div className="p-4 text-red-500 bg-red-100 rounded mb-4">{infoError}</div>}
-
+      {infoLoading && (
+        <div className="p-4 bg-gray-100 rounded mb-4">
+          {t('specialCases.loadingInfo')}
+        </div>
+      )}
+      {infoError && (
+        <div className="p-4 text-red-500 bg-red-100 rounded mb-4">
+          {t('specialCases.errorLoad')}
+        </div>
+      )}
       {infoData && (
         <div className="mb-6 p-4 bg-gray-100 rounded">
           <h2 className="text-xl mb-2">{infoData.title}</h2>
@@ -125,12 +130,11 @@ const SpecialCases = () => {
             </div>
           ))}
           <button onClick={() => setInfoData(null)} className="text-blue-600 hover:underline">
-            Close
+            {t('specialCases.close')}
           </button>
         </div>
       )}
 
-      {/* Grid of Cases */}
       <div className="grid grid-cols-2 gap-4">
         {specialCases.map((sc) => (
           <button
@@ -144,16 +148,19 @@ const SpecialCases = () => {
         ))}
       </div>
 
-      {/* Badges */}
       {(profile.profile?.conditions?.length > 0 || profile.profile?.interestedIn?.length > 0) && (
         <div className="mt-6">
-          <h2 className="text-xl mb-2">My Status</h2>
+          <h2 className="text-xl mb-2">{t('specialCases.myStatus')}</h2>
           <div className="flex flex-wrap gap-2">
             {profile.profile.conditions?.map((c) => (
-              <span key={c} className="bg-red-200 p-2 rounded">{c.toUpperCase()} (I have)</span>
+              <span key={c} className="bg-red-200 p-2 rounded">
+                {c.toUpperCase()} {t('specialCases.ihave')}
+              </span>
             ))}
             {profile.profile.interestedIn?.map((c) => (
-              <span key={c} className="bg-blue-200 p-2 rounded">{c.toUpperCase()} (Info)</span>
+              <span key={c} className="bg-blue-200 p-2 rounded">
+                {c.toUpperCase()} {t('specialCases.info')}
+              </span>
             ))}
           </div>
         </div>
@@ -162,7 +169,7 @@ const SpecialCases = () => {
       <SpecialCaseModal
         isOpen={modalOpen}
         onClose={closeModal}
-        caseName={specialCases.find(sc => sc.id === selectedCase)?.label || ''}
+        caseName={selectedCase}
         onSelect={saveCondition}
       />
     </div>

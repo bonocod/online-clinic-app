@@ -1,9 +1,10 @@
-// frontend/src/pages/Profile.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 const Profile = () => {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState({
     age: '',
     gender: '',
@@ -92,17 +93,16 @@ const Profile = () => {
     setError('');
     setSuccess('');
 
-    // Validation
     if (profile.age && (profile.age < 1 || profile.age > 120)) {
-      setError('Age must be between 1 and 120');
+      setError(t('profile.errorAge'));
       return;
     }
     if (profile.height && (profile.height < 100 || profile.height > 250)) {
-      setError('Height must be between 100 and 250 cm');
+      setError(t('profile.errorHeight'));
       return;
     }
     if (profile.weight && (profile.weight < 20 || profile.weight > 300)) {
-      setError('Weight must be between 20 and 300 kg');
+      setError(t('profile.errorWeight'));
       return;
     }
 
@@ -123,24 +123,24 @@ const Profile = () => {
     }
   };
 
-  if (loading) return <div className="p-4 text-center">Loading profile...</div>;
+  if (loading) return <div className="p-4 text-center">{t('profile.loading')}</div>;
 
   const bmi = calculateBMI();
   const bmiStatus = bmi ? getBMIStatus(bmi) : null;
+  const bmiStatusKey = bmiStatus ? `profile.bmi${bmiStatus.text}` : '';
 
   return (
     <div className="max-w-3xl mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6 text-center">My Health Profile</h1>
+      <h1 className="text-3xl font-bold mb-6 text-center">{t('profile.title')}</h1>
 
       {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
       {success && <p className="text-green-500 mb-4 text-center">{success}</p>}
 
       <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-xl shadow-sm">
 
-        {/* Basic Info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block font-medium">Age</label>
+            <label className="block font-medium">{t('profile.age')}</label>
             <input
               type="number"
               name="age"
@@ -152,22 +152,22 @@ const Profile = () => {
           </div>
 
           <div>
-            <label className="block font-medium">Gender</label>
+            <label className="block font-medium">{t('profile.gender')}</label>
             <select
               name="gender"
               value={profile.gender}
               onChange={handleChange}
               className="w-full p-2 border rounded mt-1"
             >
-              <option value="">Select</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
+              <option value="">{t('profile.select')}</option>
+              <option value="male">{t('profile.male')}</option>
+              <option value="female">{t('profile.female')}</option>
+              <option value="other">{t('profile.other')}</option>
             </select>
           </div>
 
           <div>
-            <label className="block font-medium">Height (cm)</label>
+            <label className="block font-medium">{t('profile.height')}</label>
             <input
               type="number"
               name="height"
@@ -179,7 +179,7 @@ const Profile = () => {
           </div>
 
           <div>
-            <label className="block font-medium">Weight (kg)</label>
+            <label className="block font-medium">{t('profile.weight')}</label>
             <input
               type="number"
               name="weight"
@@ -191,17 +191,15 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* BMI Display */}
         {bmi && (
           <div className="bg-blue-50 p-4 rounded-lg text-center">
-            <p className="text-lg font-bold">BMI: {bmi}</p>
+            <p className="text-lg font-bold">{t('profile.bmi', { bmi })}</p>
             <p className={`text-sm font-medium ${bmiStatus.color}`}>
-              {bmiStatus.text}
+              {t(bmiStatusKey)}
             </p>
           </div>
         )}
 
-        {/* Pregnancy */}
         {profile.gender === 'female' && (
           <div className="flex items-center gap-2">
             <input
@@ -211,13 +209,12 @@ const Profile = () => {
               onChange={handleChange}
               className="w-5 h-5"
             />
-            <label className="font-medium">I am pregnant</label>
+            <label className="font-medium">{t('profile.pregnant')}</label>
           </div>
         )}
 
-        {/* Medical History */}
         <div>
-          <label className="block font-medium">Medical History</label>
+          <label className="block font-medium">{t('profile.medicalHistory')}</label>
           <div className="flex gap-2 mt-1">
             <input
               type="text"
@@ -232,7 +229,7 @@ const Profile = () => {
               onClick={addMedicalHistory}
               className="bg-blue-600 text-white px-4 rounded"
             >
-              Add
+              {t('profile.addButton')}
             </button>
           </div>
           <div className="flex flex-wrap gap-2 mt-2">
@@ -254,28 +251,8 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Special Cases */}
-        {(profile.conditions.length > 0 || profile.interestedIn.length > 0) && (
-          <div>
-            <label className="block font-medium">My Conditions</label>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {profile.conditions.map((c) => (
-                <span key={c} className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">
-                  {c.toUpperCase()} (I have)
-                </span>
-              ))}
-              {profile.interestedIn.map((c) => (
-                <span key={c} className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
-                  {c.toUpperCase()} (Info)
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Language */}
         <div>
-          <label className="block font-medium">Preferred Language</label>
+          <label className="block font-medium">{t('profile.preferredLanguage')}</label>
           <select
             name="preferredLanguage"
             value={profile.preferredLanguage}
@@ -292,7 +269,7 @@ const Profile = () => {
           type="submit"
           className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-3 rounded-lg font-bold text-lg hover:from-blue-700 hover:to-indigo-700 transition"
         >
-          Save Profile
+          {t('profile.saveButton')}
         </button>
       </form>
     </div>

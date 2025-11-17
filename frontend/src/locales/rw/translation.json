@@ -1,0 +1,125 @@
+{
+  "navbar": {
+    "brand": "Kliniki ku Murandasi",
+    "dashboard": "Dashibodi",
+    "logout": "Sohoka",
+    "login": "Winjira",
+    "register": "Iyandikishe"
+  },
+  "landing": {
+    "title": "Murakaza neza mu Klinik ya kuri Internet",
+    "subtitle": "Kurikira ubuzima bwawe, reba ibimenyetso, menya indwara",
+    "description": "Umufasha wawe w'ubuzima. Menya byinshi mu Cyongereza, Ikinyarwanda, cyangwa Igifaransa.",
+    "cta1": "Winjira",
+    "cta2": "Iyandikishe"
+  },
+  "login": {
+    "title": "Winjira",
+    "email": "Email",
+    "password": "Ijambo ry'ibanga",
+    "button": "Winjira"
+  },
+  "register": {
+    "title": "Iyandikishe",
+    "name": "Izina",
+    "email": "Email",
+    "password": "Ijambo ry'ibanga",
+    "button": "Iyandikishe"
+  },
+  "dashboard": {
+    "welcome": "Murakaza neza, {{name}}!",
+    "symptomChecker": "Ikizamini cy'Ibimenyetso",
+    "diseases": "Indwara",
+    "healthTracker": "Gukurikirana Ubuzima",
+    "specialCases": "Ibyihariye",
+    "profile": "Umwirondoro wanjye",
+    "healthStatus": "Aho ubuzima bwanjye buhagaze",
+    "ihave": "(mfite)",
+    "info": "(amakuru)"
+  },
+  "diseaseList": {
+    "title": "Urutonde rw'indwara",
+    "searchPlaceholder": "Shakisha (urugero, umuriro, umusonga)",
+    "symptoms": "Ibimenyetso",
+    "viewDetails": "Reba amakuru arambuye",
+    "noResults": "Nta ndwara yabonetse."
+  },
+  "diseaseDetail": {
+    "symptoms": "Ibimenyetso",
+    "causes": "Impamvu",
+    "effects": "Ingaruka",
+    "prevention": "Uburyo bwo Kwirinda",
+    "behaviorGuidelines": "Amabwiriza y'Imyitwarire",
+    "treatment": "Guvura"
+  },
+  "healthTracker": {
+    "title": "Gukurikirana Ubuzima",
+    "bpPlaceholder": "Umuvuduko w'amaraso (urugero, 120/80)",
+    "tempPlaceholder": "Ubushyuhe (°C)",
+    "heartRatePlaceholder": "Umutima (bpm)",
+    "notesPlaceholder": "Amakuru",
+    "addLog": "Ongeraho Inyandiko",
+    "recentLogs": "Inyandiko z'Ubuzima ziheruka",
+    "date": "Itariki",
+    "bp": "Umuvuduko w'amaraso",
+    "temp": "Ubushyuhe",
+    "heartRateLabel": "Umutima",
+    "notesLabel": "Amakuru",
+    "bpTrend": "Imiterere y'Umuvuduko"
+  },
+  "profile": {
+    "title": "Umwirondoro w'Ubuzima bwanjye",
+    "age": "Imyaka",
+    "gender": "Igitsina",
+    "height": "Uburebure (cm)",
+    "weight": "Ibiro (kg)",
+    "bmi": "BMI: {{bmi}}",
+    "bmiUnderweight": "Umubiri muke cyane",
+    "bmiNormal": "Bisanzwe",
+    "bmiOverweight": "Kurenga urugero",
+    "bmiObese": "Ubuto bwinshi",
+    "pregnant": "Ndi gutwita",
+    "medicalHistory": "Amateka y'Ubuvuzi",
+    "addButton": "Ongeraho",
+    "myConditions": "Indwara mfite",
+    "preferredLanguage": "Ururimi uhitamo",
+    "saveButton": "Bika umwirondoro",
+    "errorAge": "Imyaka igomba kuba hagati ya 1 na 120",
+    "errorHeight": "Uburebure bugomba kuba hagati ya 100 na 250 cm",
+    "errorWeight": "Ibiro bigomba kuba hagati ya 20 na 300 kg",
+    "loading": "Gusoma umwirondoro...",
+    "select": "Hitamo",
+    "male": "Gabo",
+    "female": "Gore",
+    "other": "Ikindi"
+  },
+  "specialCaseModal": {
+    "prompt": "Ni iki ushaka gukora?",
+    "optionHas": "Mbifite",
+    "optionInfo": "Ndashaka amakuru",
+    "cancel": "Hagarika"
+  },
+  "specialCases": {
+    "back": "Subira kuri Dashboard",
+    "title": "Ibyihariye",
+    "loadingInfo": "Kurimo gusoma amakuru...",
+    "errorLoad": "Ntibashoboye kubona amakuru",
+    "myStatus": "Aho ngeze ubuzima",
+    "close": "Funga",
+    "pregnancy": "Gutwita",
+    "mentalHealth": "Ubuzima bwo mu Mutwe",
+    "hiv": "SIDA",
+    "cancer": "Kanseri",
+    "diabetes": "Diabete",
+    "ihave": "(mfite)",
+    "info": "(amakuru)"
+  },
+  "symptomChecker": {
+    "title": "Isuzuma ry'Ibimenyetso",
+    "placeholder": "Shyiramo ibimenyetso (bitandukanyijwe na, urugero, umuriro, inkorora)",
+    "checkButton": "Shakisha",
+    "possibleDiseases": "Indwara Zishoboka",
+    "causes": "Impamvu",
+    "symptoms": "Ibimenyetso"
+  }
+}

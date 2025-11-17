@@ -1,0 +1,125 @@
+{
+  "navbar": {
+    "brand": "Clinique en Ligne",
+    "dashboard": "Tableau de bord",
+    "logout": "Déconnexion",
+    "login": "Connexion",
+    "register": "Inscription"
+  },
+  "landing": {
+    "title": "Bienvenue à la Clinique en Ligne",
+    "subtitle": "Suivez votre santé, vérifiez les symptômes, apprenez sur les maladies",
+    "description": "Votre assistant santé personnel. Obtenez des informations en anglais, kinyarwanda ou français.",
+    "cta1": "Se connecter",
+    "cta2": "S'inscrire"
+  },
+  "login": {
+    "title": "Connexion",
+    "email": "Email",
+    "password": "Mot de passe",
+    "button": "Se connecter"
+  },
+  "register": {
+    "title": "Inscription",
+    "name": "Nom",
+    "email": "Email",
+    "password": "Mot de passe",
+    "button": "S'inscrire"
+  },
+  "dashboard": {
+    "welcome": "Bienvenue, {{name}}!",
+    "symptomChecker": "Test de Symptômes",
+    "diseases": "Maladies",
+    "healthTracker": "Suivi Santé",
+    "specialCases": "Cas Spéciaux",
+    "profile": "Mon Profil",
+    "healthStatus": "Mon État de Santé",
+    "ihave": "(J'ai)",
+    "info": "(Info)"
+  },
+  "diseaseList": {
+    "title": "Liste des Maladies",
+    "searchPlaceholder": "Rechercher (ex : fièvre, mal de tête)",
+    "symptoms": "Symptômes",
+    "viewDetails": "Voir Détails",
+    "noResults": "Aucune maladie trouvée."
+  },
+  "diseaseDetail": {
+    "symptoms": "Symptômes",
+    "causes": "Causes",
+    "effects": "Effets",
+    "prevention": "Prévention",
+    "behaviorGuidelines": "Conseils Comportementaux",
+    "treatment": "Traitement"
+  },
+  "healthTracker": {
+    "title": "Suivi Santé",
+    "bpPlaceholder": "TA (ex : 120/80)",
+    "tempPlaceholder": "Température (°C)",
+    "heartRatePlaceholder": "Fréquence cardiaque (bpm)",
+    "notesPlaceholder": "Remarques",
+    "addLog": "Ajouter Entrée",
+    "recentLogs": "Entrées Récentes",
+    "date": "Date",
+    "bp": "TA",
+    "temp": "Température",
+    "heartRateLabel": "Fréquence cardiaque",
+    "notesLabel": "Remarques",
+    "bpTrend": "Tendance TA"
+  },
+  "profile": {
+    "title": "Mon Profil de Santé",
+    "age": "Âge",
+    "gender": "Sexe",
+    "height": "Taille (cm)",
+    "weight": "Poids (kg)",
+    "bmi": "IMC: {{bmi}}",
+    "bmiUnderweight": "Insuffisance pondérale",
+    "bmiNormal": "Normal",
+    "bmiOverweight": "Surpoids",
+    "bmiObese": "Obésité",
+    "pregnant": "Je suis enceinte",
+    "medicalHistory": "Antécédents médicaux",
+    "addButton": "Ajouter",
+    "myConditions": "Mes Affections",
+    "preferredLanguage": "Langue préférée",
+    "saveButton": "Enregistrer",
+    "errorAge": "L'âge doit être entre 1 et 120",
+    "errorHeight": "La taille doit être entre 100 et 250 cm",
+    "errorWeight": "Le poids doit être entre 20 et 300 kg",
+    "loading": "Chargement du profil...",
+    "select": "Sélectionner",
+    "male": "Homme",
+    "female": "Femme",
+    "other": "Autre"
+  },
+  "specialCaseModal": {
+    "prompt": "Que souhaitez-vous faire ?",
+    "optionHas": "J'ai ceci",
+    "optionInfo": "Je veux juste des infos",
+    "cancel": "Annuler"
+  },
+  "specialCases": {
+    "back": "Retour au Tableau de Bord",
+    "title": "Cas Spéciaux",
+    "loadingInfo": "Chargement des informations...",
+    "errorLoad": "Échec du chargement des infos",
+    "myStatus": "Mon État",
+    "close": "Fermer",
+    "pregnancy": "Grossesse",
+    "mentalHealth": "Santé Mentale",
+    "hiv": "VIH",
+    "cancer": "Cancer",
+    "diabetes": "Diabète",
+    "ihave": "(J'ai)",
+    "info": "(Info)"
+  },
+  "symptomChecker": {
+    "title": "Test de Symptômes",
+    "placeholder": "Entrez les symptômes (séparés par des virgules, ex : fièvre, toux)",
+    "checkButton": "Rechercher",
+    "possibleDiseases": "Maladies Possibles",
+    "causes": "Causes",
+    "symptoms": "Symptômes"
+  }
+}

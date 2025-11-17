@@ -1,8 +1,10 @@
 const express = require('express')
-const { createLog, getLogs, getLog } = require('../controllers/logController')
+const { createLog, getLog, getLogs } = require('../controllers/logController')
 const authMiddleware = require('../middleware/auth')
 
 const router = express.Router()
+
+router.get('/',authMiddleware,getLogs)
 
 // @route   POST /api/logs
 // @desc    Create a health log

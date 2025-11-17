@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const Navbar = () => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const [lang, setLang] = useState(localStorage.getItem('lang') || 'en');
   const token = localStorage.getItem('token');
 
-  const changeLang = (newLang) => {
+  const changeLang = (e) => {
+    const newLang = e.target.value;
+    i18n.changeLanguage(newLang);
     localStorage.setItem('lang', newLang);
-    setLang(newLang);
-    window.location.reload();
   };
 
   const logout = () => {
@@ -19,22 +20,22 @@ const Navbar = () => {
 
   return (
     <nav className="bg-blue-600 text-white p-4 flex justify-between">
-      <Link to="/" className="text-xl font-bold">Online Clinic</Link>
+      <Link to="/" className="text-xl font-bold">{t('navbar.brand')}</Link>
       <div className="flex items-center gap-4">
         {token ? (
           <>
-            <Link to="/dashboard">Dashboard</Link>
-            <button onClick={logout}>Logout</button>
+            <Link to="/dashboard">{t('navbar.dashboard')}</Link>
+            <button onClick={logout}>{t('navbar.logout')}</button>
           </>
         ) : (
           <>
-            <Link to="/login">Login</Link>
-            <Link to="/register">Register</Link>
+            <Link to="/login">{t('navbar.login')}</Link>
+            <Link to="/register">{t('navbar.register')}</Link>
           </>
         )}
         <select
-          value={lang}
-          onChange={(e) => changeLang(e.target.value)}
+          value={i18n.language}
+          onChange={changeLang}
           className="bg-white text-black p-1 rounded"
         >
           <option value="en">English</option>

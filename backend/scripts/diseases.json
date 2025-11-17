@@ -1,293 +1,292 @@
 [
-  {
-    "name": { "en": "Influenza", "rw": "Influenza", "fr": "Grippe" },
-    "symptoms": ["fever", "cough", "sore throat", "fatigue", "body aches"],
-    "causes": {
-      "en": "Influenza virus, spread through droplets",
-      "rw": "Influenza virus, spread through droplets",
-      "fr": "Virus de la grippe, propagé par les gouttelettes"
-    },
-    "effects": {
-      "en": "Fever, muscle pain, fatigue",
-      "rw": "Fever, muscle pain, fatigue",
-      "fr": "Fièvre, douleurs musculaires, fatigue"
-    },
-    "prevention": {
-      "en": "Vaccination, hand washing, avoid crowds",
-      "rw": "Vaccination, hand washing, avoid crowds",
-      "fr": "Vaccination, lavage des mains, éviter les foules"
-    },
-    "behaviorGuidelines": {
-      "en": "Rest, stay hydrated, avoid contact",
-      "rw": "Rest, stay hydrated, avoid contact",
-      "fr": "Repos, hydratation, éviter le contact"
-    },
-    "treatment": {
-      "en": "Antivirals, rest, fluids",
-      "rw": "Antivirals, rest, fluids",
-      "fr": "Antiviraux, repos, hydratation"
-    }
-  },
-  {
-    "name": { "en": "Common Cold", "rw": "Icyorezo gisanzwe", "fr": "Rhume" },
-    "symptoms": ["cough", "runny nose", "sore throat", "sneezing"],
-    "causes": {
-      "en": "Rhinoviruses, spread through contact",
-      "rw": "Rhinoviruses, spread through contact",
-      "fr": "Rhinovirus, propagé par contact"
-    },
-    "effects": {
-      "en": "Nasal congestion, mild fever",
-      "rw": "Nasal congestion, mild fever",
-      "fr": "Nez bouché, légère fièvre"
-    },
-    "prevention": {
-      "en": "Hand washing, avoid touching face",
-      "rw": "Hand washing, avoid touching face",
-      "fr": "Lavage des mains, éviter de toucher le visage"
-    },
-    "behaviorGuidelines": {
-      "en": "Rest, use tissues",
-      "rw": "Rest, use tissues",
-      "fr": "Repos, utiliser des mouchoirs"
-    },
-    "treatment": {
-      "en": "Over-the-counter meds, hydration",
-      "rw": "Over-the-counter meds, hydration",
-      "fr": "Médicaments en vente libre, hydratation"
-    }
-  },
-  {
-    "name": { "en": "Malaria", "rw": "Malariya", "fr": "Paludisme" },
-    "symptoms": ["fever", "chills", "sweats", "headache", "nausea"],
-    "causes": {
-      "en": "Plasmodium parasite transmitted by mosquito bites",
-      "rw": "Plasmodium parasite transmitted by mosquito bites",
-      "fr": "Parasite Plasmodium transmis par les piqûres de moustiques"
-    },
-    "effects": {
-      "en": "Fever, anemia, weakness",
-      "rw": "Fever, anemia, weakness",
-      "fr": "Fièvre, anémie, faiblesse"
-    },
-    "prevention": {
-      "en": "Use mosquito nets, insect repellent",
-      "rw": "Use mosquito nets, insect repellent",
-      "fr": "Utiliser des moustiquaires, répulsifs anti-moustiques"
-    },
-    "behaviorGuidelines": {
-      "en": "Seek treatment early, avoid stagnant water",
-      "rw": "Seek treatment early, avoid stagnant water",
-      "fr": "Chercher un traitement tôt, éviter les eaux stagnantes"
-    },
-    "treatment": {
-      "en": "Antimalarial drugs",
-      "rw": "Antimalarial drugs",
-      "fr": "Médicaments antipaludiques"
-    }
-  },
-  {
-    "name": { "en": "Tuberculosis", "rw": "Igituntu", "fr": "Tuberculose" },
-    "symptoms": ["cough", "fever", "night sweats", "weight loss"],
-    "causes": {
-      "en": "Mycobacterium tuberculosis bacteria",
-      "rw": "Mycobacterium tuberculosis bacteria",
-      "fr": "Bactérie Mycobacterium tuberculosis"
-    },
-    "effects": {
-      "en": "Lung damage, weakness",
-      "rw": "Lung damage, weakness",
-      "fr": "Lésions pulmonaires, faiblesse"
-    },
-    "prevention": {
-      "en": "BCG vaccination, avoid close contact",
-      "rw": "BCG vaccination, avoid close contact",
-      "fr": "Vaccination BCG, éviter le contact étroit"
-    },
-    "behaviorGuidelines": {
-      "en": "Cover mouth when coughing",
-      "rw": "Cover mouth when coughing",
-      "fr": "Couvrir la bouche en toussant"
-    },
-    "treatment": {
-      "en": "Antibiotics for 6-9 months",
-      "rw": "Antibiotics for 6-9 months",
-      "fr": "Antibiotiques pendant 6 à 9 mois"
-    }
-  },
-  {
-    "name": { "en": "COVID-19", "rw": "COVID-19", "fr": "COVID-19" },
-    "symptoms": ["fever", "cough", "shortness of breath", "loss of taste", "loss of smell"],
-    "causes": {
-      "en": "Coronavirus SARS-CoV-2, spread through droplets",
-      "rw": "Coronavirus SARS-CoV-2, spread through droplets",
-      "fr": "Coronavirus SARS-CoV-2, propagé par les gouttelettes"
-    },
-    "effects": {
-      "en": "Respiratory distress, fatigue",
-      "rw": "Respiratory distress, fatigue",
-      "fr": "Détresse respiratoire, fatigue"
-    },
-    "prevention": {
-      "en": "Mask wearing, vaccination, social distancing",
-      "rw": "Mask wearing, vaccination, social distancing",
-      "fr": "Port du masque, vaccination, distanciation sociale"
-    },
-    "behaviorGuidelines": {
-      "en": "Isolate when sick, test regularly",
-      "rw": "Isolate when sick, test regularly",
-      "fr": "S’isoler en cas de maladie, se tester régulièrement"
-    },
-    "treatment": {
-      "en": "Supportive care, antivirals in severe cases",
-      "rw": "Supportive care, antivirals in severe cases",
-      "fr": "Soins de soutien, antiviraux dans les cas graves"
-    }
-  },
-
-  {
-    "name": { "en": "Chickenpox", "rw": "Chickenpox", "fr": "Varicelle" },
-    "symptoms": ["fever", "itchy rash", "blisters", "fatigue", "loss of appetite"],
-    "causes": {
-      "en": "Varicella-zoster virus, spread through droplets and direct contact",
-      "rw": "Varicella-zoster virus, spread through droplets and direct contact",
-      "fr": "Virus varicelle-zona, transmis par contact direct et gouttelettes"
-    },
-    "effects": {
-      "en": "Itchy rash, possible scarring, fever",
-      "rw": "Itchy rash, possible scarring, fever",
-      "fr": "Éruption cutanée prurigineuse, cicatrices possibles, fièvre"
-    },
-    "prevention": {
-      "en": "Vaccination (varicella vaccine), avoid contact with infected people",
-      "rw": "Vaccination (varicella vaccine), avoid contact with infected people",
-      "fr": "Vaccination, éviter le contact avec les personnes infectées"
-    },
-    "behaviorGuidelines": {
-      "en": "Isolate until lesions crust over, avoid scratching",
-      "rw": "Isolate until lesions crust over, avoid scratching",
-      "fr": "S’isoler jusqu’à la formation de croûtes, éviter de gratter"
-    },
-    "treatment": {
-      "en": "Antiviral for severe cases, calamine lotion, fluids",
-      "rw": "Antiviral for severe cases, calamine lotion, fluids",
-      "fr": "Antiviral dans les cas sévères, lotions apaisantes, hydratation"
-    }
-  },
-  {
-    "name": { "en": "Measles", "rw": "Measles", "fr": "Rougeole" },
-    "symptoms": ["high fever", "cough", "runny nose", "red eyes", "rash"],
-    "causes": {
-      "en": "Measles virus, highly contagious airborne transmission",
-      "rw": "Measles virus, highly contagious airborne transmission",
-      "fr": "Virus de la rougeole, transmission aérienne hautement contagieuse"
-    },
-    "effects": {
-      "en": "Pneumonia, ear infections, encephalitis in severe cases",
-      "rw": "Pneumonia, ear infections, encephalitis in severe cases",
-      "fr": "Pneumonie, otites, encéphalite dans les cas graves"
-    },
-    "prevention": {
-      "en": "MMR vaccination, avoid contact with infected individuals",
-      "rw": "MMR vaccination, avoid contact with infected individuals",
-      "fr": "Vaccination ROR (MMR), éviter le contact avec les malades"
-    },
-    "behaviorGuidelines": {
-      "en": "Isolate, seek medical care if breathing difficulty occurs",
-      "rw": "Isolate, seek medical care if breathing difficulty occurs",
-      "fr": "S’isoler, consulter en cas de difficultés respiratoires"
-    },
-    "treatment": {
-      "en": "Supportive care, vitamin A for children in severe cases",
-      "rw": "Supportive care, vitamin A for children in severe cases",
-      "fr": "Soins de soutien, vitamine A pour les enfants dans les cas graves"
-    }
-  },
-  {
-    "name": { "en": "Typhoid Fever", "rw": "Typhoid Fever", "fr": "Fièvre typhoïde" },
-    "symptoms": ["high fever", "weakness", "stomach pain", "headache", "loss of appetite"],
-    "causes": {
-      "en": "Salmonella Typhi bacteria, contaminated food or water",
-      "rw": "Salmonella Typhi bacteria, contaminated food or water",
-      "fr": "Bactérie Salmonella Typhi, aliments ou eau contaminés"
-    },
-    "effects": {
-      "en": "Prolonged fever, intestinal complications, severe weakness",
-      "rw": "Prolonged fever, intestinal complications, severe weakness",
-      "fr": "Fièvre prolongée, complications intestinales, grande faiblesse"
-    },
-    "prevention": {
-      "en": "Safe food and water, hand hygiene, vaccination where available",
-      "rw": "Safe food and water, hand hygiene, vaccination where available",
-      "fr": "Aliments et eau sûrs, hygiène des mains, vaccination si disponible"
-    },
-    "behaviorGuidelines": {
-      "en": "Seek medical care early, avoid preparing food for others while ill",
-      "rw": "Seek medical care early, avoid preparing food for others while ill",
-      "fr": "Consulter rapidement, éviter de préparer de la nourriture pour les autres"
-    },
-    "treatment": {
-      "en": "Appropriate antibiotics as prescribed, hydration",
-      "rw": "Appropriate antibiotics as prescribed, hydration",
-      "fr": "Antibiotiques adaptés prescrits, hydratation"
-    }
-  },
-  {
-    "name": { "en": "Hepatitis A", "rw": "Hepatitis A", "fr": "Hépatite A" },
-    "symptoms": ["fever", "fatigue", "jaundice", "abdominal pain", "nausea"],
-    "causes": {
-      "en": "Hepatitis A virus, transmitted via contaminated food or water (faecal-oral)",
-      "rw": "Hepatitis A virus, transmitted via contaminated food or water (faecal-oral)",
-      "fr": "Virus de l’hépatite A, transmis par aliments/eau contaminés (voie fécale-orale)"
-    },
-    "effects": {
-      "en": "Liver inflammation, jaundice, possible hospitalization",
-      "rw": "Liver inflammation, jaundice, possible hospitalization",
-      "fr": "Inflammation du foie, jaunisse, hospitalisation possible"
-    },
-    "prevention": {
-      "en": "Vaccination, safe water and food, hand washing",
-      "rw": "Vaccination, safe water and food, hand washing",
-      "fr": "Vaccination, eau et alimentation sûres, lavage des mains"
-    },
-    "behaviorGuidelines": {
-      "en": "Avoid alcohol, practice good hygiene, isolate if advised",
-      "rw": "Avoid alcohol, practice good hygiene, isolate if advised",
-      "fr": "Éviter l’alcool, bonne hygiène, isolement si recommandé"
-    },
-    "treatment": {
-      "en": "Supportive care, rest, hydration (usually self-limiting)",
-      "rw": "Supportive care, rest, hydration (usually self-limiting)",
-      "fr": "Soins de soutien, repos, hydratation (généralement spontanée)"
-    }
-  },
-  {
-    "name": { "en": "Dengue Fever", "rw": "Dengue Fever", "fr": "Dengue" },
-    "symptoms": ["high fever", "severe headache", "pain behind the eyes", "joint and muscle pain", "rash"],
-    "causes": {
-      "en": "Dengue virus transmitted by infected Aedes mosquitoes",
-      "rw": "Dengue virus transmitted by infected Aedes mosquitoes",
-      "fr": "Virus de la dengue transmis par les moustiques Aedes infectés"
-    },
-    "effects": {
-      "en": "Severe pain, dehydration; severe forms can cause hemorrhage or shock",
-      "rw": "Severe pain, dehydration; severe forms can cause hemorrhage or shock",
-      "fr": "Douleurs intenses, déshydratation ; formes graves: hémorragies ou choc"
-    },
-    "prevention": {
-      "en": "Mosquito control, avoid mosquito bites, remove standing water",
-      "rw": "Mosquito control, avoid mosquito bites, remove standing water",
-      "fr": "Lutte anti-moustiques, éviter les piqûres, éliminer les eaux stagnantes"
-    },
-    "behaviorGuidelines": {
-      "en": "Seek urgent care for severe symptoms, avoid NSAIDs (risk of bleeding)",
-      "rw": "Seek urgent care for severe symptoms, avoid NSAIDs (risk of bleeding)",
-      "fr": "Consulter d’urgence en cas de symptômes graves, éviter les AINS (risque hémorragique)"
-    },
-    "treatment": {
-      "en": "Supportive care, fluids, hospitalization for severe cases",
-      "rw": "Supportive care, fluids, hospitalization for severe cases",
-      "fr": "Soins de soutien, hydratation, hospitalisation pour les cas graves"
-    }
-  }
+{
+"name": { "en": "Influenza (Flu)", "rw": "Ibicurane", "fr": "Grippe" },
+"symptoms": ["Sudden high fever (above 38°C)", "Dry cough", "Sore throat", "Extreme fatigue or weakness", "Muscle and body aches", "Headache", "Chills", "Runny or stuffy nose"],
+"causes": {
+"en": "Caused by influenza viruses (types A, B, or C), primarily spread through respiratory droplets when infected people cough, sneeze, or talk. It can also spread via touching contaminated surfaces and then the face. Outbreaks peak in colder months, but year-round in tropical areas like parts of Rwanda.",
+"rw": "Iterwa n'ibihumekero bya virusi ya influenza (ibika A, B cyangwa C), ryandura cyane cyane ryigamo amacupa y'umuhumekero ry'abarwayi barikorora, barahisha cyangwa bavuga. Ryandura no ryigamo ibintu ryanduye hanyuma ryigamo imaso. Ryanduka ryigamo ryinshi mu bihe by'imbeho, ariko ryanduka ryose mu bihe by'umurara nk'ahandi muri Rwanda.",
+"fr": "Provoquée par les virus de la grippe (types A, B ou C), se propage principalement par les gouttelettes respiratoires lorsque les personnes infectées toussent, éternuent ou parlent. Peut aussi se transmettre via des surfaces contaminées touchées puis le visage. Les épidémies culminent en hiver, mais toute l'année dans les zones tropicales comme certaines parties du Rwanda."
+},
+"effects": {
+"en": "Can lead to severe complications like pneumonia, bronchitis, sinus infections, or worsening of chronic conditions (e.g., asthma, heart disease). High-risk groups (elderly, children under 5, pregnant women) may require hospitalization; global deaths average 290,000–650,000 annually. In Rwanda, it contributes to respiratory illness burdens during rainy seasons.",
+"rw": "Rishobora kwanduza ibintu bikomeye nk'umuriro w'umuriro, bronchitis, ibicurane by'umuriro, cyangwa kwanduza ibintu by'umuriro (nk'umuriro, ibintu by'umutima). Abantu barwayi (abakuru, abana bari munsi y'imyaka 5, abagore bafite inda) bashobora kwanduza ibitaro; abantu bapfa ku isi ryose ryigamo 290,000–650,000 ku mwaka. Muri Rwanda, ryanduza ibintu by'umuhumekero mu bihe by'imvura.",
+"fr": "Peut entraîner des complications graves comme la pneumonie, la bronchite, les infections des sinus ou l'aggravation de maladies chroniques (ex. asthme, maladies cardiaques). Les groupes à haut risque (personnes âgées, enfants de moins de 5 ans, femmes enceintes) peuvent nécessiter une hospitalisation ; décès mondiaux moyens de 290 000 à 650 000 par an. Au Rwanda, contribue à la charge des maladies respiratoires pendant les saisons des pluies."
+},
+"prevention": {
+"en": "Annual vaccination (free or low-cost in Rwanda via RBC campaigns), frequent hand washing with soap for 20 seconds, wearing masks in crowded areas, avoiding close contact with sick people, and covering coughs/sneezes with a tissue or elbow. Boost immunity with balanced diet, exercise, and sleep.",
+"rw": "Urukingo rw'umwaka (ryigenga cyangwa ryigenga muri Rwanda ryigamo ibikorwa bya RBC), kwambara amaboko n'isabuni ku masegonda 20, kwambara imyambaro mu mahanga, kwirinda kwanduza abarwayi, no kwambara inkorora/ibarahisha n'umunyabuzi cyangwa elbow. Kwanduza umuriro n'ibifunguro ryigenga, ibikorwa, n'isinema.",
+"fr": "Vaccination annuelle (gratuite ou à faible coût au Rwanda via les campagnes du RBC), lavage fréquent des mains au savon pendant 20 secondes, port de masques dans les zones bondées, éviter les contacts étroits avec les malades, et couvrir la toux/éternuements avec un mouchoir ou le coude. Renforcer l'immunité avec une alimentation équilibrée, exercice et sommeil."
+},
+"behaviorGuidelines": {
+"en": "If symptoms appear, stay home, rest in a well-ventilated room, drink plenty of fluids (water, herbal teas), use over-the-counter pain relievers like paracetamol (avoid aspirin in children). Isolate for at least 5 days; monitor for worsening (e.g., breathing difficulty) and seek care at a local health center or call Rwanda's health hotline (114).",
+"rw": "Niba ibimenyetso ryiboneka, kuguma murugo, kwihangira mu cyumba ryigenga, kunywa amazi ryinshi (amazi, amavuta y'ibinyobwa), kwanduza ibintu by'umuriro nk'paracetamol (kwirinda aspirin mu bana). Kwanduza ku minsi 5; kwanduza kwanduza (nk'umuhumekero ryigenga) no kwanduza ibitaro ry'ahandi cyangwa kwanduza ibitaro ry'umuriro wa Rwanda (114).",
+"fr": "En cas de symptômes, restez à la maison, reposez-vous dans une pièce bien ventilée, buvez beaucoup de liquides (eau, tisanes), utilisez des antidouleurs en vente libre comme le paracétamol (éviter l'aspirine chez les enfants). Isolez-vous pendant au moins 5 jours ; surveillez l'aggravation (ex. difficulté respiratoire) et consultez un centre de santé local ou appelez la hotline santé du Rwanda (114)."
+},
+"treatment": {
+"en": "Antiviral medications like oseltamivir (if started within 48 hours), rest, hydration, and symptom relief. Severe cases may need hospital care with IV fluids or oxygen. In Rwanda, consult RBC guidelines; antibiotics only if secondary bacterial infection occurs.",
+"rw": "Imiti y'umuriro nk'oseltamivir (niba ryatangiye mu maora 48), kwihangira, kunywa amazi, no kwanduza ibimenyetso. Ibintu bikomeye bishobora kwanduza ibitaro n'amazi ya IV cyangwa oksijeni. Muri Rwanda, kwanduza ibikorwa bya RBC; imiti y'umuriro gusa niba ryanduze ibicurane ry'umuriro.",
+"fr": "Médicaments antiviraux comme l'oseltamivir (si commencé dans les 48 heures), repos, hydratation et soulagement des symptômes. Cas graves peuvent nécessiter des soins hospitaliers avec fluides IV ou oxygène. Au Rwanda, consultez les directives du RBC ; antibiotiques seulement en cas d'infection bactérienne secondaire."
+}
+},
+{
+"name": { "en": "Common Cold", "rw": "Ibicurane gisanzwe", "fr": "Rhume commun" },
+"symptoms": ["Runny or stuffy nose", "Sneezing", "Sore throat", "Cough", "Mild headache", "Low-grade fever (rarely above 38°C)", "Fatigue", "Watery eyes"],
+"causes": {
+"en": "Primarily rhinoviruses (over 100 types), but also coronaviruses or adenoviruses. Spread through droplets from sneezing/coughing, hand-to-hand contact, or touching contaminated surfaces. More common in rainy seasons or crowded settings in Rwanda.",
+"rw": "Cyane cyane rhinovirusi (ibika ryinshi ryigamo 100), ariko no koronavirusi cyangwa adenovirusi. Ryandura ryigamo amacupa ry'ibarahisha/inkorora, amaboko-ku-maboko, cyangwa kwanduza ibintu ryanduye. Ryinshi mu bihe by'imvura cyangwa mu mahanga muri Rwanda.",
+"fr": "Principalement des rhinovirus (plus de 100 types), mais aussi des coronavirus ou adénovirus. Se propage par gouttelettes d'éternuements/toux, contact main-à-main, ou surfaces contaminées. Plus fréquent pendant les saisons pluvieuses ou dans les environnements bondés au Rwanda."
+},
+"effects": {
+"en": "Usually mild and self-resolving, but can lead to sinusitis, ear infections, or asthma exacerbations. In Rwanda, it contributes to school/work absences; rarely fatal but burdensome in children or those with weakened immunity.",
+"rw": "Ryigenga ryigenga no ryigenga, ariko rishobora kwanduza sinusitis, ibicurane by'umuriro, cyangwa kwanduza umuriro. Muri Rwanda, ryanduza ibikorwa ry'ishuri/akazi; ryigenga ryigenga ariko ryanduza mu bana cyangwa abantu barwayi umuriro.",
+"fr": "Généralement bénin et auto-résolutif, mais peut entraîner sinusite, otites ou exacerbations d'asthme. Au Rwanda, contribue aux absences scolaires/professionnelles ; rarement mortel mais pesant chez les enfants ou immunodéprimés."
+},
+"prevention": {
+"en": "Frequent hand washing, avoiding face touching, using tissues for sneezes, disinfecting surfaces, and maintaining distance from sick people. Vitamin C/zinc supplements may help mildly; good nutrition and sleep boost resistance.",
+"rw": "Kwambara amaboko ryinshi, kwirinda kwanduza imaso, kwanduza ibinyugunyugu ry'ibarahisha, kwanduza ibintu, no kwanduza abarwayi. Vitamini C/zinc ryishobora kwanduza ryigenga; ibifunguro ryiza n'isinema ryanduza umuriro.",
+"fr": "Lavage fréquent des mains, éviter de toucher le visage, utiliser des mouchoirs pour éternuements, désinfecter les surfaces, et maintenir la distance avec les malades. Suppléments de vitamine C/zinc peuvent aider modérément ; bonne nutrition et sommeil renforcent la résistance."
+},
+"behaviorGuidelines": {
+"en": "Rest at home if possible, drink warm fluids (e.g., ginger tea), use saline nasal sprays for congestion. Avoid antibiotics (viral, not bacterial). If fever persists >3 days or worsens, see a doctor to rule out complications.",
+"rw": "Kwihangira murugo niba ryishobora, kunywa amazi y'umuriro (nk'amavuta ya ginger), kwanduza ibinyugunyugu ry'umuriro ry'umuriro. Kwirinda imiti y'umuriro (virusi, si ibicurane). Niba umuriro ryigamo >iminota 3 cyangwa ryanduza, kureba umuriro kwirinda ibintu bikomeye.",
+"fr": "Reposez-vous à la maison si possible, buvez des liquides chauds (ex. thé au gingembre), utilisez des sprays nasaux salins pour la congestion. Évitez les antibiotiques (viral, pas bactérien). Si fièvre persiste >3 jours ou s'aggrave, consultez un médecin pour exclure complications."
+},
+"treatment": {
+"en": "Symptom-based: Over-the-counter decongestants, pain relievers (paracetamol), lozenges for throat. Hydration and rest key; no cure, resolves in 7–10 days. In Rwanda, herbal remedies like eucalyptus may help, but consult pharmacist.",
+"rw": "Ryigamo ibimenyetso: Ibintu ryigamo ry'umuriro, imiti y'umuriro (paracetamol), lozenges ry'umuhogo. Kunywa amazi n'kwihangira ryigenga; nta ryivura, ryigamo mu minsi 7–10. Muri Rwanda, ibinyugunyugu nk'eucalyptus ryishobora kwanduza, ariko kwanduza umuriro.",
+"fr": "Basé sur symptômes : Décongestionnants en vente libre, antidouleurs (paracétamol), pastilles pour gorge. Hydratation et repos essentiels ; pas de cure, résout en 7–10 jours. Au Rwanda, remèdes à base de plantes comme eucalyptus peuvent aider, mais consultez pharmacien."
+}
+},
+{
+"name": { "en": "Malaria", "rw": "Malariya", "fr": "Paludisme" },
+"symptoms": ["High fever (cyclical, every 48–72 hours)", "Chills and shivering", "Profuse sweating", "Severe headache", "Nausea and vomiting", "Muscle pain", "Fatigue", "Diarrhea (sometimes)"],
+"causes": {
+"en": "Parasite Plasmodium (mainly P. falciparum in Africa), transmitted by bites from infected female Anopheles mosquitoes. Common in tropical Rwanda; risk higher near water bodies or during rainy seasons. Drug-resistant strains increasing globally.",
+"rw": "Parasite Plasmodium (cyane cyane P. falciparum muri Afurika), ryandura ryigamo ibinyugunyugu by'abakobwa Anopheles ryanduye. Ryinshi muri Rwanda ry'umurara; ryanduza ryinshi ryigamo amazi cyangwa mu bihe by'imvura. Ibintu ry'umuriro ryanduza ku isi ryose.",
+"fr": "Parasite Plasmodium (principalement P. falciparum en Afrique), transmis par piqûres de moustiques femelles Anopheles infectés. Courant dans le Rwanda tropical ; risque plus élevé près des plans d'eau ou pendant les saisons des pluies. Souches résistantes aux médicaments en augmentation mondiale."
+},
+"effects": {
+"en": "Severe anemia, organ failure (kidneys, liver), cerebral malaria (seizures, coma), or death if untreated. In Rwanda, ~263,000 cases annually (2023 est.); children under 5 and pregnant women most vulnerable; contributes to economic burden.",
+"rw": "Anemia bikomeye, ibintu by'umubiri (impyiko, umwijima), malariya ya cerebral (ibinyugunyugu, coma), cyangwa ryapfa niba ryataravurwa. Muri Rwanda, ibintu ~263,000 ku mwaka (2023 est.); abana bari munsi y'imyaka 5 n'abagore bafite inda barwayi cyane; ryanduza ibintu ry'umurimo.",
+"fr": "Anémie sévère, défaillance d'organes (reins, foie), paludisme cérébral (convulsions, coma), ou décès si non traité. Au Rwanda, ~263 000 cas par an (est. 2023) ; enfants de moins de 5 ans et femmes enceintes les plus vulnérables ; contribue au fardeau économique."
+},
+"prevention": {
+"en": "Sleep under insecticide-treated nets (distributed free in Rwanda), use repellents (DEET-based), wear long clothing at dusk/dawn, eliminate standing water to reduce breeding sites. Chemoprophylaxis for travelers; vaccines like RTS,S available in pilot programs.",
+"rw": "Kuryama munsi y'ibinyugunyugu ry'umuriro (ryanduza ryigenga muri Rwanda), kwanduza repellents (DEET-ryigamo), kwambara imyambaro ryigenga ku mahe cyangwa amanywa, kwanduza amazi ryigamo ryanduza ibikorwa. Chemoprophylaxis ry'abashami; urukingo nk'RTS,S ryigamo mu ibikorwa ry'umuriro.",
+"fr": "Dormir sous moustiquaires imprégnées d'insecticide (distribuées gratuitement au Rwanda), utiliser des répulsifs (à base de DEET), porter des vêtements longs au crépuscule/aube, éliminer les eaux stagnantes pour réduire les sites de reproduction. Chimioprophylaxie pour voyageurs ; vaccins comme RTS,S disponibles en programmes pilotes."
+},
+"behaviorGuidelines": {
+"en": "Test immediately if fever occurs (free rapid tests at Rwanda health posts). Avoid self-medication; use nets consistently. If positive, complete full treatment course. Report to community health workers; pregnant women should attend antenatal care for IPTp (intermittent preventive treatment).",
+"rw": "Kureba ryigenga niba umuriro ryiboneka (ibikorwa ryigenga ry'umuriro ryigenga muri Rwanda). Kwirinda kwivura; kwanduza ibinyugunyugu ryigenga. Niba ryiza, ryanduza ryose ry'umuriro. Kwanduza abakozi b'umuriro; abagore bafite inda bashobora kwanduza ibitaro ry'umuriro ry'IPTp (ry'umuriro ryigenga).",
+"fr": "Testez immédiatement en cas de fièvre (tests rapides gratuits aux postes de santé rwandais). Évitez l'automédication ; utilisez les moustiquaires constamment. Si positif, complétez le traitement complet. Rapportez aux agents de santé communautaires ; femmes enceintes devraient assister aux soins prénataux pour IPTp (traitement préventif intermittent)."
+},
+"treatment": {
+"en": "Artemisinin-based combination therapies (ACTs) like artemether-lumefantrine (first-line in Rwanda). Severe cases: IV artesunate + supportive care. Monitor for resistance; hydration essential. Follow RBC protocols; full course (3–7 days) to prevent relapse.",
+"rw": "Ibikorwa ry'umuriro ryigamo artemisinin (ACTs) nk'artemether-lumefantrine (ry'umuriro ryigenga muri Rwanda). Ibintu bikomeye: IV artesunate + ibitaro ryigenga. Kwanduza ry'umuriro; kunywa amazi ryigenga. Kwanduza ibikorwa bya RBC; ryose ry'umuriro (iminota 3–7) kwirinda ryanduza.",
+"fr": "Thérapies combinées à base d'artémisinine (ACT) comme artéméther-luméfantrine (première ligne au Rwanda). Cas graves : artésunate IV + soins de soutien. Surveiller la résistance ; hydratation essentielle. Suivez les protocoles du RBC ; cours complet (3–7 jours) pour prévenir rechute."
+}
+},
+{
+"name": { "en": "Tuberculosis (TB)", "rw": "Igituntu", "fr": "Tuberculose" },
+"symptoms": ["Persistent cough (over 2 weeks, sometimes with blood)", "Fever", "Night sweats", "Unexplained weight loss", "Chest pain", "Fatigue", "Loss of appetite"],
+"causes": {
+"en": "Bacteria Mycobacterium tuberculosis, spread via airborne droplets from coughing/sneezing. Latent TB (inactive) can activate in weakened immune systems (e.g., HIV co-infection). High burden in Rwanda due to population density and HIV prevalence.",
+"rw": "Ibicurane Mycobacterium tuberculosis, ryandura ryigamo amacupa ry'umuriro ry'inkorora/ibarahisha. TB ryigamo (ryigenga) ryishobora kwanduza mu muriro ryigenga (nk'umuriro wa HIV). Ryinshi muri Rwanda ryigamo abantu ryinshi n'umuriro wa HIV.",
+"fr": "Bactérie Mycobacterium tuberculosis, se propage par gouttelettes aériennes de toux/éternuements. TB latente (inactive) peut s'activer chez les immunodéprimés (ex. co-infection VIH). Forte charge au Rwanda due à la densité de population et prévalence du VIH."
+},
+"effects": {
+"en": "Lung damage, spread to other organs (extrapulmonary TB), drug-resistant strains (MDR-TB). Globally, 1.5M deaths/year; in Rwanda, ~10,000 cases annually. Weakens economy via lost productivity; higher risk with malnutrition or diabetes.",
+"rw": "Ibintu by'umuriro, ryandura ku bindi bintu (extrapulmonary TB), ibintu ry'umuriro (MDR-TB). Ku isi, abantu 1.5M bapfa/ku mwaka; muri Rwanda, ibintu ~10,000 ku mwaka. Ryanduza umurimo ryigamo ryanduza; ryanduza ryinshi n'umuriro cyangwa umuriro.",
+"fr": "Dommages pulmonaires, propagation à d'autres organes (TB extrapulmonaire), souches résistantes (TB-MDR). Mondialement, 1,5M décès/an ; au Rwanda, ~10 000 cas par an. Affaiblit l'économie via perte de productivité ; risque plus élevé avec malnutrition ou diabète."
+},
+"prevention": {
+"en": "BCG vaccine for newborns (routine in Rwanda), avoid close contact with active cases, good ventilation in homes/workplaces. Screen high-risk groups (HIV patients); isoniazid preventive therapy (IPT) for contacts.",
+"rw": "Urukingo rwa BCG ry'abana bashya (ryigenga muri Rwanda), kwirinda kwanduza ibintu bikomeye, umuriro ryiza mu ngo/akazi. Kureba abantu barwayi (abarwayi ba HIV); isoniazid ry'umuriro (IPT) ry'abashami.",
+"fr": "Vaccin BCG pour nouveau-nés (routine au Rwanda), éviter contacts étroits avec cas actifs, bonne ventilation dans maisons/lieux de travail. Dépister groupes à haut risque (patients VIH) ; thérapie préventive à l'isoniazide (IPT) pour contacts."
+},
+"behaviorGuidelines": {
+"en": "Cover mouth when coughing (use mask or tissue), adhere to treatment if diagnosed. Isolate during infectious phase; regular sputum tests. In Rwanda, report to CHWs; avoid alcohol/tobacco to aid recovery.",
+"rw": "Kwambara umunyabuzi ry'inkorora (kwanduza imyambaro cyangwa ibinyugunyugu), kwanduza ry'umuriro niba ryarebwa. Kwanduza mu bihe ryanduza; ibikorwa ry'umuriro ryigenga. Muri Rwanda, kwanduza CHWs; kwirinda alcool/tabako kwanduza ryivura.",
+"fr": "Couvrir la bouche en toussant (masque ou mouchoir), adhérer au traitement si diagnostiqué. Isolez pendant phase infectieuse ; tests d'expectoration réguliers. Au Rwanda, rapportez aux ASC ; évitez alcool/tabac pour aider la guérison."
+},
+"treatment": {
+"en": "Standard 4-drug regimen (isoniazid, rifampicin, etc.) for 6 months; directly observed therapy (DOT) in Rwanda via community workers. MDR-TB needs longer (9–20 months) regimens. Nutrition support essential; full adherence prevents resistance.",
+"rw": "Ryigenga ry'umuriro ryigamo 4 (isoniazid, rifampicin, n.k.) ku mezi 6; ry'umuriro ryigenga (DOT) muri Rwanda ryigamo abakozi b'umuriro. MDR-TB ryanduza ryigenga (amezi 9–20). Ibifunguro ryigenga ryigenga; kwanduza ryose ryirinda ry'umuriro.",
+"fr": "Régime standard à 4 médicaments (isoniazide, rifampicine, etc.) pendant 6 mois ; thérapie directement observée (DOT) au Rwanda via agents communautaires. TB-MDR nécessite régimes plus longs (9–20 mois). Soutien nutritionnel essentiel ; adhésion complète prévient résistance."
+}
+},
+{
+"name": { "en": "COVID-19", "rw": "Koronavirusi (COVID-19)", "fr": "COVID-19" },
+"symptoms": ["Fever or chills", "Dry cough", "Shortness of breath", "Loss of taste/smell", "Fatigue", "Muscle aches", "Sore throat", "Headache", "Runny nose", "Diarrhea (less common)"],
+"causes": {
+"en": "SARS-CoV-2 virus, spread via respiratory droplets/aerosols from talking, coughing, or breathing. Variants evolve; post-2023, less severe due to immunity/vaccines. In Rwanda, urban areas and travel increase risk.",
+"rw": "Virusi ya SARS-CoV-2, ryandura ryigamo amacupa y'umuhumekero/aerosols ry'umuvugiro, inkorora, cyangwa umuhumekero. Ibintu ryihinduka; nyuma ya 2023, ryigenga ryigenga ryigamo umuriro/urukingo. Muri Rwanda, ahantu ry'umujyi n'umushami ryanduza ryanduza.",
+"fr": "Virus SARS-CoV-2, se propage via gouttelettes/aérosols respiratoires de parole, toux ou respiration. Variants évoluent ; post-2023, moins sévère grâce à immunité/vaccins. Au Rwanda, zones urbaines et voyages augmentent le risque."
+},
+"effects": {
+"en": "Mild for most, but severe respiratory failure, long COVID (fatigue, brain fog), or death in vulnerable (elderly, comorbidities). Global deaths ~7M total; in Rwanda, controlled via vaccination but occasional outbreaks.",
+"rw": "Ryigenga ryinshi, ariko umuhumekero bikomeye, COVID ryigenga (umuriro, umuriro wa brain), cyangwa ryapfa mu barwayi (abakuru, ibintu ryigamo). Abantu bapfa ku isi ~7M ryose; muri Rwanda, ryanduza ryigamo urukingo ariko ryanduza ryigenga.",
+"fr": "Bénin pour la plupart, mais insuffisance respiratoire sévère, COVID long (fatigue, brouillard cérébral), ou décès chez vulnérables (âgés, comorbidités). Décès mondiaux ~7M total ; au Rwanda, contrôlé via vaccination mais épidémies occasionnelles."
+},
+"prevention": {
+"en": "Vaccination (boosters recommended), masks in crowds, hand hygiene, ventilation. Test if exposed; Rwanda offers free testing/vaccines via RBC.",
+"rw": "Urukingo (boosters ryanduza), imyambaro mu mahanga, amaboko ryiza, umuriro. Kureba niba ryarebwa; Rwanda ryanduza ryigenga ryigenga/urukingo ryigamo RBC.",
+"fr": "Vaccination (rappels recommandés), masques en foule, hygiène des mains, ventilation. Testez si exposé ; Rwanda offre tests/vaccins gratuits via RBC."
+},
+"behaviorGuidelines": {
+"en": "Isolate 5 days if positive, wear mask 5 more. Monitor oxygen levels; seek care for shortness of breath. In Rwanda, report via 114; avoid crowds during surges.",
+"rw": "Kwanduza iminsi 5 niba ryiza, kwambara imyambaro 5 ryinshi. Kwanduza ibintu ya oksijeni; kwanduza umuhumekero ryigenga. Muri Rwanda, kwanduza ryigamo 114; kwirinda mahanga mu bihe ryanduza.",
+"fr": "Isolez 5 jours si positif, portez masque 5 jours de plus. Surveillez niveaux d'oxygène ; consultez pour essoufflement. Au Rwanda, rapportez via 114 ; évitez foules pendant flambées."
+},
+"treatment": {
+"en": "Supportive: Rest, fluids, paracetamol. Antivirals (paxlovid) for high-risk; oxygen/hospital for severe. Follow WHO living guidelines.",
+"rw": "Ryigenga: Kwihangira, amazi, paracetamol. Antivirals (paxlovid) ry'abarwayi; oksijeni/ibitaro ry bikomeye. Kwanduza ibikorwa ry'umuriro wa WHO.",
+"fr": "Supportif : Repos, fluides, paracétamol. Antiviraux (paxlovid) pour haut risque ; oxygène/hôpital pour sévère. Suivez directives vivantes de l'OMS."
+}
+},
+{
+"name": { "en": "Chickenpox", "rw": "Ibihara", "fr": "Varicelle" },
+"symptoms": ["Fever", "Itchy red rash that turns to blisters", "Blisters (fluid-filled, then crust over)", "Fatigue", "Loss of appetite", "Headache", "Sore throat"],
+"causes": {
+"en": "Varicella-zoster virus (herpes family), highly contagious via droplets or direct contact with rash. Spreads easily in schools/households; can reactivate as shingles later in life.",
+"rw": "Virusi ya Varicella-zoster (umuryango wa herpes), ryanduza cyane ryigamo amacupa cyangwa kwanduza ryigamo ry'umuriro. Ryandura ryigenga mu mashuri/ingo; ryishobora kwanduza nk'shingles nyuma mu buzima.",
+"fr": "Virus varicelle-zona (famille herpès), hautement contagieux via gouttelettes ou contact direct avec éruption. Se propage facilement dans écoles/ménages ; peut réactiver comme zona plus tard."
+},
+"effects": {
+"en": "Scarring from scratching, bacterial skin infections, pneumonia in adults. Rare: Encephalitis or death. In Rwanda, outbreaks in unvaccinated children; pregnant women risk fetal issues.",
+"rw": "Ibintu ryigamo ry'umuriro ryigamo scratching, ibicurane ry'umubiri ry'umuriro, umuriro w'umuriro mu bakuru. Ryigenga: Encephalitis cyangwa ryapfa. Muri Rwanda, ryanduza mu bana bataravurwa; abagore bafite inda ryanduza ibintu ry'umwana.",
+"fr": "Cicatrices de grattage, infections bactériennes cutanées, pneumonie chez adultes. Rare : Encéphalite ou décès. Au Rwanda, épidémies chez enfants non vaccinés ; femmes enceintes risquent problèmes fœtaux."
+},
+"prevention": {
+"en": "Varicella vaccine (2 doses, part of Rwanda's EPI program), avoid contact with infected. Good hygiene; isolate cases until scabs form.",
+"rw": "Urukingo rwa Varicella (iminota 2, igice ry'ibikorwa rya EPI muri Rwanda), kwirinda kwanduza ryanduye. Umuriro ryiza; kwanduza ibintu kugeza scabs ryiboneka.",
+"fr": "Vaccin varicelle (2 doses, partie du programme PEI du Rwanda), éviter contact avec infectés. Bonne hygiène ; isolez cas jusqu'à formation de croûtes."
+},
+"behaviorGuidelines": {
+"en": "Isolate until all blisters crust (5–7 days), avoid scratching (trim nails, use mittens for kids). Cool baths with oatmeal for itch; seek care if high fever or breathing issues.",
+"rw": "Kwanduza kugeza ibinyugunyugu ryose ry'umuriro (iminota 5–7), kwirinda scratching (trim nails, kwanduza mittens ry'abana). Amazi ry'umuriro n'oatmeal ry'umuriro; kwanduza niba umuriro ryigenga cyangwa ibintu ry'umuhumekero.",
+"fr": "Isolez jusqu'à ce que toutes vésicules croûtent (5–7 jours), évitez grattage (coupez ongles, utilisez mitaines pour enfants). Bains frais à l'avoine pour démangeaisons ; consultez si forte fièvre ou problèmes respiratoires."
+},
+"treatment": {
+"en": "Antivirals (acyclovir) for severe/high-risk cases; calamine lotion, antihistamines for itch; fluids and rest. Avoid aspirin (Reye's syndrome risk).",
+"rw": "Antivirals (acyclovir) ry ibintu bikomeye/abarwayi; calamine lotion, antihistamines ry'umuriro; amazi n'kwihangira. Kwirinda aspirin (ry'umuriro wa Reye).",
+"fr": "Antiviraux (acyclovir) pour cas graves/haut risque ; lotion calamine, antihistaminiques pour démangeaisons ; fluides et repos. Évitez aspirine (risque syndrome de Reye)."
+}
+},
+{
+"name": { "en": "Measles", "rw": "Iseru", "fr": "Rougeole" },
+"symptoms": ["High fever (up to 40°C)", "Cough", "Runny nose", "Red, watery eyes (conjunctivitis)", "White spots inside mouth (Koplik's spots)", "Red rash starting on face"],
+"causes": {
+"en": "Measles virus, highly contagious airborne spread. Unvaccinated populations vulnerable; outbreaks in low-coverage areas like parts of Rwanda.",
+"rw": "Virusi ya iseru, ryanduza cyane ryigamo umuriro. Abantu bataravurwa barwayi; ryanduza mu mahanga ryigenga nk'ahandi muri Rwanda.",
+"fr": "Virus de la rougeole, propagation aérienne hautement contagieuse. Populations non vaccinées vulnérables ; épidémies dans zones à faible couverture comme certaines au Rwanda."
+},
+"effects": {
+"en": "Pneumonia, ear infections, encephalitis (brain swelling), blindness, or death (107,500 global deaths in 2023). Subacute sclerosing panencephalitis rare long-term.",
+"rw": "Umuriro w'umuriro, ibicurane by'umuriro, encephalitis (umuriro wa brain), ibinyugunyugu, cyangwa ryapfa (abantu 107,500 bapfa ku isi mu 2023). Subacute sclerosing panencephalitis ryigenga ryigenga.",
+"fr": "Pneumonie, otites, encéphalite (gonflement cerveau), cécité, ou décès (107 500 décès mondiaux en 2023). Panencéphalite sclérosante subaiguë rare à long terme."
+},
+"prevention": {
+"en": "MMR vaccine (2 doses, 95% effective; routine in Rwanda), avoid infected people. Mass campaigns target outbreaks.",
+"rw": "Urukingo rwa MMR (iminota 2, 95% ryiza; ryigenga muri Rwanda), kwirinda abantu barwayi. Ibikorwa ryinshi ryanduza ryanduza.",
+"fr": "Vaccin ROR (2 doses, 95% efficace ; routine au Rwanda), éviter infectés. Campagnes de masse ciblent épidémies."
+},
+"behaviorGuidelines": {
+"en": "Isolate until 4 days after rash; vitamin A for children to reduce severity. Seek care for breathing difficulty or dehydration.",
+"rw": "Kwanduza kugeza iminsi 4 nyuma ya ry'umuriro; vitamini A ry'abana kwanduza bikomeye. Kwanduza umuhumekero ryigenga cyangwa dehydration.",
+"fr": "Isolez jusqu'à 4 jours après éruption ; vitamine A pour enfants pour réduire sévérité. Consultez pour difficulté respiratoire ou déshydratation."
+},
+"treatment": {
+"en": "Supportive: Rest, fluids, fever reducers, vitamin A. Antibiotics for secondary infections; no specific antiviral.",
+"rw": "Ryigenga: Kwihangira, amazi, ibintu ry'umuriro, vitamini A. Imiti y'umuriro ry ibicurane ryigenga; nta antiviral ryigenga.",
+"fr": "Supportif : Repos, fluides, réducteurs de fièvre, vitamine A. Antibiotiques pour infections secondaires ; pas d'antiviral spécifique."
+}
+},
+{
+"name": { "en": "Typhoid Fever", "rw": "Tifoyide", "fr": "Fièvre typhoïde" },
+"symptoms": ["Sustained high fever (39–40°C)", "Weakness and fatigue", "Abdominal pain", "Headache", "Loss of appetite", "Constipation or diarrhea", "Rose-colored spots on chest"],
+"causes": {
+"en": "Salmonella Typhi bacteria, via contaminated food/water (fecal-oral route). Poor sanitation increases risk; drug-resistant strains common in Africa, including Rwanda.",
+"rw": "Ibicurane Salmonella Typhi, ryigamo ibifunguro/amazi ryanduye (ry'umuriro-umunyabuzi). Umuriro ryigenga ryanduza ryanduza; ibintu ry'umuriro ryinshi muri Afurika, hamwe na Rwanda.",
+"fr": "Bactérie Salmonella Typhi, via aliments/eau contaminés (voie fécale-orale). Mauvaise assainissement augmente risque ; souches résistantes courantes en Afrique, y compris Rwanda."
+},
+"effects": {
+"en": "Intestinal perforation, hemorrhage, sepsis, or death (110,000 global deaths/year). Chronic carriers spread it; in Rwanda, ~ thousands cases annually, linked to water quality.",
+"rw": "Ibintu ry'umuriro ryigenga, hemorrhage, sepsis, cyangwa ryapfa (abantu 110,000 bapfa ku isi/ku mwaka). Abantu ryigenga ryanduza ryanduza; muri Rwanda, ibintu ryinshi ku mwaka, ryanduza amazi ryiza.",
+"fr": "Perforation intestinale, hémorragie, sepsis, ou décès (110 000 décès mondiaux/an). Porteurs chroniques propagent ; au Rwanda, ~ milliers cas par an, liés à qualité de l'eau."
+},
+"prevention": {
+"en": "Safe water (boil/filter), hand hygiene, cook food thoroughly. Vaccines (Vi polysaccharide or conjugate) for travelers/endemic areas; routine in Rwanda outbreaks.",
+"rw": "Amazi ryiza (boil/filter), amaboko ryiza, ibifunguro ryigenga ryigenga. Urukingo (Vi polysaccharide cyangwa conjugate) ry'abashami/ahantu ryanduza; ryigenga muri Rwanda ryanduza.",
+"fr": "Eau sûre (bouillir/filtrer), hygiène des mains, cuire aliments彻底. Vaccins (Vi polysaccharide ou conjugué) pour voyageurs/zones endémiques ; routine lors épidémies au Rwanda."
+},
+"behaviorGuidelines": {
+"en": "Seek test/treatment early (blood/stool culture); avoid food prep while ill. Hydrate; in Rwanda, free treatment via mutuelle de santé.",
+"rw": "Kureba ry'umuriro/ry'umuriro ryigenga (umuriro wa damu/stool); kwirinda ibifunguro ry'umuriro ryigenga. Kunywa amazi; muri Rwanda, ry'umuriro ryigenga ryigamo mutuelle de santé.",
+"fr": "Cherchez test/traitement tôt (culture sang/selles) ; évitez préparation aliments pendant maladie. Hydratez ; au Rwanda, traitement gratuit via mutuelle de santé."
+},
+"treatment": {
+"en": "Antibiotics (ciprofloxacin or ceftriaxone, based on sensitivity); fluids/electrolytes. For resistance, azithromycin. Complete course (7–14 days).",
+"rw": "Imiti y'umuriro (ciprofloxacin cyangwa ceftriaxone, ryigamo sensitivity); amazi/electrolytes. Ry'umuriro, azithromycin. Ryose ry'umuriro (iminota 7–14).",
+"fr": "Antibiotiques (ciprofloxacine ou ceftriaxone, basé sur sensibilité) ; fluides/électrolytes. Pour résistance, azithromycine. Cours complet (7–14 jours)."
+}
+},
+{
+"name": { "en": "Hepatitis A", "rw": "Hepatite A", "fr": "Hépatite A" },
+"symptoms": ["Fever", "Fatigue", "Jaundice (yellow skin/eyes)", "Abdominal pain", "Nausea/vomiting", "Dark urine", "Clay-colored stool", "Loss of appetite"],
+"causes": {
+"en": "Hepatitis A virus, fecal-oral transmission via contaminated food/water or close contact. Outbreaks from poor hygiene; less common in Rwanda but risk in rural areas.",
+"rw": "Virusi ya Hepatite A, ry'umuriro-umunyabuzi ryandura ryigamo ibifunguro/amazi ryanduye cyangwa kwanduza ryigenga. Ryanduza ryigamo umuriro ryigenga; ryigenga muri Rwanda ariko ryanduza mu cyaro.",
+"fr": "Virus de l'hépatite A, transmission fécale-orale via aliments/eau contaminés ou contact étroit. Épidémies de mauvaise hygiène ; moins courant au Rwanda mais risque en zones rurales."
+},
+"effects": {
+"en": "Liver inflammation, rarely liver failure (fatal in <1%). Self-limiting but debilitating; no chronic form. In Rwanda, linked to sanitation gaps.",
+"rw": "Umuriro wa umwijima, ryigenga umuriro wa umwijima (ryapfa mu <1%). Ryigenga ariko ryanduza; nta ryigenga ryigenga. Muri Rwanda, ryanduza ibintu ry'umuriro.",
+"fr": "Inflammation hépatique, rarement insuffisance hépatique (mortelle <1%). Auto-limitant mais débilitant ; pas de forme chronique. Au Rwanda, lié à lacunes d'assainissement."
+},
+"prevention": {
+"en": "Vaccination (2 doses, recommended for travelers), safe water/food, hand washing after toilet/use. Rwanda includes in outbreak responses.",
+"rw": "Urukingo (iminota 2, ryanduza abashami), amazi/ibifunguro ryiza, kwambara amaboko nyuma ya toilet/use. Rwanda ryanduza mu ibikorwa ryanduza.",
+"fr": "Vaccination (2 doses, recommandée pour voyageurs), eau/aliments sûrs, lavage mains après toilettes/utilisation. Rwanda inclut dans réponses épidémiques."
+},
+"behaviorGuidelines": {
+"en": "Avoid alcohol/fatty foods during illness, rest, hydrate. Isolate if in group settings; seek care for severe jaundice.",
+"rw": "Kwirinda alcool/ibifunguro ry'umuriro mu burwayi, kwihangira, kunywa amazi. Kwanduza niba mu mahanga; kwanduza jaundice bikomeye.",
+"fr": "Évitez alcool/aliments gras pendant maladie, reposez, hydratez. Isolez en milieux groupés ; consultez pour ictère sévère."
+},
+"treatment": {
+"en": "Supportive: Rest, nutrition, anti-nausea meds. Usually resolves 2–6 weeks; no specific antiviral. Hospital for dehydration.",
+"rw": "Ryigenga: Kwihangira, ibifunguro, imiti y'umuriro. Ryigenga ryigamo 2–6 izuba; nta antiviral ryigenga. Ibitaro ry dehydration.",
+"fr": "Supportif : Repos, nutrition, anti-nauséeux. Résout généralement 2–6 semaines ; pas d'antiviral spécifique. Hôpital pour déshydratation."
+}
+},
+{
+"name": { "en": "Dengue Fever", "rw": "Dengue", "fr": "Dengue" },
+"symptoms": ["Sudden high fever", "Severe headache", "Pain behind eyes", "Joint/muscle pain ('breakbone fever')", "Nausea/vomiting", "Rash", "Fatigue"],
+"causes": {
+"en": "Dengue virus (4 serotypes), transmitted by Aedes mosquitoes (day-biters). Urban Rwanda at risk due to climate; sequential infections increase severity.",
+"rw": "Virusi ya Dengue (ibika 4), ryandura ryigamo ibinyugunyugu ya Aedes (ry'umuriro-ryanduza). Umujyi wa Rwanda ryanduza ryigamo imiterere; ryanduza ryigenga ryanduza bikomeye.",
+"fr": "Virus dengue (4 sérotypes), transmis par moustiques Aedes (piqueurs diurnes). Rwanda urbain à risque dû au climat ; infections séquentielles augmentent sévérité."
+},
+"effects": {
+"en": "Severe: Plasma leakage, shock, hemorrhage (dengue hemorrhagic fever), organ failure. 10,576 global deaths in 2024; rare in Rwanda but emerging.",
+"rw": "Bikomeye: Plasma ryanduza, shock, hemorrhage (dengue hemorrhagic umuriro), ibintu ry'umubiri. Abantu 10,576 bapfa ku isi mu 2024; ryigenga muri Rwanda ariko ryanduza.",
+"fr": "Sévère : Fuite plasmatique, choc, hémorragie (fièvre hémorragique dengue), défaillance d'organes. 10 576 décès mondiaux en 2024 ; rare au Rwanda mais émergent."
+},
+"prevention": {
+"en": "Mosquito control (remove standing water), repellents, long clothing. Qdenga vaccine for high-risk; Rwanda monitors via RBC.",
+"rw": "Kwanduza ibinyugunyugu (kwanduza amazi ryigenga), repellents, imyambaro ryigenga. Urukingo rwa Qdenga ry'abarwayi; Rwanda ryanduza ryigamo RBC.",
+"fr": "Contrôle moustiques (éliminer eaux stagnantes), répulsifs, vêtements longs. Vaccin Qdenga pour haut risque ; Rwanda surveille via RBC."
+},
+"behaviorGuidelines": {
+"en": "Rest, hydrate aggressively; avoid NSAIDs (bleeding risk). Seek urgent care for warning signs (abdominal pain, vomiting, bleeding).",
+"rw": "Kwihangira, kunywa amazi ryigenga; kwirinda NSAIDs (ry'umuriro ryanduza). Kwanduza ryigenga ry'ibimenyetso (umuriro wa inda, vomiting, ryanduza).",
+"fr": "Reposez, hydratez agressivement ; évitez AINS (risque hémorragique). Consultez urgemment pour signes d'alarme (douleur abdominale, vomissements, saignements)."
+},
+"treatment": {
+"en": "Supportive: Fluids, paracetamol for pain/fever. Hospital for severe (IV fluids, monitoring). No specific antiviral.",
+"rw": "Ryigenga: Amazi, paracetamol ry'umuriro/umuriro. Ibitaro ry bikomeye (IV amazi, kwanduza). Nta antiviral ryigenga.",
+"fr": "Supportif : Fluides, paracétamol pour douleur/fièvre. Hôpital pour sévère (fluides IV, surveillance). Pas d'antiviral spécifique."
+}
+}
 ]

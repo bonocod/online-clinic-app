@@ -1,0 +1,125 @@
+{
+  "navbar": {
+    "brand": "Online Clinic",
+    "dashboard": "Dashboard",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register"
+  },
+  "landing": {
+    "title": "Welcome to Online Clinic",
+    "subtitle": "Track your health, check symptoms, learn about diseases",
+    "description": "Your personal health assistant. Get insights in English, Kinyarwanda, or French.",
+    "cta1": "Login",
+    "cta2": "Register"
+  },
+  "login": {
+    "title": "Login",
+    "email": "Email",
+    "password": "Password",
+    "button": "Login"
+  },
+  "register": {
+    "title": "Register",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "button": "Register"
+  },
+  "dashboard": {
+    "welcome": "Welcome, {{name}}!",
+    "symptomChecker": "Symptom Checker",
+    "diseases": "Diseases",
+    "healthTracker": "Health Tracker",
+    "specialCases": "Special Cases",
+    "profile": "My Profile",
+    "healthStatus": "My Health Status",
+    "ihave": "(I have)",
+    "info": "(Info)"
+  },
+  "diseaseList": {
+    "title": "Disease List",
+    "searchPlaceholder": "Search (e.g., fever, umusonga)",
+    "symptoms": "Symptoms",
+    "viewDetails": "View Details",
+    "noResults": "No diseases found."
+  },
+  "diseaseDetail": {
+    "symptoms": "Symptoms",
+    "causes": "Causes",
+    "effects": "Effects",
+    "prevention": "Prevention",
+    "behaviorGuidelines": "Behavior Guidelines",
+    "treatment": "Treatment"
+  },
+  "healthTracker": {
+    "title": "Health Tracker",
+    "bpPlaceholder": "BP (e.g., 120/80)",
+    "tempPlaceholder": "Temperature (°C)",
+    "heartRatePlaceholder": "Heart Rate (bpm)",
+    "notesPlaceholder": "Notes",
+    "addLog": "Add Log",
+    "recentLogs": "Recent Logs",
+    "date": "Date",
+    "bp": "BP",
+    "temp": "Temp",
+    "heartRateLabel": "Heart Rate",
+    "notesLabel": "Notes",
+    "bpTrend": "BP Trend"
+  },
+  "profile": {
+    "title": "My Health Profile",
+    "age": "Age",
+    "gender": "Gender",
+    "height": "Height (cm)",
+    "weight": "Weight (kg)",
+    "bmi": "BMI: {{bmi}}",
+    "bmiUnderweight": "Underweight",
+    "bmiNormal": "Normal",
+    "bmiOverweight": "Overweight",
+    "bmiObese": "Obese",
+    "pregnant": "I am pregnant",
+    "medicalHistory": "Medical History",
+    "addButton": "Add",
+    "myConditions": "My Conditions",
+    "preferredLanguage": "Preferred Language",
+    "saveButton": "Save Profile",
+    "errorAge": "Age must be between 1 and 120",
+    "errorHeight": "Height must be between 100 and 250 cm",
+    "errorWeight": "Weight must be between 20 and 300 kg",
+    "loading": "Loading profile...",
+    "select": "Select",
+    "male": "Male",
+    "female": "Female",
+    "other": "Other"
+  },
+  "specialCaseModal": {
+    "prompt": "What would you like to do?",
+    "optionHas": "I have this",
+    "optionInfo": "Just want info",
+    "cancel": "Cancel"
+  },
+  "specialCases": {
+    "back": "Back to Dashboard",
+    "title": "Special Cases",
+    "loadingInfo": "Loading information...",
+    "errorLoad": "Failed to load info",
+    "myStatus": "My Status",
+    "close": "Close",
+    "pregnancy": "Pregnancy",
+    "mentalHealth": "Mental Health",
+    "hiv": "HIV",
+    "cancer": "Cancer",
+    "diabetes": "Diabetes",
+    "ihave": "(I have)",
+    "info": "(Info)"
+  },
+  "symptomChecker": {
+    "title": "Symptom Checker",
+    "placeholder": "Enter symptoms (comma separated, e.g., fever, cough)",
+    "checkButton": "Check Symptoms",
+    "possibleDiseases": "Possible Diseases",
+    "causes": "Causes",
+    "symptoms": "Symptoms"
+  }
+}
