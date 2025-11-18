@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import api from '../services/api';
+import { LayoutDashboard, Activity, Stethoscope, Heart, User, AlertCircle } from 'lucide-react';
 
 const Dashboard = () => {
   const { t } = useTranslation();
@@ -28,51 +30,55 @@ const Dashboard = () => {
     fetchProfile();
   }, [navigate]);
 
-  if (loading) return <div className="p-4 text-center">Loading...</div>;
-  if (error) return <div className="p-4 text-red-500 text-center">{error}</div>;
+  if (loading) return <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 text-center text-gray-600">Loading...</motion.div>;
+  if (error) return <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 text-red-500 text-center">{error}</motion.div>;
+
+  const cards = [
+    { to: "/symptom-checker", icon: Stethoscope, label: t('dashboard.symptomChecker'), color: "bg-blue-100 text-blue-600" },
+    { to: "/diseases", icon: Activity, label: t('dashboard.diseases'), color: "bg-green-100 text-green-600" },
+    { to: "/health-tracker", icon: Heart, label: t('dashboard.healthTracker'), color: "bg-yellow-100 text-yellow-600" },
+    { to: "/special-cases", icon: AlertCircle, label: t('dashboard.specialCases'), color: "bg-indigo-100 text-indigo-600" },
+    { to: "/profile", icon: User, label: t('dashboard.profile'), color: "bg-purple-100 text-purple-600", colSpan: "col-span-2" },
+  ];
 
   return (
-    <div className="p-4 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-center">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="p-4 max-w-4xl mx-auto"
+    >
+      <h1 className="text-3xl font-bold mb-6 text-center text-dark flex items-center justify-center">
+        <LayoutDashboard className="mr-2" />
         {t('dashboard.welcome', { name: profile.name })}
       </h1>
-
       <div className="grid grid-cols-2 gap-4">
-        <Link
-          to="/symptom-checker"
-          className="bg-blue-600 text-white p-6 rounded-xl text-center font-medium hover:bg-blue-700 transition shadow-md"
-        >
-          {t('dashboard.symptomChecker')}
-        </Link>
-        <Link
-          to="/diseases"
-          className="bg-green-600 text-white p-6 rounded-xl text-center font-medium hover:bg-green-700 transition shadow-md"
-        >
-          {t('dashboard.diseases')}
-        </Link>
-        <Link
-          to="/health-tracker"
-          className="bg-yellow-600 text-white p-6 rounded-xl text-center font-medium hover:bg-yellow-700 transition shadow-md"
-        >
-          {t('dashboard.healthTracker')}
-        </Link>
-        <Link
-          to="/special-cases"
-          className="bg-indigo-600 text-white p-6 rounded-xl text-center font-medium hover:bg-indigo-700 transition shadow-md"
-        >
-          {t('dashboard.specialCases')}
-        </Link>
-        <Link
-          to="/profile"
-          className="bg-purple-600 text-white p-6 rounded-xl text-center font-medium hover:bg-purple-700 transition shadow-md col-span-2"
-        >
-          {t('dashboard.profile')}
-        </Link>
+        {cards.map((card, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: i * 0.1 }}
+          >
+            <Link
+              to={card.to}
+              className={`glass-card flex flex-col items-center justify-center text-center ${card.color} hover:bg-opacity-80 transition-all ${card.colSpan || ''}`}
+            >
+              <card.icon className="w-12 h-12 mb-2" />
+              <span className="font-medium">{card.label}</span>
+            </Link>
+          </motion.div>
+        ))}
       </div>
-
       {(profile.profile?.conditions?.length > 0 || profile.profile?.interestedIn?.length > 0) && (
-        <div className="mt-8 p-4 bg-gray-50 rounded-xl">
-          <h3 className="font-bold text-lg mb-2">{t('dashboard.healthStatus')}</h3>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-8 glass-card"
+        >
+          <h3 className="font-bold text-lg mb-2 flex items-center">
+            <AlertCircle className="mr-2 text-red-500" />
+            {t('dashboard.healthStatus')}
+          </h3>
           <div className="flex flex-wrap gap-2">
             {profile.profile.conditions?.map((c) => (
               <span
@@ -91,9 +97,9 @@ const Dashboard = () => {
               </span>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

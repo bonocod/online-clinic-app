@@ -3,25 +3,33 @@ const Disease = require('../models/Disease')
 // POST /api/diseases/symptoms - Match symptoms to diseases
 const matchSymptoms = async (req, res, next) => {
   try {
-    const { symptoms } = req.body
+    const { symptoms } = req.body;
+
+    // Validate input
     if (!symptoms || !Array.isArray(symptoms) || symptoms.length === 0) {
-      return res.status(400).json({ msg: 'Symptoms array is required' })
+      return res.status(400).json({ msg: 'Symptoms array is required' });
     }
+
+    // Convert symptoms to lowercase for matching
+    const lowerCaseSymptoms = symptoms.map(s => s.toLowerCase());
 
     // Simple rule-based matching: Find diseases with at least one matching symptom
-    const diseases = await Disease.find({
-      symptoms: { $in: symptoms.map(s => s.toLowerCase()) }
-    }).select('name symptoms causes')
+    const diseases = await Disease.find({ 
+      symptoms: { $in: lowerCaseSymptoms } 
+    }).select('name symptoms causes');
 
     if (diseases.length === 0) {
-      return res.status(404).json({ msg: req.__('diseases.no_diseases_found') })
+      console.log('No diseases found');
+      return res.status(404).json({ msg: req.__('diseases.no_diseases_found') });
     }
 
-    res.json({ diseases })
+    res.json({ diseases });
   } catch (err) {
-    next(err)
+    next(err);
   }
-}
+};
+
+
 
 // GET /api/diseases/:id - Get single disease details
 const getDisease = async (req, res, next) => {

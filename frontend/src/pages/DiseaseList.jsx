@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import api from '../services/api';
+import DiseaseCard from '../components/DiseaseCard';
+import { Search } from 'lucide-react';
 
 const DiseaseList = () => {
   const { t, i18n } = useTranslation();
@@ -30,36 +32,33 @@ const DiseaseList = () => {
     setSearchQuery(e.target.value);
   };
 
-  if (loading) return <div className="p-4">Loading diseases...</div>;
-  if (error) return <div className="p-4 text-red-500">{error}</div>;
+  if (loading) return <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 text-center">Loading diseases...</motion.div>;
+  if (error) return <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 text-red-500 text-center">{error}</motion.div>;
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl mb-4">{t('diseaseList.title')}</h1>
-      <input
-        type="text"
-        placeholder={t('diseaseList.searchPlaceholder')}
-        value={searchQuery}
-        onChange={handleSearch}
-        className="w-full p-2 border rounded mb-4"
-      />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {diseases.map((d) => (
-          <div key={d._id} className="border p-4 rounded shadow">
-            <h3 className="font-bold text-lg">
-              {typeof d.name === 'object' ? d.name[i18n.language] || d.name.en : d.name}
-            </h3>
-            <p className="text-sm text-gray-600">
-              {t('diseaseList.symptoms')}: {Array.isArray(d.symptoms) ? d.symptoms.join(', ') : d.symptoms}
-            </p>
-            <Link to={`/diseases/${d._id}`} className="text-blue-500">
-              {t('diseaseList.viewDetails')}
-            </Link>
-          </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="p-4 max-w-6xl mx-auto"
+    >
+      <h1 className="text-3xl font-bold mb-6 text-center text-dark">{t('diseaseList.title')}</h1>
+      <div className="relative mb-6">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        <input
+          type="text"
+          placeholder={t('diseaseList.searchPlaceholder')}
+          value={searchQuery}
+          onChange={handleSearch}
+          className="input-field pl-10"
+        />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {diseases.map((d, i) => (
+          <DiseaseCard key={d._id} disease={d} language={i18n.language} />
         ))}
       </div>
-      {diseases.length === 0 && <p>{t('diseaseList.noResults')}</p>}
-    </div>
+      {diseases.length === 0 && <p className="text-center text-gray-600 mt-8">{t('diseaseList.noResults')}</p>}
+    </motion.div>
   );
 };
 

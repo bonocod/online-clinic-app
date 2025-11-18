@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import api from '../services/api';
+import { User, Calendar, Ruler, Scale, Activity, Globe, Save, AlertCircle } from 'lucide-react';
 
 const Profile = () => {
   const { t } = useTranslation();
@@ -82,17 +84,16 @@ const Profile = () => {
   };
 
   const getBMIStatus = (bmi) => {
-    if (bmi < 18.5) return { text: 'Underweight', color: 'text-yellow-600' };
-    if (bmi < 25) return { text: 'Normal', color: 'text-green-600' };
-    if (bmi < 30) return { text: 'Overweight', color: 'text-orange-600' };
-    return { text: 'Obese', color: 'text-red-600' };
+    if (bmi < 18.5) return { text: 'Underweight', color: 'text-yellow-600 bg-yellow-100' };
+    if (bmi < 25) return { text: 'Normal', color: 'text-green-600 bg-green-100' };
+    if (bmi < 30) return { text: 'Overweight', color: 'text-orange-600 bg-orange-100' };
+    return { text: 'Obese', color: 'text-red-600 bg-red-100' };
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
-
     if (profile.age && (profile.age < 1 || profile.age > 120)) {
       setError(t('profile.errorAge'));
       return;
@@ -105,7 +106,6 @@ const Profile = () => {
       setError(t('profile.errorWeight'));
       return;
     }
-
     try {
       await api.put('/users/profile', {
         age: profile.age || null,
@@ -123,41 +123,45 @@ const Profile = () => {
     }
   };
 
-  if (loading) return <div className="p-4 text-center">{t('profile.loading')}</div>;
+  if (loading) return <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 text-center">{t('profile.loading')}</motion.div>;
 
   const bmi = calculateBMI();
   const bmiStatus = bmi ? getBMIStatus(bmi) : null;
   const bmiStatusKey = bmiStatus ? `profile.bmi${bmiStatus.text}` : '';
 
   return (
-    <div className="max-w-3xl mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6 text-center">{t('profile.title')}</h1>
-
-      {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
-      {success && <p className="text-green-500 mb-4 text-center">{success}</p>}
-
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-xl shadow-sm">
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block font-medium">{t('profile.age')}</label>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="max-w-3xl mx-auto p-4"
+    >
+      <h1 className="text-3xl font-bold mb-6 text-center text-dark flex items-center justify-center">
+        <User className="mr-2" />
+        {t('profile.title')}
+      </h1>
+      {error && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-500 mb-4 text-center flex items-center justify-center"><AlertCircle className="mr-2" />{error}</motion.p>}
+      {success && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-green-500 mb-4 text-center">{success}</motion.p>}
+      <form onSubmit={handleSubmit} className="glass-card space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="relative">
+            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary w-5 h-5" />
             <input
               type="number"
               name="age"
               value={profile.age}
               onChange={handleChange}
               placeholder="e.g., 28"
-              className="w-full p-2 border rounded mt-1"
+              className="input-field pl-10"
             />
+            <label className="absolute -top-2 left-4 bg-white px-1 text-sm text-gray-600">{t('profile.age')}</label>
           </div>
-
           <div>
-            <label className="block font-medium">{t('profile.gender')}</label>
+            <label className="block text-sm text-gray-600 mb-1">{t('profile.gender')}</label>
             <select
               name="gender"
               value={profile.gender}
               onChange={handleChange}
-              className="w-full p-2 border rounded mt-1"
+              className="input-field"
             >
               <option value="">{t('profile.select')}</option>
               <option value="male">{t('profile.male')}</option>
@@ -165,41 +169,39 @@ const Profile = () => {
               <option value="other">{t('profile.other')}</option>
             </select>
           </div>
-
-          <div>
-            <label className="block font-medium">{t('profile.height')}</label>
+          <div className="relative">
+            <Ruler className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary w-5 h-5" />
             <input
               type="number"
               name="height"
               value={profile.height}
               onChange={handleChange}
               placeholder="e.g., 170"
-              className="w-full p-2 border rounded mt-1"
+              className="input-field pl-10"
             />
+            <label className="absolute -top-2 left-4 bg-white px-1 text-sm text-gray-600">{t('profile.height')}</label>
           </div>
-
-          <div>
-            <label className="block font-medium">{t('profile.weight')}</label>
+          <div className="relative">
+            <Scale className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary w-5 h-5" />
             <input
               type="number"
               name="weight"
               value={profile.weight}
               onChange={handleChange}
               placeholder="e.g., 65"
-              className="w-full p-2 border rounded mt-1"
+              className="input-field pl-10"
             />
+            <label className="absolute -top-2 left-4 bg-white px-1 text-sm text-gray-600">{t('profile.weight')}</label>
           </div>
         </div>
-
         {bmi && (
-          <div className="bg-blue-50 p-4 rounded-lg text-center">
-            <p className="text-lg font-bold">{t('profile.bmi', { bmi })}</p>
-            <p className={`text-sm font-medium ${bmiStatus.color}`}>
+          <div className="glass-card p-4 text-center">
+            <p className="text-lg font-bold text-dark">{t('profile.bmi', { bmi })}</p>
+            <p className={`text-sm font-medium px-3 py-1 rounded-full inline-block ${bmiStatus.color}`}>
               {t(bmiStatusKey)}
             </p>
           </div>
         )}
-
         {profile.gender === 'female' && (
           <div className="flex items-center gap-2">
             <input
@@ -207,27 +209,29 @@ const Profile = () => {
               name="isPregnant"
               checked={profile.isPregnant}
               onChange={handleChange}
-              className="w-5 h-5"
+              className="w-5 h-5 accent-primary"
             />
-            <label className="font-medium">{t('profile.pregnant')}</label>
+            <label className="text-gray-700">{t('profile.pregnant')}</label>
           </div>
         )}
-
         <div>
-          <label className="block font-medium">{t('profile.medicalHistory')}</label>
-          <div className="flex gap-2 mt-1">
-            <input
-              type="text"
-              value={newHistory}
-              onChange={(e) => setNewHistory(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addMedicalHistory())}
-              placeholder="e.g., Asthma"
-              className="flex-1 p-2 border rounded"
-            />
+          <label className="block text-sm text-gray-600 mb-1">{t('profile.medicalHistory')}</label>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Activity className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary w-5 h-5" />
+              <input
+                type="text"
+                value={newHistory}
+                onChange={(e) => setNewHistory(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addMedicalHistory())}
+                placeholder="e.g., Asthma"
+                className="input-field pl-10"
+              />
+            </div>
             <button
               type="button"
               onClick={addMedicalHistory}
-              className="bg-blue-600 text-white px-4 rounded"
+              className="btn-primary px-4"
             >
               {t('profile.addButton')}
             </button>
@@ -236,7 +240,7 @@ const Profile = () => {
             {profile.medicalHistory.map((item, i) => (
               <span
                 key={i}
-                className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center gap-1"
+                className="bg-neutral px-3 py-1 rounded-full text-sm flex items-center gap-1"
               >
                 {item}
                 <button
@@ -250,29 +254,31 @@ const Profile = () => {
             ))}
           </div>
         </div>
-
         <div>
-          <label className="block font-medium">{t('profile.preferredLanguage')}</label>
-          <select
-            name="preferredLanguage"
-            value={profile.preferredLanguage}
-            onChange={handleChange}
-            className="w-full p-2 border rounded mt-1"
-          >
-            <option value="en">English</option>
-            <option value="rw">Kinyarwanda</option>
-            <option value="fr">Français</option>
-          </select>
+          <label className="block text-sm text-gray-600 mb-1">{t('profile.preferredLanguage')}</label>
+          <div className="relative">
+            <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary w-5 h-5" />
+            <select
+              name="preferredLanguage"
+              value={profile.preferredLanguage}
+              onChange={handleChange}
+              className="input-field pl-10"
+            >
+              <option value="en">English</option>
+              <option value="rw">Kinyarwanda</option>
+              <option value="fr">Français</option>
+            </select>
+          </div>
         </div>
-
         <button
           type="submit"
-          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-3 rounded-lg font-bold text-lg hover:from-blue-700 hover:to-indigo-700 transition"
+          className="btn-primary w-full flex items-center justify-center"
         >
+          <Save className="mr-2" size={18} />
           {t('profile.saveButton')}
         </button>
       </form>
-    </div>
+    </motion.div>
   );
 };
 

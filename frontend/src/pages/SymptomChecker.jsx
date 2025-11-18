@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import api from '../services/api';
+import SymptomInput from '../components/SymptomInput';
+import { Activity, AlertTriangle } from 'lucide-react';
 
 const SymptomChecker = () => {
   const { t, i18n } = useTranslation();
@@ -11,8 +14,8 @@ const SymptomChecker = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await api.post('/diseases/symptoms', { 
-        symptoms: symptoms.split(',').map(s => s.trim()) 
+      const res = await api.post('/diseases/symptoms', {
+        symptoms: symptoms.split(',').map(s => s.trim())
       });
       setResults(res.data.diseases);
     } catch (err) {
@@ -21,48 +24,47 @@ const SymptomChecker = () => {
   };
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl mb-4">{t('symptomChecker.title')}</h1>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="text"
-          placeholder={t('symptomChecker.placeholder')}
-          value={symptoms}
-          onChange={(e) => setSymptoms(e.target.value)}
-          className="w-full p-2 border rounded"
-        />
-        <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded">
-          {t('symptomChecker.checkButton')}
-        </button>
-      </form>
-
-      {error && <p className="text-red-500 mt-2">{error}</p>}
-
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="p-4 max-w-4xl mx-auto"
+    >
+      <h1 className="text-3xl font-bold mb-6 text-center text-dark">{t('symptomChecker.title')}</h1>
+      <SymptomInput symptoms={symptoms} setSymptoms={setSymptoms} handleSubmit={handleSubmit} />
+      {error && <p className="text-red-500 mt-4 text-center flex items-center justify-center"><AlertTriangle className="mr-2" />{error}</p>}
       {results && (
-        <div className="mt-4">
-          <h2 className="text-xl">{t('symptomChecker.possibleDiseases')}</h2>
-          {results.map((d, i) => (
-            <div key={i} className="border p-2 mt-2">
-              <h3 className="font-bold">
-                {typeof d.name === 'object' ? d.name[i18n.language] || d.name.en : d.name}
-              </h3>
-              <p>
-                {t('symptomChecker.causes')}: {typeof d.causes === 'object' ? d.causes[i18n.language] || d.causes.en : d.causes}
-              </p>
-              <p>
-                {t('symptomChecker.symptoms')}: {' '}
-                {Array.isArray(d.symptoms)
-                  ? d.symptoms.join(', ')
-                  : typeof d.symptoms === 'object'
-                  ? (d.symptoms[i18n.language] || []).join(', ')
-                  : d.symptoms}
-              </p>
-            </div>
-          ))}
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-8"
+        >
+          <h2 className="text-2xl font-bold mb-4 text-secondary flex items-center">
+            <Activity className="mr-2" />
+            {t('symptomChecker.possibleDiseases')}
+          </h2>
+          <div className="space-y-6">
+            {results.map((d, i) => (
+              <div key={i} className="glass-card">
+                <h3 className="font-bold text-xl text-dark">
+                  {typeof d.name === 'object' ? d.name[i18n.language] || d.name.en : d.name}
+                </h3>
+                <p className="mt-2">
+                  <span className="font-medium">{t('symptomChecker.causes')}:</span> {typeof d.causes === 'object' ? d.causes[i18n.language] || d.causes.en : d.causes}
+                </p>
+                <p className="mt-2">
+                  <span className="font-medium">{t('symptomChecker.symptoms')}:</span> {' '}
+                  {Array.isArray(d.symptoms)
+                    ? d.symptoms.join(', ')
+                    : typeof d.symptoms === 'object'
+                    ? (d.symptoms[i18n.language] || []).join(', ')
+                    : d.symptoms}
+                </p>
+              </div>
+            ))}
+          </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

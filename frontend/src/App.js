@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
@@ -16,20 +17,22 @@ function App() {
   return (
     <Router>
       <Navbar />
-      <div className="container mx-auto p-4">
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/symptom-checker" element={<SymptomChecker />} />
-          <Route path="/diseases" element={<DiseaseList />} />
-          <Route path="/health-tracker" element={<HealthTracker />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/diseases/:id" element={<DiseaseDetail />} />
-          <Route path="/special-cases" element={<SpecialCases />} />
-        </Routes>
-      </div>
+      <AnimatePresence mode="wait">
+        <div className="container mx-auto p-4 max-w-7xl">
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/symptom-checker" element={<SymptomChecker />} />
+            <Route path="/diseases" element={<DiseaseList />} />
+            <Route path="/health-tracker" element={<HealthTracker />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/diseases/:id" element={<DiseaseDetail />} />
+            <Route path="/special-cases" element={<SpecialCases />} />
+          </Routes>
+        </div>
+      </AnimatePresence>
     </Router>
   );
 }
