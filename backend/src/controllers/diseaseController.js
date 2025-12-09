@@ -1,21 +1,26 @@
 const Disease = require('../models/Disease')
 
 // POST /api/diseases/symptoms - Match symptoms to diseases
+
 const matchSymptoms = async (req, res, next) => {
   try {
     const { symptoms } = req.body;
 
     // Validate input
-    if (!symptoms || !Array.isArray(symptoms) || symptoms.length === 0) {
-      return res.status(400).json({ msg: 'Symptoms array is required' });
+    if (!symptoms || typeof symptoms !== 'string' || symptoms.trim().length === 0) {
+      return res.status(400).json({ msg: 'Symptoms string is required' });
     }
 
-    // Convert symptoms to lowercase for matching
-    const lowerCaseSymptoms = symptoms.map(s => s.toLowerCase());
+    // Parse symptoms (sentence or comma-separated)
+    const parsedSymptoms = symptoms
+      .toLowerCase()
+      .replace(/[.,!?]/g, '') // Remove punctuation
+      .split(/\s+/) // Split by spaces
+      .filter(s => s.length > 0); // Remove empty strings
 
-    // Simple rule-based matching: Find diseases with at least one matching symptom
-    const diseases = await Disease.find({ 
-      symptoms: { $in: lowerCaseSymptoms } 
+    // Find diseases with at least one matching symptom
+    const diseases = await Disease.find({
+      symptoms: { $in: parsedSymptoms }
     }).select('name symptoms causes');
 
     if (diseases.length === 0) {
@@ -24,11 +29,11 @@ const matchSymptoms = async (req, res, next) => {
     }
 
     res.json({ diseases });
+
   } catch (err) {
     next(err);
   }
 };
-
 
 
 // GET /api/diseases/:id - Get single disease details
@@ -43,7 +48,6 @@ const getDisease = async (req, res, next) => {
     next(err)
   }
 }
-
 // GET /api/diseases - List all diseases
 const listDiseases = async (req, res, next) => {
   try {
@@ -53,19 +57,15 @@ const listDiseases = async (req, res, next) => {
     next(err)
   }
 }
-
 // GET /api/diseases/search?q=fever
 const searchDiseases = async (req, res, next) => {
   try {
     const { q } = req.query
     const locale = req.getLocale() || 'en'
-
     if (!q || q.trim() === '') {
       return res.status(400).json({ msg: req.__('diseases.search_query_required') })
     }
-
     const query = q.trim()
-
     const diseases = await Disease.find({
       $or: [
         { 'name.en': { $regex: query, $options: 'i' } },
@@ -89,17 +89,14 @@ const searchDiseases = async (req, res, next) => {
         { 'treatment.fr': { $regex: query, $options: 'i' } }
       ]
     }).select('name symptoms')
-
     const translated = diseases.map(d => ({
       _id: d._id,
       name: d.name[locale] || d.name.en,
       symptoms: d.symptoms
     }))
-
     res.json({ diseases: translated, count: translated.length })
   } catch (err) {
     next(err)
   }
 }
-
-module.exports = { matchSymptoms, getDisease, listDiseases ,searchDiseases  }
+module.exports = { matchSymptoms, getDisease, listDiseases ,searchDiseases }

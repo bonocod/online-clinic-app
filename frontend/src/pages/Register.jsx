@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import api from '../services/api';
 import { User, Mail, Lock } from 'lucide-react';
-
 const Register = () => {
   const { t } = useTranslation();
   const [name, setName] = useState('');
@@ -12,18 +11,16 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const res = await api.post('/auth/register', { name, email, password });
       localStorage.setItem('token', res.data.token);
-      navigate('/dashboard');
+      navigate('/profile-setup');
     } catch (err) {
       setError(err.response?.data?.msg || 'Registration failed');
     }
   };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -70,5 +67,4 @@ const Register = () => {
     </motion.div>
   );
 };
-
 export default Register;

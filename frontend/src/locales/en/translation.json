@@ -35,7 +35,18 @@
     "profile": "My Profile",
     "healthStatus": "My Health Status",
     "ihave": "(I have)",
-    "info": "(Info)"
+    "info": "(Info)",
+    "goodBehaviors": "Good Health Behaviors",
+    "badBehaviors": "Bad Health Behaviors",
+    "diseasesIHave": "Diseases I Have",
+    "setReminder": "Set Reminder Time",
+    "reminders": "Reminders",
+    "mentalHealth": "Mental Health",
+    "pregnancyManager": "Pregnancy Manager",
+    "healthBehaviors": "Health Behaviors",
+    "myDiseases": "My Diseases",
+    "forum": "Community Forum"
+    
   },
   "diseaseList": {
     "title": "Disease List",
@@ -116,10 +127,89 @@
   },
   "symptomChecker": {
     "title": "Symptom Checker",
-    "placeholder": "Enter symptoms (comma separated, e.g., fever, cough)",
+    "placeholder": "Describe your symptoms (e.g., I have fever and cough)",
     "checkButton": "Check Symptoms",
     "possibleDiseases": "Possible Diseases",
     "causes": "Causes",
     "symptoms": "Symptoms"
-  }
+  },
+  "profileSetup": {
+    "title": "Tell Us More About You",
+    "next": "Next",
+    "skip": "Skip",
+    "finish": "Finish",
+    "questions": {
+      "age": "What is your age?",
+      "gender": "What is your gender?",
+      "height": "What is your height in cm?",
+      "weight": "What is your weight in kg?",
+      "pregnant": "Are you pregnant? (for females)",
+      "conditions": "Do you have any chronic conditions? (comma separated)"
+    }
+  },
+  "mentalHealth": {
+    "title": "Mental Health Assistant",
+    "send": "Send",
+    "placeholder": "Type your message...",
+    "botGreeting": "Hello! How are you feeling today?"
+  },
+  "pregnancyManager": {
+    "title": "Pregnancy Manager",
+    "trimesterInfo": "Trimester Information",
+    "nutrition": "Nutrition Tips",
+    "exercises": "Safe Exercises",
+    "symptoms": "Common Symptoms",
+    "doctor": "When to See a Doctor"
+  },
+  "behaviors": {
+    "good": [
+      "Drink at least 8 glasses of water daily",
+      "Brush teeth twice a day",
+      "Do physical exercises for 30 minutes daily",
+      "Wash hands regularly",
+      "Eat a balanced diet with fruits and vegetables"
+    ],
+    "bad": [
+      "Smoking",
+      "Excessive alcohol consumption",
+      "Poor sleep habits",
+      "Unhealthy eating",
+      "Sedentary lifestyle"
+    ]
+  },
+  "healthBehaviors": {
+    "title": "Health Behaviors"
+  },
+  "myDiseases": {
+    "title": "My Diseases",
+    "loading": "Loading...",
+    "error": "Error loading profile"
+  },
+"forum": {
+  "title": "Community Forum",
+  "joinGroup": "Join Group",
+  "viewGroup": "View Group →",
+  "noGroups": "No groups available yet.",
+  "errorLoad": "Failed to load groups",
+  "joinSuccess": "Joined successfully!",
+  "joinFailed": "Failed to join group",
+  "posts": "Posts",
+  "createPost": "Create Post",
+  "postTitle": "Post Title",
+  "postContent": "Post Content",
+  "viewThread": "View Thread",
+  "replies": "replies",
+  "groupChat": "Group Chat",
+  "messagePlaceholder": "Type a message...",
+  "createPostFailed": "Failed to create post",
+  "loading": "Loading..."
+},
+"post": {
+  "comments": "Comments",
+  "addComment": "Add your comment...",
+  "postComment": "Post Comment",
+  "errorLoad": "Failed to load post",
+  "commentFailed": "Failed to add comment",
+  "loading": "Loading..."
+}
 }

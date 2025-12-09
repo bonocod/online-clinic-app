@@ -11,8 +11,14 @@ import DiseaseList from './pages/DiseaseList'
 import HealthTracker from './pages/HealthTracker'
 import Profile from './pages/Profile'
 import DiseaseDetail from './pages/DiseaseDetail'
-import SpecialCases from './pages/SpecialCases';
-
+import ProfileSetup from './pages/ProfileSetup';
+import MentalHealth from './pages/MentalHealth';
+import PregnancyManager from './pages/PregnancyManager';
+import HealthBehaviors from './pages/HealthBehaviors';
+import MyDiseases from './pages/MyDiseases';
+import Forum from './pages/Forum';
+import Group from './pages/Group';
+import Post from './pages/Post';
 function App() {
   return (
     <Router>
@@ -29,12 +35,18 @@ function App() {
             <Route path="/health-tracker" element={<HealthTracker />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/diseases/:id" element={<DiseaseDetail />} />
-            <Route path="/special-cases" element={<SpecialCases />} />
+            <Route path="/profile-setup" element={<ProfileSetup />} />
+            <Route path="/mental-health" element={<MentalHealth />} />
+            <Route path="/pregnancy-manager" element={<PregnancyManager />} />
+            <Route path="/health-behaviors" element={<HealthBehaviors />} />
+            <Route path="/my-diseases" element={<MyDiseases />} />
+            <Route path="/forum" element={<Forum />} />
+            <Route path="/group/:id" element={<Group />} />
+            <Route path="/post/:id" element={<Post />} />
           </Routes>
         </div>
       </AnimatePresence>
     </Router>
   );
 }
-
 export default App;

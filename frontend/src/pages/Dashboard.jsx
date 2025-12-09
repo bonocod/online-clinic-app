@@ -3,20 +3,20 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import api from '../services/api';
-import { LayoutDashboard, Activity, Stethoscope, Heart, User, AlertCircle } from 'lucide-react';
-
+import { LayoutDashboard, Activity, Stethoscope, Heart, User, AlertCircle, CheckCircle, XCircle, Clock, Baby, Apple, Pill, Users } from 'lucide-react';
 const Dashboard = () => {
   const { t } = useTranslation();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [reminders, setReminders] = useState([]);
   const navigate = useNavigate();
-
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const res = await api.get('/auth/profile');
         setProfile(res.data);
+        setReminders(res.data.profile?.reminders || []);
       } catch (err) {
         setError('Error loading profile');
         if (err.response?.status === 401) {
@@ -29,18 +29,33 @@ const Dashboard = () => {
     };
     fetchProfile();
   }, [navigate]);
-
+  useEffect(() => {
+    if (Notification.permission !== 'granted') {
+      Notification.requestPermission();
+    }
+    const interval = setInterval(() => {
+      const now = new Date();
+      const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      reminders.forEach(r => {
+        if (r.time === currentTime && Notification.permission === 'granted') {
+          new Notification(`Reminder: Time for ${r.disease} medicine`);
+        }
+      });
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [reminders]);
   if (loading) return <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 text-center text-gray-600">Loading...</motion.div>;
   if (error) return <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 text-red-500 text-center">{error}</motion.div>;
-
   const cards = [
     { to: "/symptom-checker", icon: Stethoscope, label: t('dashboard.symptomChecker'), color: "bg-blue-100 text-blue-600" },
     { to: "/diseases", icon: Activity, label: t('dashboard.diseases'), color: "bg-green-100 text-green-600" },
-    { to: "/health-tracker", icon: Heart, label: t('dashboard.healthTracker'), color: "bg-yellow-100 text-yellow-600" },
-    { to: "/special-cases", icon: AlertCircle, label: t('dashboard.specialCases'), color: "bg-indigo-100 text-indigo-600" },
+    //{ to: "/health-tracker", icon: Heart, label: t('dashboard.healthTracker'), color: "bg-yellow-100 text-yellow-600" },
+    { to: "/mental-health", icon: AlertCircle, label: t('dashboard.mentalHealth'), color: "bg-indigo-100 text-indigo-600" },
+    { to: "/health-behaviors", icon: Apple, label: t('dashboard.healthBehaviors'), color: "bg-orange-100 text-orange-600" },
+    { to: "/my-diseases", icon: Pill, label: t('dashboard.myDiseases'), color: "bg-red-100 text-red-600" },
+    { to: "/forum", icon: Users, label: t('dashboard.forum'), color: "bg-purple-100 text-purple-600" },
     { to: "/profile", icon: User, label: t('dashboard.profile'), color: "bg-purple-100 text-purple-600", colSpan: "col-span-2" },
   ];
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -69,6 +84,12 @@ const Dashboard = () => {
           </motion.div>
         ))}
       </div>
+      {profile.profile?.isPregnant && (
+        <Link to="/pregnancy-manager" className="glass-card block text-center py-4 mt-8 bg-pink-100 text-pink-600 hover:bg-pink-200 transition-colors">
+          <Baby className="w-8 h-8 mx-auto mb-2" />
+          {t('dashboard.pregnancyManager')}
+        </Link>
+      )}
       {(profile.profile?.conditions?.length > 0 || profile.profile?.interestedIn?.length > 0) && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -99,8 +120,23 @@ const Dashboard = () => {
           </div>
         </motion.div>
       )}
+      {reminders.length > 0 && (
+        <div className="glass-card mt-8">
+          <h2 className="text-xl font-bold mb-4 flex items-center text-blue-600">
+            <Clock className="mr-2" />
+            {t('dashboard.reminders')}
+          </h2>
+          <ul className="space-y-2">
+            {reminders.map((r, i) => (
+              <li key={i} className="flex items-center text-gray-700">
+                <Clock className="mr-2 text-blue-500 w-4 h-4" />
+                {r.disease} at {r.time}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </motion.div>
   );
 };
-
 export default Dashboard;

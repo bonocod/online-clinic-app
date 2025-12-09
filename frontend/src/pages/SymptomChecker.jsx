@@ -2,27 +2,21 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import api from '../services/api';
-import SymptomInput from '../components/SymptomInput';
 import { Activity, AlertTriangle } from 'lucide-react';
-
 const SymptomChecker = () => {
   const { t, i18n } = useTranslation();
   const [symptoms, setSymptoms] = useState('');
   const [results, setResults] = useState(null);
   const [error, setError] = useState('');
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await api.post('/diseases/symptoms', {
-        symptoms: symptoms.split(',').map(s => s.trim())
-      });
+      const res = await api.post('/diseases/symptoms', { symptoms });
       setResults(res.data.diseases);
     } catch (err) {
       setError(err.response?.data?.msg || 'Error');
     }
   };
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -30,7 +24,22 @@ const SymptomChecker = () => {
       className="p-4 max-w-4xl mx-auto"
     >
       <h1 className="text-3xl font-bold mb-6 text-center text-dark">{t('symptomChecker.title')}</h1>
-      <SymptomInput symptoms={symptoms} setSymptoms={setSymptoms} handleSubmit={handleSubmit} />
+      <motion.form
+        onSubmit={handleSubmit}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass-card space-y-6"
+      >
+        <textarea
+          placeholder={t('symptomChecker.placeholder')}
+          value={symptoms}
+          onChange={(e) => setSymptoms(e.target.value)}
+          className="input-field min-h-[100px] resize-y"
+        />
+        <button type="submit" className="btn-primary w-full">
+          {t('symptomChecker.checkButton')}
+        </button>
+      </motion.form>
       {error && <p className="text-red-500 mt-4 text-center flex items-center justify-center"><AlertTriangle className="mr-2" />{error}</p>}
       {results && (
         <motion.div
@@ -67,5 +76,4 @@ const SymptomChecker = () => {
     </motion.div>
   );
 };
-
 export default SymptomChecker;

@@ -35,7 +35,17 @@
     "profile": "Mon Profil",
     "healthStatus": "Mon État de Santé",
     "ihave": "(J'ai)",
-    "info": "(Info)"
+    "info": "(Info)",
+    "goodBehaviors": "Bonnes Pratiques de Santé",
+    "badBehaviors": "Mauvaises Habitudes de Santé",
+    "diseasesIHave": "Maladies que J'ai",
+    "setReminder": "Définir l'Heure de Rappel",
+    "reminders": "Rappels",
+    "mentalHealth": "Santé Mentale",
+    "pregnancyManager": "Gestion de Grossesse",
+    "healthBehaviors": "Comportements de Santé",
+    "myDiseases": "Mes Maladies",
+    "forum": "Forum Communautaire"
   },
   "diseaseList": {
     "title": "Liste des Maladies",
@@ -116,10 +126,89 @@
   },
   "symptomChecker": {
     "title": "Test de Symptômes",
-    "placeholder": "Entrez les symptômes (séparés par des virgules, ex : fièvre, toux)",
+    "placeholder": "Décrivez vos symptômes (ex : J'ai de la fièvre et une toux)",
     "checkButton": "Rechercher",
     "possibleDiseases": "Maladies Possibles",
     "causes": "Causes",
     "symptoms": "Symptômes"
-  }
+  },
+  "profileSetup": {
+    "title": "Dites-nous en plus sur vous",
+    "next": "Suivant",
+    "skip": "Passer",
+    "finish": "Terminer",
+    "questions": {
+      "age": "Quel est votre âge ?",
+      "gender": "Quel est votre sexe ?",
+      "height": "Quelle est votre taille en cm ?",
+      "weight": "Quel est votre poids en kg ?",
+      "pregnant": "Êtes-vous enceinte ? (pour les femmes)",
+      "conditions": "Avez-vous des conditions chroniques ? (séparées par des virgules)"
+    }
+  },
+  "mentalHealth": {
+    "title": "Assistant Santé Mentale",
+    "send": "Envoyer",
+    "placeholder": "Tapez votre message...",
+    "botGreeting": "Bonjour ! Comment vous sentez-vous aujourd'hui ?"
+  },
+  "pregnancyManager": {
+    "title": "Gestion de Grossesse",
+    "trimesterInfo": "Informations sur le Trimestre",
+    "nutrition": "Conseils Nutrition",
+    "exercises": "Exercices Sûrs",
+    "symptoms": "Symptômes Courants",
+    "doctor": "Quand Consulter un Médecin"
+  },
+  "behaviors": {
+    "good": [
+      "Buvez au moins 8 verres d'eau par jour",
+      "Brossez les dents deux fois par jour",
+      "Faites de l'exercice physique 30 minutes par jour",
+      "Lavez les mains régulièrement",
+      "Mangez une alimentation équilibrée avec fruits et légumes"
+    ],
+    "bad": [
+      "Fumer",
+      "Consommation excessive d'alcool",
+      "Mauvaises habitudes de sommeil",
+      "Alimentation malsaine",
+      "Mode de vie sédentaire"
+    ]
+  },
+  "healthBehaviors": {
+    "title": "Comportements de Santé"
+  },
+  "myDiseases": {
+    "title": "Mes Maladies",
+    "loading": "Chargement...",
+    "error": "Erreur de chargement du profil"
+  },
+ "forum": {
+  "title": "Forum Communautaire",
+  "joinGroup": "Rejoindre le Groupe",
+  "viewGroup": "Voir le Groupe →",
+  "noGroups": "Aucun groupe disponible pour le moment.",
+  "errorLoad": "Échec du chargement des groupes",
+  "joinSuccess": "Rejoint avec succès !",
+  "joinFailed": "Échec de la jointure au groupe",
+  "posts": "Publications",
+  "createPost": "Créer une Publication",
+  "postTitle": "Titre de la Publication",
+  "postContent": "Contenu de la Publication",
+  "viewThread": "Voir le Fil",
+  "replies": "réponses",
+  "groupChat": "Chat de Groupe",
+  "messagePlaceholder": "Tapez un message...",
+  "createPostFailed": "Échec de la création de la publication",
+  "loading": "Chargement..."
+},
+"post": {
+  "comments": "Commentaires",
+  "addComment": "Ajoutez votre commentaire...",
+  "postComment": "Publier le Commentaire",
+  "errorLoad": "Échec du chargement de la publication",
+  "commentFailed": "Échec de l'ajout du commentaire",
+  "loading": "Chargement..."
+}
 }

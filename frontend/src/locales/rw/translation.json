@@ -35,7 +35,17 @@
     "profile": "Umwirondoro wanjye",
     "healthStatus": "Aho ubuzima bwanjye buhagaze",
     "ihave": "(mfite)",
-    "info": "(amakuru)"
+    "info": "(amakuru)",
+    "goodBehaviors": "Imyitwarire Myiza y'Ubuzima",
+    "badBehaviors": "Imyitwarire Mibi y'Ubuzima",
+    "diseasesIHave": "Indwara mfite",
+    "setReminder": "Shyira Igihe cy'Iburira",
+    "reminders": "Iburira",
+    "mentalHealth": "Ubuzima bwo mu Mutwe",
+    "pregnancyManager": "Imiyoborere y'Imbanyi",
+    "healthBehaviors": "Imyitwarire y'Ubuzima",
+    "myDiseases": "Indwara Zanjye",
+    "forum": "Ihuriro ry'Abantu"
   },
   "diseaseList": {
     "title": "Urutonde rw'indwara",
@@ -116,10 +126,89 @@
   },
   "symptomChecker": {
     "title": "Isuzuma ry'Ibimenyetso",
-    "placeholder": "Shyiramo ibimenyetso (bitandukanyijwe na, urugero, umuriro, inkorora)",
+    "placeholder": "Sobanura ibimenyetso byawe (urugero, mfite umuriro n'inkorora)",
     "checkButton": "Shakisha",
     "possibleDiseases": "Indwara Zishoboka",
     "causes": "Impamvu",
     "symptoms": "Ibimenyetso"
-  }
+  },
+  "profileSetup": {
+    "title": "Tubwire Byinshi Kuri Wowe",
+    "next": "Ikindi",
+    "skip": "Siba",
+    "finish": "Rangiza",
+    "questions": {
+      "age": "Imyaka yawe ni iyihe?",
+      "gender": "Igitsina cyawe ni iki?",
+      "height": "Uburebure bwawe ni biki mu cm?",
+      "weight": "Ibiro byawe ni biki mu kg?",
+      "pregnant": "Wagutwitse? (ku bagore)",
+      "conditions": "Ufite indwara zidapfa? (zitandukanijwe na,)"
+    }
+  },
+  "mentalHealth": {
+    "title": "Umufasha w'Ubuzima bwo mu Mutwe",
+    "send": "Ohereza",
+    "placeholder": "Andika izina ry'umuntu...",
+    "botGreeting": "Mwaramutse! Urumva ute muri iyi sa?"
+  },
+  "pregnancyManager": {
+    "title": "Imiyoborere y'Imbanyi",
+    "trimesterInfo": "Amakuru ku Trimestre",
+    "nutrition": "Inama ku Biryo",
+    "exercises": "Ibikorwa by'Amagarama",
+    "symptoms": "Ibimenyetso Bisanzwe",
+    "doctor": "Igihe cyo Kureba Umuganga"
+  },
+  "behaviors": {
+    "good": [
+      "Nywa byibuze ibikombe 8 ry'amazi buri munsi",
+      "Sukura ameno kabiri ku munsi",
+      "Kora ibikorwa by'umubiri iminota 30 buri munsi",
+      "Iyuhagira intoki buri gihe",
+      "Rya ibiryo byuzuye hamwe imbuto n'imboga"
+    ],
+    "bad": [
+      "Ifumuro",
+      "Kunywa inzoga cyane",
+      "Imyitwarire mibi y'isinzira",
+      "Ibiryo bidafite ibiribwa",
+      "Imibereho y'itagendera"
+    ]
+  },
+  "healthBehaviors": {
+    "title": "Imyitwarire y'Ubuzima"
+  },
+  "myDiseases": {
+    "title": "Indwara Zanjye",
+    "loading": "Gusoma...",
+    "error": "Ikosa ryokusoma umwirondoro"
+  },
+ "forum": {
+  "title": "Ihuriro ry'Abantu",
+  "joinGroup": "Injira mu Ihuriro",
+  "viewGroup": "Reba Ihuriro →",
+  "noGroups": "Nta huriro ribaho kugeza kugira ngo.",
+  "errorLoad": "Ntibyashobokaga kusoma amahuriro",
+  "joinSuccess": "Winjiriye neza!",
+  "joinFailed": "Ntibyashobokaga kwinjira mu huriro",
+  "posts": "Ibyanditswe",
+  "createPost": "Andika Ibintu",
+  "postTitle": "Izina ry'Ibyanditswe",
+  "postContent": "Ibyanditswe",
+  "viewThread": "Reba Ikiganiro",
+  "replies": "Ibisubizo",
+  "groupChat": "Ikiganiro cy'Ihuriro",
+  "messagePlaceholder": "Andika igitekerezo...",
+  "createPostFailed": "Ntibyashobokaga kwandika ibintu",
+  "loading": "Gusoma..."
+},
+"post": {
+  "comments": "Ibisubizo",
+  "addComment": "Ongeraho igitekerezo cyawe...",
+  "postComment": "Shyira Igitekerezo",
+  "errorLoad": "Ntibyashobokaga kusoma ibyanditswe",
+  "commentFailed": "Ntibyashobokaga kongeraho igitekerezo",
+  "loading": "Gusoma..."
+}
 }
