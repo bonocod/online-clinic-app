@@ -1,45 +1,30 @@
-const axios = require('axios')
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+const Post = require('../src/models/Post');
+dotenv.config();
 
-// Base API URL
-const API_URL = 'http://localhost:5000/api/auth'
-
-// Helper to handle HTTP requests and log results
-const makeRequest = async (method, endpoint, data, headers = {}) => {
+const connectDB = async () => {
   try {
-    const response = await axios({
-      method,
-      url: `${API_URL}/${endpoint}`,
-      data,
-      headers
-    })
-    console.log(`✅ ${method.toUpperCase()} /${endpoint}:`, response.data)
-    return response.data
-  } catch (error) {
-    console.error(
-      `❌ ${method.toUpperCase()} /${endpoint} failed:`,
-      error.response?.data || error.message
-    )
-    throw error
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log('✅ MongoDB connected');
+  } catch (err) {
+    console.error('❌ MongoDB connection error:', err);
+    process.exit(1);
   }
-}
+};
 
-// Simulate user actions
-const runAuthFlow = async () => {
-  console.log('=== Starting Auth Flow Simulation ===')
 
-  // Step 1: Register a new user
-  console.log('\n1. Registering user...')
-  const registerData = {
-    email: `intwaribonheur"gmail.com`, // Unique email to avoid duplicates
-    password: 'pass123'
-  }
-  let registerResponse
+
+const seedGroups = async () => {
+  await connectDB();
   try {
-    registerResponse = await makeRequest('post', 'register', registerData)
-  } catch (error) {
-    return // Stop if registration fails
+    const posts = await Post.find();
+
+    console.log(posts)
+  } catch (err) {
+    console.error('❌ Seeding failed:', err);
+    process.exit(1);
   }
-}
- 
-// Run the script
-runAuthFlow()
+};
+
+seedGroups();
