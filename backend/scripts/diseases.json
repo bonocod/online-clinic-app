@@ -1,0 +1,147 @@
+[
+  {
+    "name": { "en": "Influenza", "rw": "Influenza", "fr": "Grippe" },
+    "symptoms": ["fever", "cough", "sore throat", "fatigue", "body aches"],
+    "causes": {
+      "en": "Influenza virus, spread through droplets",
+      "rw": "Virusi ya Influenza, itandukira binyuze mu matembabuzi",
+      "fr": "Virus de la grippe, propagé par les gouttelettes"
+    },
+    "effects": {
+      "en": "Fever, muscle pain, fatigue",
+      "rw": "Umusonga, ububabare bwo mu mubiri, kunanirwa",
+      "fr": "Fièvre, douleurs musculaires, fatigue"
+    },
+    "prevention": {
+      "en": "Vaccination, hand washing, avoid crowds",
+      "rw": "Gutera urushinge, kwiyuhagira intoki, kwirinda ingo nyinshi",
+      "fr": "Vaccination, lavage des mains, éviter les foules"
+    },
+    "behaviorGuidelines": {
+      "en": "Rest, stay hydrated, avoid contact",
+      "rw": "Kuzimura, kunywa amazi menshi, kwirinda abandi",
+      "fr": "Repos, hydratation, éviter le contact"
+    },
+    "treatment": {
+      "en": "Antivirals, rest, fluids",
+      "rw": "Imiti y'ivirusi, kuzimura, kunywa amazi",
+      "fr": "Antiviraux, repos, hydratation"
+    }
+  },
+  {
+    "name": { "en": "Common Cold", "rw": "Icyorezo gisanzwe", "fr": "Rhume" },
+    "symptoms": ["cough", "runny nose", "sore throat", "sneezing"],
+    "causes": {
+      "en": "Rhinoviruses, spread through contact",
+      "rw": "Virusi ya Rhinovirus, itandukira binyuze mu gukurikiranwa",
+      "fr": "Rhinovirus, propagé par contact"
+    },
+    "effects": {
+      "en": "Nasal congestion, mild fever",
+      "rw": "Umunwa uturuka, umusonga muto",
+      "fr": "Nez bouché, légère fièvre"
+    },
+    "prevention": {
+      "en": "Hand washing, avoid touching face",
+      "rw": "Kumesa intoki, kwirinda gukora mu maso",
+      "fr": "Lavage des mains, éviter de toucher le visage"
+    },
+    "behaviorGuidelines": {
+      "en": "Rest, use tissues",
+      "rw": "Kuzimura, gukoresha amakarita",
+      "fr": "Repos, utiliser des mouchoirs"
+    },
+    "treatment": {
+      "en": "Over-the-counter meds, hydration",
+      "rw": "Imiti yo mu duka, kunywa amazi",
+      "fr": "Médicaments en vente libre, hydratation"
+    }
+  },
+  {
+    "name": { "en": "Malaria", "rw": "Malariya", "fr": "Paludisme" },
+    "symptoms": ["fever", "chills", "sweats", "headache", "nausea"],
+    "causes": {
+      "en": "Plasmodium parasite transmitted by mosquito bites",
+      "rw": "Udukoko twa Plasmodium dutwarwa n’umubu",
+      "fr": "Parasite Plasmodium transmis par les piqûres de moustiques"
+    },
+    "effects": {
+      "en": "Fever, anemia, weakness",
+      "rw": "Umusonga, kubura amaraso, intege nke",
+      "fr": "Fièvre, anémie, faiblesse"
+    },
+    "prevention": {
+      "en": "Use mosquito nets, insect repellent",
+      "rw": "Gukoresha umusego w’urumukiza, gusiga umuti wica imibu",
+      "fr": "Utiliser des moustiquaires, répulsifs anti-moustiques"
+    },
+    "behaviorGuidelines": {
+      "en": "Seek treatment early, avoid stagnant water",
+      "rw": "Shaka ubuvuzi kare, wirinde amazi ahagaze",
+      "fr": "Chercher un traitement tôt, éviter les eaux stagnantes"
+    },
+    "treatment": {
+      "en": "Antimalarial drugs",
+      "rw": "Imiti ivura malariya",
+      "fr": "Médicaments antipaludiques"
+    }
+  },
+  {
+    "name": { "en": "Tuberculosis", "rw": "Igituntu", "fr": "Tuberculose" },
+    "symptoms": ["cough", "fever", "night sweats", "weight loss"],
+    "causes": {
+      "en": "Mycobacterium tuberculosis bacteria",
+      "rw": "Bagiteri ya Mycobacterium tuberculosis",
+      "fr": "Bactérie Mycobacterium tuberculosis"
+    },
+    "effects": {
+      "en": "Lung damage, weakness",
+      "rw": "Kwangirika kw’uruhaha, intege nke",
+      "fr": "Lésions pulmonaires, faiblesse"
+    },
+    "prevention": {
+      "en": "BCG vaccination, avoid close contact",
+      "rw": "Urukingo rwa BCG, kwirinda kwegerana n’abarwayi",
+      "fr": "Vaccination BCG, éviter le contact étroit"
+    },
+    "behaviorGuidelines": {
+      "en": "Cover mouth when coughing",
+      "rw": "Gupfuka umunwa iyo ukorora",
+      "fr": "Couvrir la bouche en toussant"
+    },
+    "treatment": {
+      "en": "Antibiotics for 6-9 months",
+      "rw": "Imiti yica bagiteri mu gihe cy’amezi 6-9",
+      "fr": "Antibiotiques pendant 6 à 9 mois"
+    }
+  },
+  {
+    "name": { "en": "COVID-19", "rw": "COVID-19", "fr": "COVID-19" },
+    "symptoms": ["fever", "cough", "shortness of breath", "loss of taste", "loss of smell"],
+    "causes": {
+      "en": "Coronavirus SARS-CoV-2, spread through droplets",
+      "rw": "Koronavirusi SARS-CoV-2, itandukira binyuze mu matembabuzi",
+      "fr": "Coronavirus SARS-CoV-2, propagé par les gouttelettes"
+    },
+    "effects": {
+      "en": "Respiratory distress, fatigue",
+      "rw": "Kunanirwa guhumeka, kunanirwa",
+      "fr": "Détresse respiratoire, fatigue"
+    },
+    "prevention": {
+      "en": "Mask wearing, vaccination, social distancing",
+      "rw": "Kwambara agapfukamunwa, kwikingiza, guhana intera",
+      "fr": "Port du masque, vaccination, distanciation sociale"
+    },
+    "behaviorGuidelines": {
+      "en": "Isolate when sick, test regularly",
+      "rw": "Kwigumira mu rugo igihe urwaye, kwisuzumisha kenshi",
+      "fr": "S’isoler en cas de maladie, se tester régulièrement"
+    },
+    "treatment": {
+      "en": "Supportive care, antivirals in severe cases",
+      "rw": "Ubuvuzi bwo gufasha, imiti y’ivirusi mu gihe bikomeye",
+      "fr": "Soins de soutien, antiviraux dans les cas graves"
+    }
+  }
+]

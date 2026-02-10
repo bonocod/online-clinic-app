@@ -1,0 +1,31 @@
+{
+  "auth": {
+    "register_success": "Umukoresha yanditswe neza",
+    "login_success": "Winjije neza",
+    "invalid_credentials": "Amakuru atari yo",
+    "user_exists": "Uyu mukoresha asanzwe ariho",
+    "name_required": "Izina rirakenewe",
+    "email_required": "Imeyili irakenewe",
+    "password_required": "Ijambobanga rirakenewe"
+  },
+  "profile": {
+    "updated": "Profayili yahinduwe neza",
+    "not_found": "Umukoresha ntabonetse"
+  },
+  "diseases": {
+    "symptoms_required": "Urutonde rw'ibimenyetso rirakenewe",
+    "no_diseases_found": "Nta ndwara zibonetse ku bimenyetso watanze",
+    "disease_not_found": "Indwara ntabonetse",
+    "search_query_required": "gusaba guahaka birakenewe"
+  },
+  "logs": {
+    "log_created": "Inyandiko y'ubuzima yabitswe",
+    "vitals_required": "Ibipimo by'ubuzima birasabwa",
+    "log_not_found": "Inyandiko ntabonetse cyangwa ntaburenganzira"
+  },
+  "common": {
+    "server_error": "Ikosa rya seriveri",
+    "unauthorized": "Nta token, ntaburenganzira",
+    "invalid_token": "Token si yo"
+  }
+}

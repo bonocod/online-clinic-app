@@ -1,0 +1,31 @@
+{
+  "auth": {
+    "register_success": "Utilisateur enregistré avec succès",
+    "login_success": "Connexion réussie",
+    "invalid_credentials": "Identifiants invalides",
+    "user_exists": "Cet utilisateur existe déjà",
+    "name_required": "Le nom est requis",
+    "email_required": "L'email est requis",
+    "password_required": "Le mot de passe est requis"
+  },
+  "profile": {
+    "updated": "Profil mis à jour avec succès",
+    "not_found": "Utilisateur non trouvé"
+  },
+  "diseases": {
+    "symptoms_required": "Le tableau des symptômes est requis",
+    "no_diseases_found": "Aucune maladie trouvée pour les symptômes donnés",
+    "disease_not_found": "Maladie non trouvée",
+    "search_query_required": "La requête de recherche est requise."
+  },
+  "logs": {
+    "log_created": "Journal de santé créé",
+    "vitals_required": "L'objet des signes vitaux est requis",
+    "log_not_found": "Journal non trouvé ou non autorisé"
+  },
+  "common": {
+    "server_error": "Erreur serveur",
+    "unauthorized": "Aucun token, accès refusé",
+    "invalid_token": "Token invalide"
+  }
+}
