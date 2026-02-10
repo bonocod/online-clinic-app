@@ -1,0 +1,34 @@
+# Node / dependencies
+**/node_modules/
+**/npm-debug.log
+**/yarn-debug.log
+**/yarn-error.log
+**/.pnp*
+**/.yarn/*
+.pnpm-debug.log
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# Frontend build artifacts
+frontend/build/
+frontend/dist/
+frontend/.next/          # if using Next.js
+frontend/.vite/          # if using Vite
+
+# Backend logs / temp
+backend/*.log
+backend/uploads/         # ← very important — don't commit user-uploaded files!
+backend/temp/
+
+# Editor / OS junk
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Optional: tests coverage
+**/coverage/

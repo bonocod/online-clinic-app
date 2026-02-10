@@ -10,7 +10,7 @@ import Dashboard from './pages/Dashboard';
 import SymptomChecker from './pages/SymptomChecker'
 import DiseaseList from './pages/DiseaseList'
 import HealthBehaviors from './pages/HealthBehaviors';
-import HealthTracker from './pages/HealthTracker'
+
 import Profile from './pages/Profile'
 import DiseaseDetail from './pages/DiseaseDetail'
 import ProfileSetup from './pages/ProfileSetup';
@@ -33,7 +33,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/symptom-checker" element={<SymptomChecker />} />
             <Route path="/diseases" element={<DiseaseList />} />
-            <Route path="/health-tracker" element={<HealthTracker />} />
+            
             <Route path="/profile" element={<Profile />} />
             <Route path="/diseases/:id" element={<DiseaseDetail />} />
             <Route path="/profile-setup" element={<ProfileSetup />} />
