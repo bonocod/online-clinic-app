@@ -1,77 +1,76 @@
 const Disease = require('../models/Disease')
 
-// POST /api/diseases/symptoms - Match symptoms to diseases
-
+// POST /api/diseases/symptoms
 const matchSymptoms = async (req, res, next) => {
   try {
     const { symptoms } = req.body;
-
-    // Validate input
     if (!symptoms || typeof symptoms !== 'string' || symptoms.trim().length === 0) {
       return res.status(400).json({ msg: 'Symptoms string is required' });
     }
 
-    // Parse symptoms (sentence or comma-separated)
+    const locale = req.getLocale() || 'en';
+
     const parsedSymptoms = symptoms
       .toLowerCase()
-      .replace(/[.,!?]/g, '') // Remove punctuation
-      .split(/\s+/) // Split by spaces
-      .filter(s => s.length > 0); // Remove empty strings
+      .replace(/[.,!?]/g, '')
+      .split(/\s+/)
+      .filter(s => s.length > 0);
 
-    // Find diseases with at least one matching symptom
     const diseases = await Disease.find({
-      symptoms: { $in: parsedSymptoms }
+      [`symptoms.${locale}`]: { $in: parsedSymptoms }
     }).select('name symptoms causes');
 
     if (diseases.length === 0) {
-      console.log('No diseases found');
       return res.status(404).json({ msg: req.__('diseases.no_diseases_found') });
     }
 
     res.json({ diseases });
-
   } catch (err) {
     next(err);
   }
 };
 
-
-// GET /api/diseases/:id - Get single disease details
+// GET /api/diseases/:id
 const getDisease = async (req, res, next) => {
   try {
-    const disease = await Disease.findById(req.params.id)
-    if (!disease) {
-      return res.status(404).json({ msg: 'Disease not found' })
-    }
-    res.json(disease)
+    const disease = await Disease.findById(req.params.id);
+    if (!disease) return res.status(404).json({ msg: 'Disease not found' });
+    res.json(disease);
   } catch (err) {
-    next(err)
+    next(err);
   }
-}
-// GET /api/diseases - List all diseases
+};
+
+// GET /api/diseases
 const listDiseases = async (req, res, next) => {
   try {
-    const diseases = await Disease.find().select('name symptoms')
-    res.json(diseases)
+    const diseases = await Disease.find().select('name symptoms');
+    res.json(diseases);
   } catch (err) {
-    next(err)
+    next(err);
   }
-}
-// GET /api/diseases/search?q=fever
+};
+
+// GET /api/diseases/search?q=...
 const searchDiseases = async (req, res, next) => {
   try {
-    const { q } = req.query
-    const locale = req.getLocale() || 'en'
+    const { q } = req.query;
+    const locale = req.getLocale() || 'en';
+
     if (!q || q.trim() === '') {
-      return res.status(400).json({ msg: req.__('diseases.search_query_required') })
+      return res.status(400).json({ msg: req.__('diseases.search_query_required') });
     }
-    const query = q.trim()
+
+    const query = q.trim();
+
     const diseases = await Disease.find({
       $or: [
         { 'name.en': { $regex: query, $options: 'i' } },
         { 'name.rw': { $regex: query, $options: 'i' } },
         { 'name.fr': { $regex: query, $options: 'i' } },
-        { symptoms: { $regex: query, $options: 'i' } },
+        { [`symptoms.en`]: { $regex: query, $options: 'i' } },
+        { [`symptoms.rw`]: { $regex: query, $options: 'i' } },
+        { [`symptoms.fr`]: { $regex: query, $options: 'i' } },
         { 'causes.en': { $regex: query, $options: 'i' } },
         { 'causes.rw': { $regex: query, $options: 'i' } },
         { 'causes.fr': { $regex: query, $options: 'i' } },
@@ -88,15 +87,19 @@ const searchDiseases = async (req, res, next) => {
         { 'treatment.rw': { $regex: query, $options: 'i' } },
         { 'treatment.fr': { $regex: query, $options: 'i' } }
       ]
-    }).select('name symptoms')
+    });
+
+    // Return full documents so DiseaseCard works the same as list
     const translated = diseases.map(d => ({
-      _id: d._id,
-      name: d.name[locale] || d.name.en,
-      symptoms: d.symptoms
-    }))
-    res.json({ diseases: translated, count: translated.length })
+      ...d.toObject(),                    // keep full structure
+      name: d.name[locale] || d.name.en,  // still return translated name for display
+      symptoms: d.symptoms[locale] || d.symptoms.en || []  // keep array for backward compatibility in card
+    }));
+
+    res.json({ diseases: translated, count: translated.length });
   } catch (err) {
-    next(err)
+    next(err);
   }
-}
-module.exports = { matchSymptoms, getDisease, listDiseases ,searchDiseases }
+};
+
+module.exports = { matchSymptoms, getDisease, listDiseases, searchDiseases };

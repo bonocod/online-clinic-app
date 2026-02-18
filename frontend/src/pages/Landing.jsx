@@ -1,11 +1,26 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { HeartPulse } from 'lucide-react';
 
 const Landing = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  // Check if user is logged in and redirect to dashboard
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
+
+  // If user is logged in, don't render anything (we're redirecting)
+  const token = localStorage.getItem('token');
+  if (token) {
+    return null; // or a small loader if you prefer
+  }
 
   return (
     <motion.div
@@ -23,11 +38,15 @@ const Landing = () => {
         <h1 className="text-5xl font-bold mb-4 text-dark">{t('landing.title')}</h1>
         <p className="text-2xl mb-6 text-gray-700">{t('landing.subtitle')}</p>
         <p className="text-lg mb-10 text-gray-600">{t('landing.description')}</p>
+        
         <div className="space-x-6">
           <Link to="/login" className="btn-primary inline-block">
             {t('landing.cta1')}
           </Link>
-          <Link to="/register" className="bg-accent text-white py-3 px-6 rounded-full font-semibold shadow-md hover:bg-green-600 transition-all duration-300 transform hover:-translate-y-1 inline-block">
+          <Link 
+            to="/register" 
+            className="bg-accent text-white py-3 px-6 rounded-full font-semibold shadow-md hover:bg-green-600 transition-all duration-300 transform hover:-translate-y-1 inline-block"
+          >
             {t('landing.cta2')}
           </Link>
         </div>

@@ -60,7 +60,10 @@
     "effects": "Ingaruka",
     "prevention": "Uburyo bwo Kwirinda",
     "behaviorGuidelines": "Amabwiriza y'Imyitwarire",
-    "treatment": "Guvura"
+    "treatment": "Guvura",
+    "feedbackTitle": "Ibyo Abandi Bazi Kuri Iyi Ndwara",
+    "feedbackPlaceholder": "Twungure amakuru cyangwa ubumenyi ufite kuri iyi ndwara...",
+    "submitFeedback": "twungure Ubumenyi"
   },
   "healthTracker": {
     "title": "Gukurikirana Ubuzima",
@@ -177,38 +180,46 @@
     ]
   },
   "healthBehaviors": {
-    "title": "Imyitwarire y'Ubuzima"
+    "title": "Imyitwarire y’Ubuzima",
+    "recommended": "Imyitwarire isabwa",
+    "restricted": "Imyitwarire ibujijwe",
+    "loading": "Gutegereza imyitwarire..."
   },
   "myDiseases": {
     "title": "Indwara Zanjye",
     "loading": "Gusoma...",
     "error": "Ikosa ryokusoma umwirondoro"
   },
- "forum": {
-  "title": "Ihuriro ry'Abantu",
-  "joinGroup": "Injira mu Ihuriro",
-  "viewGroup": "Reba Ihuriro →",
-  "noGroups": "Nta huriro ribaho kugeza kugira ngo.",
-  "errorLoad": "Ntibyashobokaga kusoma amahuriro",
-  "joinSuccess": "Winjiriye neza!",
-  "joinFailed": "Ntibyashobokaga kwinjira mu huriro",
-  "posts": "Ibyanditswe",
-  "createPost": "Andika Ibintu",
-  "postTitle": "Izina ry'Ibyanditswe",
-  "postContent": "Ibyanditswe",
-  "viewThread": "Reba Ikiganiro",
-  "replies": "Ibisubizo",
-  "groupChat": "Ikiganiro cy'Ihuriro",
-  "messagePlaceholder": "Andika igitekerezo...",
-  "createPostFailed": "Ntibyashobokaga kwandika ibintu",
-  "loading": "Gusoma..."
-},
-"post": {
-  "comments": "Ibisubizo",
-  "addComment": "Ongeraho igitekerezo cyawe...",
-  "postComment": "Shyira Igitekerezo",
-  "errorLoad": "Ntibyashobokaga kusoma ibyanditswe",
-  "commentFailed": "Ntibyashobokaga kongeraho igitekerezo",
-  "loading": "Gusoma..."
+  "forum": {
+    "title": "Ihuriro ry'Abantu",
+    "joinGroup": "Injira mu Ihuriro",
+    "viewGroup": "Reba Ihuriro →",
+    "noGroups": "Nta huriro ribaho kugeza kugira ngo.",
+    "errorLoad": "Ntibyashobokaga kusoma amahuriro",
+    "joinSuccess": "Winjiriye neza!",
+    "joinFailed": "Ntibyashobokaga kwinjira mu huriro",
+    "posts": "Ibyanditswe",
+    "createPost": "Andika Ibintu",
+    "postTitle": "Izina ry'Ibyanditswe",
+    "postContent": "Ibyanditswe",
+    "viewThread": "Reba Ikiganiro",
+    "replies": "Ibisubizo",
+    "groupChat": "Ikiganiro cy'Ihuriro",
+    "messagePlaceholder": "Andika igitekerezo...",
+    "createPostFailed": "Ntibyashobokaga kwandika ibintu",
+    "loading": "Gusoma..."
+  },
+  "post": {
+    "comments": "Ibisubizo",
+    "addComment": "Ongeraho igitekerezo cyawe...",
+    "postComment": "Shyira Igitekerezo",
+    "errorLoad": "Ntibyashobokaga kusoma ibyanditswe",
+    "commentFailed": "Ntibyashobokaga kongeraho igitekerezo",
+    "loading": "Gusoma..."
+  },
+  "diseaseSeverity": {
+  "mild": "Byoroheje",
+  "moderate": "Gufata hagati",
+  "serious": "Icyorezo gikomeye"
 }
 }

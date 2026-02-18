@@ -33,6 +33,8 @@ app.use('/api/diseases', require('./routes/diseases'))
 app.use('/api/logs', require('./routes/logs'))
 app.use('/api/users', require('./routes/users'))
 app.use('/api/forum', require('./routes/forum'));
+app.use('/api/behaviors', require('./routes/behaviors'));
+app.use('/api/feedback', require('./routes/feedback'));
 // Socket.io setup
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });

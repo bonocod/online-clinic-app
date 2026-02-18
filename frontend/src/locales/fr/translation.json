@@ -60,7 +60,10 @@
     "effects": "Effets",
     "prevention": "Prévention",
     "behaviorGuidelines": "Conseils Comportementaux",
-    "treatment": "Traitement"
+    "treatment": "Traitement",
+    "feedbackTitle": "What Others Know About This Disease",
+    "feedbackPlaceholder": "Share your experience or knowledge...",
+    "submitFeedback": "Add Feedback"
   },
   "healthTracker": {
     "title": "Suivi Santé",
@@ -177,38 +180,47 @@
     ]
   },
   "healthBehaviors": {
-    "title": "Comportements de Santé"
+    "title": "Comportements de santé",
+    "recommended": "Comportements recommandés",
+    "restricted": "Comportements restreints",
+    "loading": "Chargement des comportements..."
   },
+
   "myDiseases": {
     "title": "Mes Maladies",
     "loading": "Chargement...",
     "error": "Erreur de chargement du profil"
   },
- "forum": {
-  "title": "Forum Communautaire",
-  "joinGroup": "Rejoindre le Groupe",
-  "viewGroup": "Voir le Groupe →",
-  "noGroups": "Aucun groupe disponible pour le moment.",
-  "errorLoad": "Échec du chargement des groupes",
-  "joinSuccess": "Rejoint avec succès !",
-  "joinFailed": "Échec de la jointure au groupe",
-  "posts": "Publications",
-  "createPost": "Créer une Publication",
-  "postTitle": "Titre de la Publication",
-  "postContent": "Contenu de la Publication",
-  "viewThread": "Voir le Fil",
-  "replies": "réponses",
-  "groupChat": "Chat de Groupe",
-  "messagePlaceholder": "Tapez un message...",
-  "createPostFailed": "Échec de la création de la publication",
-  "loading": "Chargement..."
-},
-"post": {
-  "comments": "Commentaires",
-  "addComment": "Ajoutez votre commentaire...",
-  "postComment": "Publier le Commentaire",
-  "errorLoad": "Échec du chargement de la publication",
-  "commentFailed": "Échec de l'ajout du commentaire",
-  "loading": "Chargement..."
-}
+  "forum": {
+    "title": "Forum Communautaire",
+    "joinGroup": "Rejoindre le Groupe",
+    "viewGroup": "Voir le Groupe →",
+    "noGroups": "Aucun groupe disponible pour le moment.",
+    "errorLoad": "Échec du chargement des groupes",
+    "joinSuccess": "Rejoint avec succès !",
+    "joinFailed": "Échec de la jointure au groupe",
+    "posts": "Publications",
+    "createPost": "Créer une Publication",
+    "postTitle": "Titre de la Publication",
+    "postContent": "Contenu de la Publication",
+    "viewThread": "Voir le Fil",
+    "replies": "réponses",
+    "groupChat": "Chat de Groupe",
+    "messagePlaceholder": "Tapez un message...",
+    "createPostFailed": "Échec de la création de la publication",
+    "loading": "Chargement..."
+  },
+  "post": {
+    "comments": "Commentaires",
+    "addComment": "Ajoutez votre commentaire...",
+    "postComment": "Publier le Commentaire",
+    "errorLoad": "Échec du chargement de la publication",
+    "commentFailed": "Échec de l'ajout du commentaire",
+    "loading": "Chargement..."
+  },
+  "diseaseSeverity": {
+    "mild": "Léger",
+    "moderate": "Modéré",
+    "serious": "Grave"
+  }
 }

@@ -12,25 +12,20 @@ const DiseaseList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchDiseases = async (query = '') => {
-    try {
-      const endpoint = query ? `/diseases/search?q=${encodeURIComponent(query)}` : '/diseases';
-      const res = await api.get(endpoint);
-      setDiseases(res.data.diseases || res.data);
-    } catch (err) {
-      setError(err.response?.data?.msg || 'Error fetching diseases');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchDiseases(searchQuery);
+    const fetchDiseases = async () => {
+      try {
+        const endpoint = searchQuery ? `/diseases/search?q=${encodeURIComponent(searchQuery)}` : '/diseases';
+        const res = await api.get(endpoint);
+        setDiseases(res.data.diseases || res.data);
+      } catch (err) {
+        setError(err.response?.data?.msg || 'Error fetching diseases');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDiseases();
   }, [searchQuery]);
-
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
-  };
 
   if (loading) return <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 text-center">Loading diseases...</motion.div>;
   if (error) return <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 text-red-500 text-center">{error}</motion.div>;
@@ -48,13 +43,13 @@ const DiseaseList = () => {
           type="text"
           placeholder={t('diseaseList.searchPlaceholder')}
           value={searchQuery}
-          onChange={handleSearch}
+          onChange={(e) => setSearchQuery(e.target.value)}
           className="input-field pl-10"
         />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {diseases.map((d, i) => (
-          <DiseaseCard key={d._id} disease={d} language={i18n.language} />
+          <DiseaseCard key={d._id} disease={d} language={i18n.language} searchQuery={searchQuery} />
         ))}
       </div>
       {diseases.length === 0 && <p className="text-center text-gray-600 mt-8">{t('diseaseList.noResults')}</p>}
