@@ -27,6 +27,7 @@ const DiseaseDetail = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [replies, setReplies] = useState({});  // { tipId: [replies] }
   const [newReply, setNewReply] = useState({});  // { tipId: 'text' }
+  const [likedTips, setLikedTips] = useState(new Set());
 
   useEffect(() => {
     const fetchDisease = async () => {
@@ -34,25 +35,35 @@ const DiseaseDetail = () => {
         const res = await api.get(`/diseases/${id}`);
         setDisease(res.data);
       } catch (err) {
-        setError(err.response?.data?.msg || "Error fetching disease");
+        setError(t('diseaseDetail.errorFetch') || err.response?.data?.msg || "Error fetching disease");
       } finally {
         setLoading(false);
       }
     };
     fetchDisease();
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     const fetchTips = async () => {
       try {
         const res = await api.get(`/feedback/${id}`);
-        setTipsList(res.data);
+        const tips = res.data;
+        setTipsList(tips);
+        const liked = new Set(tips.filter(tip => tip.helpfulUsers?.some(u => u.toString() === currentUser?._id.toString())).map(tip => tip._id));
+        setLikedTips(liked);
+        const repliesObj = {};
+        tips.forEach(tip => {
+          repliesObj[tip._id] = tip.replies || [];
+        });
+        setReplies(repliesObj);
       } catch (err) {
         console.error(err);
       }
     };
-    fetchTips();
-  }, [id]);
+    if (currentUser) {
+      fetchTips();
+    }
+  }, [id, currentUser]);
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -71,7 +82,7 @@ const DiseaseDetail = () => {
     setTipError('');
 
     if (!newTip.trim()) {
-      setTipError('Please share your tip');
+      setTipError(t('diseaseDetail.tipRequired') || 'Please share your tip');
       return;
     }
 
@@ -80,16 +91,29 @@ const DiseaseDetail = () => {
       setTipsList(prev => [res.data, ...prev]);
       setNewTip('');
     } catch (err) {
-      setTipError(err.response?.data?.msg || 'Failed to share tip');
+      setTipError(t('diseaseDetail.tipFailed') || err.response?.data?.msg || 'Failed to share tip');
     }
   };
 
   const handleLikeTip = async (tipId) => {
     try {
-      await api.post(`/feedback/${tipId}/like`);
-      setTipsList(prev => prev.map(tip => 
-        tip._id === tipId ? { ...tip, helpful: (tip.helpful || 0) + 1 } : tip
-      ));
+      const isLiked = likedTips.has(tipId);
+      await api.post(`/feedback/${tipId}/${isLiked ? 'unlike' : 'like'}`);
+      setTipsList(prev => prev.map(tip => {
+        if (tip._id === tipId) {
+          return { ...tip, helpful: (tip.helpful || 0) + (isLiked ? -1 : 1) };
+        }
+        return tip;
+      }));
+      setLikedTips(prev => {
+        const newSet = new Set(prev);
+        if (isLiked) {
+          newSet.delete(tipId);
+        } else {
+          newSet.add(tipId);
+        }
+        return newSet;
+      });
     } catch (err) {
       console.error(err);
     }
@@ -116,16 +140,16 @@ const DiseaseDetail = () => {
     const now = new Date();
     const seconds = Math.floor((now - new Date(date)) / 1000);
     let interval = Math.floor(seconds / 31536000);
-    if (interval > 1) return `${interval} years ago`;
+    if (interval > 1) return t('time.yearsAgo', { count: interval });
     interval = Math.floor(seconds / 2592000);
-    if (interval > 1) return `${interval} months ago`;
+    if (interval > 1) return t('time.monthsAgo', { count: interval });
     interval = Math.floor(seconds / 86400);
-    if (interval > 1) return `${interval} days ago`;
+    if (interval > 1) return t('time.daysAgo', { count: interval });
     interval = Math.floor(seconds / 3600);
-    if (interval > 1) return `${interval} hours ago`;
+    if (interval > 1) return t('time.hoursAgo', { count: interval });
     interval = Math.floor(seconds / 60);
-    if (interval > 1) return `${interval} minutes ago`;
-    return `${seconds} seconds ago`;
+    if (interval > 1) return t('time.minutesAgo', { count: interval });
+    return t('time.secondsAgo', { count: seconds });
   };
 
   // Helper for normal translated fields (causes, effects, etc.)
@@ -163,7 +187,7 @@ const DiseaseDetail = () => {
         animate={{ opacity: 1 }}
         className="p-4 text-center"
       >
-        Loading disease...
+        {t('diseaseDetail.loading') || "Loading disease..."}
       </motion.div>
     );
 
@@ -185,7 +209,7 @@ const DiseaseDetail = () => {
         animate={{ opacity: 1 }}
         className="p-4 text-center"
       >
-        No disease found
+        {t('diseaseDetail.noDisease') || "No disease found"}
       </motion.div>
     );
 
@@ -238,7 +262,7 @@ const DiseaseDetail = () => {
           animate={{ opacity: 1 }}
           className="glass-card mt-10"
         >
-          <h2 className="text-xl font-bold mb-4">Related Diseases</h2>
+          <h2 className="text-xl font-bold mb-4">{t('diseaseDetail.related') || "Related Diseases"}</h2>
           <div className="flex flex-wrap gap-3">
             {disease.relatedDiseases.map((rel) => (
               <Link
@@ -280,7 +304,7 @@ const DiseaseDetail = () => {
                 <div className="flex-1">
                   <div className="flex items-center mb-1">
                     <span className="font-medium mr-2">
-                      {tip.user?._id === currentUser?._id ? 'You' : tip.user?.name || 'Anonymous'}
+                      {tip.user?._id === currentUser?._id ? t('diseaseDetail.you') || 'You' : tip.user?.name || t('diseaseDetail.anonymous') || 'Anonymous'}
                     </span>
                     <span className="text-xs text-gray-500">
                       • {timeAgo(tip.createdAt)}
@@ -311,7 +335,9 @@ const DiseaseDetail = () => {
                     <div className="mt-4 space-y-3">
                       {replies[tip._id].map((reply) => (
                         <div key={reply._id} className="ml-8 text-sm text-gray-600">
-                          <span className="font-medium">{reply.user.name || 'Anonymous'}: </span>{reply.comment}
+                          <span className="font-medium">
+                            {reply.user?._id === currentUser?._id ? t('diseaseDetail.you') || 'You' : reply.user?.name || t('diseaseDetail.anonymous') || 'Anonymous'}: 
+                          </span> {reply.comment}
                           <p className="text-xs text-gray-400 mt-1">{timeAgo(reply.createdAt)}</p>
                         </div>
                       ))}

@@ -61,9 +61,9 @@
     "prevention": "Prevention",
     "behaviorGuidelines": "Behavior Guidelines",
     "treatment": "Treatment",
-    "feedbackTitle": "What Others Know About This Disease",
-    "feedbackPlaceholder": "Share your experience or knowledge...",
-    "submitFeedback": "Add Feedback",
+    "errorFetch": "Error fetching disease",
+    "noDisease": "No disease found",
+    "loading": "Loading disease...",
     "tipsTitle": "Additional Tips, Experiences & Knowledge from Users",
     "tipsPlaceholder": "Share your tip, personal experience, or additional knowledge about this disease...",
     "submitTip": "Share Your Tip",
@@ -72,7 +72,11 @@
     "helpful": "Helpful",
     "reply": "Reply",
     "addReply": "Add your reply...",
-    "submitReply": "Reply"
+    "submitReply": "Reply",
+    "tipRequired": "Please share your tip",
+    "tipFailed": "Failed to share tip",
+    "you": "You",
+    "anonymous": "Anonymous"
   },
   "healthTracker": {
     "title": "Health Tracker",

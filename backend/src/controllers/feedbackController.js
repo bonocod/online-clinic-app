@@ -20,6 +20,7 @@ const getFeedback = async (req, res, next) => {
   try {
     const feedback = await Feedback.find({ disease: req.params.diseaseId })
       .populate('user', 'name')
+      .populate('replies.user', 'name')  // ← Add this to populate reply users
       .sort({ createdAt: -1 });
     res.json(feedback);
   } catch (err) {
@@ -29,19 +30,7 @@ const getFeedback = async (req, res, next) => {
 
 // ... (keep existing addFeedback and getFeedback)
 
-const likeFeedback = async (req, res, next) => {
-  try {
-    const feedback = await Feedback.findByIdAndUpdate(
-      req.params.tipId,
-      { $inc: { helpful: 1 } },
-      { new: true }
-    );
-    if (!feedback) return res.status(404).json({ msg: 'Feedback not found' });
-    res.json(feedback);
-  } catch (err) {
-    next(err);
-  }
-};
+
 
 const addReply = async (req, res, next) => {
   try {
@@ -57,6 +46,30 @@ const addReply = async (req, res, next) => {
     await feedback.save();
     const newReply = feedback.replies[feedback.replies.length - 1];
     res.status(201).json(newReply);
+  } catch (err) {
+    next(err);
+  }
+};
+const likeFeedback = async (req, res, next) => {
+  try {
+    const feedback = await Feedback.findById(req.params.tipId);
+    if (!feedback) return res.status(404).json({ msg: 'Feedback not found' });
+
+    const userId = req.user.id.toString();
+    const index = feedback.helpfulUsers.findIndex(u => u.toString() === userId);
+
+    if (index === -1) {
+      // Like
+      feedback.helpfulUsers.push(userId);
+    } else {
+      // Unlike
+      feedback.helpfulUsers.splice(index, 1);
+    }
+
+    feedback.helpful = feedback.helpfulUsers.length;
+    await feedback.save();
+
+    res.json(feedback);
   } catch (err) {
     next(err);
   }

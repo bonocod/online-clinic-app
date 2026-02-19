@@ -11,6 +11,7 @@ router.post('/:diseaseId', authMiddleware, addFeedback);
 router.get('/:diseaseId', getFeedback);
 
 // POST /api/feedback/:tipId/like - Like a tip
+
 router.post('/:tipId/like', authMiddleware, likeFeedback);
 
 // POST /api/feedback/:tipId/reply - Add reply to tip
