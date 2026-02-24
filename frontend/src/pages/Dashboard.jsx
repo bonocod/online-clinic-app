@@ -96,12 +96,6 @@ const Dashboard = () => {
       color: "bg-green-100 text-green-600",
     },
     {
-      to: "/mental-health",
-      icon: AlertCircle,
-      label: t("dashboard.mentalHealth"),
-      color: "bg-indigo-100 text-indigo-600",
-    },
-    {
       to: "/health-behaviors",
       icon: Apple,
       label: t("dashboard.healthBehaviors"),

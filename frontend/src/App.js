@@ -13,7 +13,7 @@ import HealthBehaviors from './pages/HealthBehaviors';
 import Profile from './pages/Profile'
 import DiseaseDetail from './pages/DiseaseDetail'
 import ProfileSetup from './pages/ProfileSetup';
-import MentalHealth from './pages/MentalHealth';
+
 import PregnancyManager from './pages/PregnancyManager';
 import MyDiseases from './pages/MyDiseases';
 import Forum from './pages/Forum';
@@ -39,7 +39,7 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/diseases/:id" element={<DiseaseDetail />} />
             <Route path="/profile-setup" element={<ProfileSetup />} />
-            <Route path="/mental-health" element={<MentalHealth />} />
+            
             <Route path="/pregnancy-manager" element={<PregnancyManager />} />
             <Route path="/health-behaviors" element={<HealthBehaviors />} />
             <Route path="/my-diseases" element={<MyDiseases />} />

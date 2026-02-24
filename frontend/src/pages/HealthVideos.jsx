@@ -24,7 +24,10 @@ const HealthVideos = () => {
         const videoData = {};
         for (let cat of catRes.data) {
           const videoRes = await axios.get(`${BASE_URL}/videos/category/${cat._id}`);
-          videoData[cat._id] = videoRes.data;
+          videoData[cat._id] = videoRes.data.map(video => ({
+            ...video,
+            thumbnailUrl: video.thumbnailUrl || getDefaultThumbnail(video.videoUrl)
+          }));
         }
         setVideosByCategory(videoData);
       } catch (err) {
@@ -35,6 +38,15 @@ const HealthVideos = () => {
     };
     fetchAll();
   }, []);
+
+  // Fallback thumbnail approach: extract from video URL if thumbnail missing
+  const getDefaultThumbnail = (videoUrl) => {
+    // Assuming Cloudinary URL, replace .mp4 with .jpg for thumbnail
+    if (videoUrl.includes('cloudinary')) {
+      return videoUrl.replace(/\.[^/.]+$/, ".jpg"); // Replace extension with .jpg
+    }
+    return 'https://via.placeholder.com/320x180?text=Video';
+  };
 
   if (loading) return <div className="text-center py-10 flex items-center justify-center"><Film className="animate-spin mr-2" />Loading videos...</div>;
   if (error) return <p className="text-red-500 text-center py-10">{error}</p>;
@@ -66,7 +78,9 @@ const HealthVideos = () => {
                   src={video.thumbnailUrl} 
                   alt={video.title}
                   className="w-full aspect-video object-cover"
-                  onError={(e) => e.target.src = 'https://via.placeholder.com/320x180?text=Video'}
+                  onError={(e) => {
+                    e.target.src = getDefaultThumbnail(video.videoUrl);
+                  }}
                 />
                 <div className="absolute inset-0 bg-black/30 flex items-center justify-center transition-all hover:bg-black/40">
                   <Play className="w-16 h-16 text-white opacity-80 hover:opacity-100 transition-opacity" fill="white" />

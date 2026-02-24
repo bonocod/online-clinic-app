@@ -196,7 +196,8 @@
     "title": "Health Behaviors",
     "recommended": "Recommended Behaviors",
     "restricted": "Restricted Behaviors",
-    "loading": "Loading behaviors..."
+    "loading": "Loading behaviors...",
+    "searchPlaceholder":"find behaviors"
   },
   "myDiseases": {
     "title": "My Diseases",
