@@ -1,4 +1,4 @@
-//frontend/src/App.js
+// frontend/src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
@@ -10,7 +10,6 @@ import Dashboard from './pages/Dashboard';
 import SymptomChecker from './pages/SymptomChecker'
 import DiseaseList from './pages/DiseaseList'
 import HealthBehaviors from './pages/HealthBehaviors';
-
 import Profile from './pages/Profile'
 import DiseaseDetail from './pages/DiseaseDetail'
 import ProfileSetup from './pages/ProfileSetup';
@@ -20,6 +19,9 @@ import MyDiseases from './pages/MyDiseases';
 import Forum from './pages/Forum';
 import Group from './pages/Group';
 import CreatePost from './pages/CreatePost';
+import HealthVideos from './pages/HealthVideos';
+import Admin from './pages/Admin'; // New
+
 function App() {
   return (
     <Router>
@@ -33,7 +35,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/symptom-checker" element={<SymptomChecker />} />
             <Route path="/diseases" element={<DiseaseList />} />
-            
+           
             <Route path="/profile" element={<Profile />} />
             <Route path="/diseases/:id" element={<DiseaseDetail />} />
             <Route path="/profile-setup" element={<ProfileSetup />} />
@@ -44,6 +46,8 @@ function App() {
             <Route path="/forum" element={<Forum />} />
             <Route path="/group/:id" element={<Group />} />
             <Route path="/group/:id/create-post" element={<CreatePost />} />
+            <Route path="/health-videos" element={<HealthVideos />} />
+            <Route path="/admin" element={<Admin />} /> {/* New */}
           </Routes>
         </div>
       </AnimatePresence>

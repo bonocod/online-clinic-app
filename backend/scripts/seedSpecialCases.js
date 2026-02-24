@@ -1,48 +1,46 @@
-// backend/scripts/seedSpecialCases.js
+// backend/seedAdmin.js
 const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const SpecialCase = require('../src/models/SpecialCase');
-dotenv.config();
+const bcrypt = require('bcryptjs');
+const User = require('./src/models/User'); // adjust path if needed
 
-const specialCases = [
-  {
-    id: 'hiv',
-    info: {
-      en: {
-        title: "HIV Information",
-        sections: [
-          { title: "What is HIV?", content: "HIV attacks the immune system and can lead to AIDS if untreated." },
-          { title: "Prevention", content: "Use protection, get tested regularly, avoid sharing needles." },
-          { title: "Support in Rwanda", content: "Free testing at health centers. Contact CHUK or local clinic." }
-        ]
-      },
-      rw: {
-        title: "Amakuru ku VIH",
-        sections: [
-          { title: "VIH ni iki?", content: "VIH igabanya ubudahangarwa bw'umubiri kandi ishobora gutera SIDA niba ititabwaho." },
-          { title: "Kuzirinda", content: "Koresha agakingirizo, kwipimisha buri gihe, kwirinda kunywana ibyuma." },
-          { title: "Inkunga mu Rwanda", content: "Kwipimisha kubuntu mu bitaro. Hamagara CHUK cyangwa ikigo cy'ubuzima cyegereye." }
-        ]
-      },
-      fr: {
-        title: "Informations sur le VIH",
-        sections: [
-          { title: "Qu'est-ce que le VIH?", content: "Le VIH attaque le système immunitaire et peut mener au SIDA s'il n'est pas traité." },
-          { title: "Prévention", content: "Utilisez des préservatifs, faites des tests réguliers, évitez les aiguilles partagées." },
-          { title: "Soutien au Rwanda", content: "Dépistage gratuit dans les centres de santé. Contactez CHUK ou votre clinique locale." }
-        ]
-      }
+// MongoDB connection string
+const MONGO_URI = 'mongodb://127.0.0.1:27017/yourDatabaseName'; // replace with your DB
+
+async function seedAdmin() {
+  try {
+    await mongoose.connect(MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    console.log('MongoDB connected');
+
+    // Check if admin already exists
+    const existingAdmin = await User.findOne({ email: 'admin@gmail.com' });
+    if (existingAdmin) {
+      console.log('Admin user already exists');
+      process.exit(0);
     }
-  },
-  // ... Add cancer, diabetes, mental-health, pregnancy (same as before)
-];
 
-const seed = async () => {
-  await mongoose.connect(process.env.MONGO_URI);
-  await SpecialCase.deleteMany({});
-  await SpecialCase.insertMany(specialCases);
-  console.log('Special cases seeded!');
-  process.exit();
-};
+    // Hash the password
+    const hashedPassword = await bcrypt.hash('admin123', 10);
 
-seed();
+    // Create admin user
+    const adminUser = new User({
+      name: 'Admin',
+      email: 'admin@gmail.com',
+      password: hashedPassword,
+      isAdmin: true,
+    });
+
+    await adminUser.save();
+    console.log('Admin user created successfully');
+
+    process.exit(0);
+  } catch (error) {
+    console.error('Error seeding admin:', error);
+    process.exit(1);
+  }
+}
+
+seedAdmin();

@@ -1,3 +1,4 @@
+// frontend/src/pages/Login.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -17,7 +18,8 @@ const Login = () => {
     try {
       const res = await api.post('/auth/login', { email, password });
       localStorage.setItem('token', res.data.token);
-      navigate('/dashboard');
+      localStorage.setItem('isAdmin', res.data.isAdmin ? 'true' : 'false');
+      navigate(res.data.isAdmin ? '/admin' : '/dashboard');
     } catch (err) {
       setError(err.response?.data?.msg || 'Login failed');
     }

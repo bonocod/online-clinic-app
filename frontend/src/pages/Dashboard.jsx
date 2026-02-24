@@ -1,3 +1,4 @@
+// frontend/src/pages/Dashboard.jsx
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -17,6 +18,7 @@ import {
   Apple,
   Pill,
   Users,
+  Film // New icon for videos
 } from "lucide-react";
 const Dashboard = () => {
   const { t } = useTranslation();
@@ -25,7 +27,14 @@ const Dashboard = () => {
   const [error, setError] = useState("");
   const [reminders, setReminders] = useState([]);
   const navigate = useNavigate();
+  const isAdmin = localStorage.getItem('isAdmin') === 'true';
+
   useEffect(() => {
+    if (isAdmin) {
+      navigate('/admin');
+      return;
+    }
+
     const fetchProfile = async () => {
       try {
         const res = await api.get("/auth/profile");
@@ -42,7 +51,8 @@ const Dashboard = () => {
       }
     };
     fetchProfile();
-  }, [navigate]);
+  }, [navigate, isAdmin]);
+
   useEffect(() => {
     if (Notification.permission !== "granted") {
       Notification.requestPermission();
@@ -102,6 +112,12 @@ const Dashboard = () => {
       icon: Users,
       label: t("dashboard.forum"),
       color: "bg-purple-100 text-purple-600",
+    },
+    {
+      to: "/health-videos", // New card
+      icon: Film,
+      label: "Health Videos",
+      color: "bg-cyan-100 text-cyan-600",
     },
     {
       to: "/profile",

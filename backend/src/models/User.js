@@ -1,9 +1,11 @@
+// backend/src/models/User.js
 const mongoose = require('mongoose');
 // backend/src/models/User.js
 const userSchema = new mongoose.Schema({
   name: { type: String },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  isAdmin: { type: Boolean, default: false }, // New
   profile: {
     age: Number,
     gender: String,

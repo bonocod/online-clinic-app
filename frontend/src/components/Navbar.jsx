@@ -1,3 +1,4 @@
+// frontend/src/components/Navbar.jsx
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +9,7 @@ const Navbar = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
+  const isAdmin = localStorage.getItem('isAdmin') === 'true';
 
   const changeLang = (e) => {
     const newLang = e.target.value;
@@ -17,6 +19,7 @@ const Navbar = () => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('isAdmin');
     navigate('/login');
   };
 
@@ -35,7 +38,14 @@ const Navbar = () => {
         <div className="flex items-center gap-6">
           {token ? (
             <>
-              <Link to="/dashboard" className="nav-link">{t('navbar.dashboard')}</Link>
+              <Link to={isAdmin ? "/admin" : "/dashboard"} className="nav-link">
+                {isAdmin ? 'Admin' : t('navbar.dashboard')}
+              </Link>
+              {!isAdmin && (
+                <>
+                  {/* Other user links if needed, but for now, keep minimal */}
+                </>
+              )}
               <button onClick={logout} className="icon-btn flex items-center">
                 <LogOut className="mr-1" size={18} />
                 {t('navbar.logout')}
