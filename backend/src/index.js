@@ -36,7 +36,7 @@ app.use('/api/diseases', require('./routes/diseases'))
 app.use('/api/users', require('./routes/users'))
 app.use('/api/forum', require('./routes/forum'));
 app.use('/api/behaviors', require('./routes/behaviors'));
-app.use('/api/feedback', require('./routes/feedback'));
+
 // New routes for videos
 app.use('/api/categories', require('./routes/categories'));
 app.use('/api/videos', require('./routes/videos'));
