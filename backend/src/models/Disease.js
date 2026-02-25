@@ -1,5 +1,5 @@
+// backend/src/models/Disease.js
 const mongoose = require('mongoose')
-
 const diseaseSchema = new mongoose.Schema({
   name: {
     en: { type: String, required: true },
@@ -43,10 +43,10 @@ const diseaseSchema = new mongoose.Schema({
     enum: ['mild', 'moderate', 'serious'],
     required: true
   },
+  videoUrl: { type: String }, // New: Video URL for the disease
   relatedDiseases: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Disease'
   }]
 }, { timestamps: true })
-
 module.exports = mongoose.model('Disease', diseaseSchema)

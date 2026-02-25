@@ -12,6 +12,7 @@
     "behaviorGuidelines": { "en": "Rest, stay hydrated and isolate", "rw": "Kuzimura, kunywa amazi menshi no kwigumira", "fr": "Repos, hydratation et isolement" },
     "treatment": { "en": "Antiviral drugs and rest", "rw": "Imiti y'ivirusi n'ikiruhuko", "fr": "Antiviraux et repos" },
     "imageUrl": "https://source.unsplash.com/600x400/?flu,virus",
+    "videoUrl": "https://res.cloudinary.com/ddroe4lij/video/upload/v1771940301/qrlji8ybu3uocsen36jx.mp4",
     "severity": "moderate",
     "relatedDiseases": []
   },
@@ -28,6 +29,7 @@
     "behaviorGuidelines": { "en": "Rest and drink warm fluids", "rw": "Kuzimura no kunywa ibiyobya", "fr": "Repos et boissons chaudes" },
     "treatment": { "en": "Symptom relief medicine", "rw": "Imiti yo kugabanya ibimenyetso", "fr": "Médicaments symptomatiques" },
     "imageUrl": "https://source.unsplash.com/600x400/?cold,flu",
+    "videoUrl": "https://res.cloudinary.com/ddroe4lij/video/upload/v1771940301/qrlji8ybu3uocsen36jx.mp4",
     "severity": "mild",
     "relatedDiseases": []
   },
@@ -44,6 +46,7 @@
     "behaviorGuidelines": { "en": "Seek treatment within 24 hours", "rw": "Shaka ubuvuzi vuba", "fr": "Consulter rapidement" },
     "treatment": { "en": "Antimalarial medication", "rw": "Imiti ivura malariya", "fr": "Médicaments antipaludiques" },
     "imageUrl": "https://source.unsplash.com/600x400/?malaria,mosquito",
+    "videoUrl": "https://res.cloudinary.com/ddroe4lij/video/upload/v1771940301/qrlji8ybu3uocsen36jx.mp4",
     "severity": "serious",
     "relatedDiseases": []
   },
@@ -60,6 +63,7 @@
     "behaviorGuidelines": { "en": "Cover mouth when coughing", "rw": "Gupfuka umunwa iyo ukorora", "fr": "Couvrir la bouche en toussant" },
     "treatment": { "en": "Long course of antibiotics (6+ months)", "rw": "Imiti yica bagiteri mu gihe kirekire", "fr": "Antibiotiques pendant 6 mois ou plus" },
     "imageUrl": "https://source.unsplash.com/600x400/?tuberculosis,lungs",
+    "videoUrl": "https://res.cloudinary.com/ddroe4lij/video/upload/v1771940301/qrlji8ybu3uocsen36jx.mp4",
     "severity": "serious",
     "relatedDiseases": []
   },
@@ -76,6 +80,7 @@
     "behaviorGuidelines": { "en": "Isolate when symptomatic", "rw": "Kwigumira mu rugo", "fr": "S'isoler en cas de symptômes" },
     "treatment": { "en": "Supportive care and antivirals", "rw": "Ubuvuzi bwo gufasha", "fr": "Soins de soutien" },
     "imageUrl": "https://source.unsplash.com/600x400/?covid,virus",
+    "videoUrl": "https://res.cloudinary.com/ddroe4lij/video/upload/v1771940301/qrlji8ybu3uocsen36jx.mp4",
     "severity": "moderate",
     "relatedDiseases": []
   },
@@ -92,6 +97,7 @@
     "behaviorGuidelines": { "en": "Monitor blood sugar regularly", "rw": "Gukurikirana isukari mu maraso", "fr": "Surveiller la glycémie" },
     "treatment": { "en": "Insulin or oral medication", "rw": "Insuline cyangwa imiti yo kunywa", "fr": "Insuline ou médicaments oraux" },
     "imageUrl": "https://source.unsplash.com/600x400/?diabetes,bloodsugar",
+    "videoUrl": "https://res.cloudinary.com/ddroe4lij/video/upload/v1771940301/qrlji8ybu3uocsen36jx.mp4",
     "severity": "serious",
     "relatedDiseases": []
   }

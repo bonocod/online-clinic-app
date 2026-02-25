@@ -1,3 +1,4 @@
+// frontend/src/pages/DiseaseDetail.jsx
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -10,9 +11,7 @@ import {
   HeartPulse,
   Pill,
   BookOpen,
-  MessageCircle,
-  Heart,
-  CornerDownLeft,
+  Film
 } from "lucide-react";
 
 const DiseaseDetail = () => {
@@ -21,13 +20,6 @@ const DiseaseDetail = () => {
   const [disease, setDisease] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [tipsList, setTipsList] = useState([]);
-  const [newTip, setNewTip] = useState('');
-  const [tipError, setTipError] = useState('');
-  const [currentUser, setCurrentUser] = useState(null);
-  const [replies, setReplies] = useState({});  // { tipId: [replies] }
-  const [newReply, setNewReply] = useState({});  // { tipId: 'text' }
-  const [likedTips, setLikedTips] = useState(new Set());
 
   useEffect(() => {
     const fetchDisease = async () => {
@@ -43,123 +35,12 @@ const DiseaseDetail = () => {
     fetchDisease();
   }, [id, t]);
 
-  useEffect(() => {
-    const fetchTips = async () => {
-      try {
-        const res = await api.get(`/feedback/${id}`);
-        const tips = res.data;
-        setTipsList(tips);
-        const liked = new Set(tips.filter(tip => tip.helpfulUsers?.some(u => u.toString() === currentUser?._id.toString())).map(tip => tip._id));
-        setLikedTips(liked);
-        const repliesObj = {};
-        tips.forEach(tip => {
-          repliesObj[tip._id] = tip.replies || [];
-        });
-        setReplies(repliesObj);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    if (currentUser) {
-      fetchTips();
-    }
-  }, [id, currentUser]);
-
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        const res = await api.get('/auth/profile');
-        setCurrentUser(res.data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchCurrentUser();
-  }, []);
-
-  const handleAddTip = async (e) => {
-    e.preventDefault();
-    setTipError('');
-
-    if (!newTip.trim()) {
-      setTipError(t('diseaseDetail.tipRequired') || 'Please share your tip');
-      return;
-    }
-
-    try {
-      const res = await api.post(`/feedback/${id}`, { comment: newTip });
-      setTipsList(prev => [res.data, ...prev]);
-      setNewTip('');
-    } catch (err) {
-      setTipError(t('diseaseDetail.tipFailed') || err.response?.data?.msg || 'Failed to share tip');
-    }
-  };
-
-  const handleLikeTip = async (tipId) => {
-    try {
-      const isLiked = likedTips.has(tipId);
-      await api.post(`/feedback/${tipId}/${isLiked ? 'unlike' : 'like'}`);
-      setTipsList(prev => prev.map(tip => {
-        if (tip._id === tipId) {
-          return { ...tip, helpful: (tip.helpful || 0) + (isLiked ? -1 : 1) };
-        }
-        return tip;
-      }));
-      setLikedTips(prev => {
-        const newSet = new Set(prev);
-        if (isLiked) {
-          newSet.delete(tipId);
-        } else {
-          newSet.add(tipId);
-        }
-        return newSet;
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleAddReply = async (tipId) => {
-    const replyText = newReply[tipId];
-    if (!replyText?.trim()) return;
-
-    try {
-      const res = await api.post(`/feedback/${tipId}/reply`, { comment: replyText });
-      setReplies(prev => ({
-        ...prev,
-        [tipId]: [...(prev[tipId] || []), res.data]
-      }));
-      setNewReply(prev => ({ ...prev, [tipId]: '' }));
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // Simple relative time function
-  const timeAgo = (date) => {
-    const now = new Date();
-    const seconds = Math.floor((now - new Date(date)) / 1000);
-    let interval = Math.floor(seconds / 31536000);
-    if (interval > 1) return t('time.yearsAgo', { count: interval });
-    interval = Math.floor(seconds / 2592000);
-    if (interval > 1) return t('time.monthsAgo', { count: interval });
-    interval = Math.floor(seconds / 86400);
-    if (interval > 1) return t('time.daysAgo', { count: interval });
-    interval = Math.floor(seconds / 3600);
-    if (interval > 1) return t('time.hoursAgo', { count: interval });
-    interval = Math.floor(seconds / 60);
-    if (interval > 1) return t('time.minutesAgo', { count: interval });
-    return t('time.secondsAgo', { count: seconds });
-  };
-
-  // Helper for normal translated fields (causes, effects, etc.)
   const getTranslated = (field) => {
     return typeof field === "object" && field !== null
       ? field[i18n.language] || field.en || ""
       : field || "";
   };
 
-  // Special handler for symptoms (now multilingual array)
   const getSymptoms = (symptomsObj) => {
     if (!symptomsObj) return "";
     const lang = i18n.language;
@@ -168,11 +49,7 @@ const DiseaseDetail = () => {
   };
 
   const sections = [
-    {
-      title: "symptoms",
-      icon: Activity,
-      content: getSymptoms,
-    },
+    { title: "symptoms", icon: Activity, content: getSymptoms },
     { title: "causes", icon: AlertTriangle, content: getTranslated },
     { title: "effects", icon: HeartPulse, content: getTranslated },
     { title: "prevention", icon: Shield, content: getTranslated },
@@ -185,8 +62,9 @@ const DiseaseDetail = () => {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="p-4 text-center"
+        className="flex items-center justify-center min-h-[60vh] text-gray-500 text-lg"
       >
+        <Film className="animate-spin mr-3" size={28} />
         {t('diseaseDetail.loading') || "Loading disease..."}
       </motion.div>
     );
@@ -196,8 +74,9 @@ const DiseaseDetail = () => {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="p-4 text-red-500 text-center"
+        className="flex items-center justify-center min-h-[60vh] text-red-500 text-lg"
       >
+        <AlertTriangle className="mr-3" size={28} />
         {error}
       </motion.div>
     );
@@ -207,7 +86,7 @@ const DiseaseDetail = () => {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="p-4 text-center"
+        className="flex items-center justify-center min-h-[60vh] text-gray-500"
       >
         {t('diseaseDetail.noDisease') || "No disease found"}
       </motion.div>
@@ -215,188 +94,126 @@ const DiseaseDetail = () => {
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="p-4 max-w-3xl mx-auto"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="px-4 md:px-8 py-10 max-w-6xl mx-auto"
     >
-      <h1 className="text-3xl font-bold mb-6 text-center text-dark">
-        {getTranslated(disease.name)}
-      </h1>
+      {/* HEADER */}
+      <div className="relative h-72 md:h-[420px] rounded-3xl overflow-hidden shadow-2xl mb-12">
+        <img
+          src={disease.imageUrl}
+          alt={getTranslated(disease.name)}
+          className="w-full h-full object-cover scale-105 hover:scale-110 transition-transform duration-700"
+        />
 
-      <div className="space-y-6">
-        {sections.map((sec, i) => (
-          <motion.section
-            key={sec.title}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="glass-card"
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+
+        <div className="absolute bottom-8 left-8">
+          <h1 className="text-4xl md:text-6xl font-extrabold text-white drop-shadow-lg mb-4">
+            {getTranslated(disease.name)}
+          </h1>
+
+          <span
+            className={`px-5 py-2 rounded-full text-sm font-semibold backdrop-blur-md border ${
+              disease.severity === "mild"
+                ? "bg-green-500/20 text-green-200 border-green-400/40"
+                : disease.severity === "moderate"
+                  ? "bg-yellow-500/20 text-yellow-200 border-yellow-400/40"
+                  : "bg-red-500/20 text-red-200 border-red-400/40"
+            }`}
           >
-            <h2 className="text-xl font-bold mb-3 flex items-center text-secondary">
-              <sec.icon className="mr-2" />
-              {t(`diseaseDetail.${sec.title}`)}
-            </h2>
-            <p className="text-gray-700">{sec.content(disease[sec.title])}</p>
-          </motion.section>
-        ))}
-      </div>
-      {/* Severity Badge */}
-      <div className="flex justify-center mb-8">
-        <span
-          className={`px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider ${
-            disease.severity === "mild"
-              ? "bg-green-100 text-green-700"
-              : disease.severity === "moderate"
-                ? "bg-yellow-100 text-yellow-700"
-                : "bg-red-100 text-red-700"
-          }`}
-        >
-          {t(`diseaseSeverity.${disease.severity || "moderate"}`)}
-        </span>
+            {t(`diseaseSeverity.${disease.severity || "moderate"}`)}
+          </span>
+        </div>
       </div>
 
-      {/* Related Diseases */}
-      {disease.relatedDiseases && disease.relatedDiseases.length > 0 && (
-        <motion.section
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="glass-card mt-10"
-        >
-          <h2 className="text-xl font-bold mb-4">{t('diseaseDetail.related') || "Related Diseases"}</h2>
-          <div className="flex flex-wrap gap-3">
-            {disease.relatedDiseases.map((rel) => (
-              <Link
-                key={rel._id}
-                to={`/diseases/${rel._id}`}
-                className="bg-white px-4 py-2 rounded-full text-sm border hover:border-primary transition-colors"
-              >
-                {rel.name?.[i18n.language] || rel.name?.en}
-              </Link>
-            ))}
-          </div>
-        </motion.section>
-      )}
-      {/* Tips/Experiences Section */}
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="glass-card mt-10"
-      >
-        <h2 className="text-xl font-bold mb-4 flex items-center text-secondary">
-          <MessageCircle className="mr-2" />
-          {t("diseaseDetail.tipsTitle") ||
-            "Additional Tips, Experiences & Knowledge from Users"}
-        </h2>
-
-        {/* Tips List */}
-        <div className="space-y-6 mb-6">
-          {tipsList.map((tip) => (
-            <motion.div 
-              key={tip._id} 
-              className="border-b pb-4 hover:bg-neutral/50 transition-colors rounded-lg p-4"
-              whileHover={{ scale: 1.02 }}
+      {/* MAIN GRID */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        {/* CONTENT SECTIONS */}
+        <div className="lg:col-span-2 space-y-10">
+          {sections.map((sec, i) => (
+            <motion.section
+              key={sec.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className="bg-white/70 backdrop-blur-xl p-8 rounded-3xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300"
             >
-              <div className="flex items-start gap-4">
-                {/* Avatar */}
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                  {tip.user?.name?.charAt(0).toUpperCase() || '?'}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center mb-1">
-                    <span className="font-medium mr-2">
-                      {tip.user?._id === currentUser?._id ? t('diseaseDetail.you') || 'You' : tip.user?.name || t('diseaseDetail.anonymous') || 'Anonymous'}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      • {timeAgo(tip.createdAt)}
-                    </span>
-                  </div>
-                  <p className="text-gray-700 mb-2">{tip.comment}</p>
-                  {/* Engagement */}
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
-                    <button 
-                      onClick={() => handleLikeTip(tip._id)}
-                      className="flex items-center hover:text-primary transition-colors"
-                    >
-                      <Heart className="w-4 h-4 mr-1" /> {t('diseaseDetail.helpful') || 'Helpful'} ({tip.helpful || 0})
-                    </button>
-                    <button 
-                      onClick={() => {
-                        // Toggle reply input for this tip
-                        setNewReply(prev => ({ ...prev, [tip._id]: prev[tip._id] ? '' : ' ' }));
-                      }}
-                      className="flex items-center hover:text-primary transition-colors"
-                    >
-                      <CornerDownLeft className="w-4 h-4 mr-1" /> {t('diseaseDetail.reply') || 'Reply'}
-                    </button>
-                  </div>
+              <h2 className="text-2xl font-bold mb-5 flex items-center text-gray-800">
+                <sec.icon className="mr-3 text-blue-600" size={26} />
+                {t(`diseaseDetail.${sec.title}`)}
+              </h2>
 
-                  {/* Replies */}
-                  {replies[tip._id] && replies[tip._id].length > 0 && (
-                    <div className="mt-4 space-y-3">
-                      {replies[tip._id].map((reply) => (
-                        <div key={reply._id} className="ml-8 text-sm text-gray-600">
-                          <span className="font-medium">
-                            {reply.user?._id === currentUser?._id ? t('diseaseDetail.you') || 'You' : reply.user?.name || t('diseaseDetail.anonymous') || 'Anonymous'}: 
-                          </span> {reply.comment}
-                          <p className="text-xs text-gray-400 mt-1">{timeAgo(reply.createdAt)}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+              <p className="text-gray-600 leading-relaxed text-lg">
+                {sec.content(disease[sec.title])}
+              </p>
+            </motion.section>
+          ))}
+        </div>
 
-                  {/* Add Reply Input */}
-                  {newReply[tip._id] && (
-                    <form 
-                      onSubmit={(e) => { e.preventDefault(); handleAddReply(tip._id); }}
-                      className="mt-4 ml-8 flex gap-2"
-                    >
-                      <input
-                        value={newReply[tip._id]}
-                        onChange={(e) => setNewReply(prev => ({ ...prev, [tip._id]: e.target.value }))}
-                        placeholder={t('diseaseDetail.addReply') || "Add your reply..."}
-                        className="input-field flex-1 text-sm py-2"
-                      />
-                      <button type="submit" className="btn-primary px-4 py-2 text-sm">
-                        {t('diseaseDetail.submitReply') || "Reply"}
-                      </button>
-                    </form>
-                  )}
-                </div>
+        {/* SIDEBAR */}
+        <div className="space-y-10">
+          {/* VIDEO */}
+          {disease.videoUrl && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="bg-white/80 backdrop-blur-xl p-6 rounded-3xl shadow-xl border border-gray-100 sticky top-28"
+            >
+              <h2 className="text-xl font-bold mb-5 flex items-center text-gray-800">
+                <Film className="mr-3 text-blue-600" size={24} />
+                Educational Video
+              </h2>
+
+              <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black">
+                <video
+                  src={disease.videoUrl}
+                  controls
+                  poster={disease.imageUrl}
+                  className="w-full h-full object-cover"
+                >
+                  Your browser does not support the video tag.
+                </video>
               </div>
             </motion.div>
-          ))}
-          {tipsList.length === 0 && (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-8 text-gray-500"
+          )}
+
+          {/* RELATED DISEASES */}
+          {disease.relatedDiseases && disease.relatedDiseases.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-white/80 backdrop-blur-xl p-6 rounded-3xl shadow-lg border border-gray-100"
             >
-              <MessageCircle className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-              <p className="text-lg mb-2">{t('diseaseDetail.noTipsTitle') || "No tips shared yet"}</p>
-              <p>{t('diseaseDetail.noTipsMessage') || "Be the first to share your experience and help others!"}</p>
+              <h2 className="text-xl font-bold mb-6 flex items-center text-gray-800">
+                <Activity className="mr-3 text-blue-600" size={22} />
+                Related Diseases
+              </h2>
+
+              <div className="space-y-4">
+                {disease.relatedDiseases.map((rel) => (
+                  <Link
+                    key={rel._id}
+                    to={`/diseases/${rel._id}`}
+                    className="group flex items-center p-4 rounded-xl bg-gray-50 hover:bg-blue-50 transition-all duration-300 shadow-sm hover:shadow-md"
+                  >
+                    <HeartPulse
+                      className="mr-3 text-blue-500 group-hover:scale-110 transition-transform"
+                      size={18}
+                    />
+                    <span className="text-gray-700 group-hover:text-blue-700 font-medium">
+                      {rel.name?.[i18n.language] || rel.name?.en}
+                    </span>
+                  </Link>
+                ))}
+              </div>
             </motion.div>
           )}
         </div>
-
-        {/* Add Tip Form */}
-        <form onSubmit={handleAddTip} className="space-y-4">
-          {tipError && <p className="text-red-500">{tipError}</p>}
-          <textarea
-            value={newTip}
-            onChange={(e) => setNewTip(e.target.value)}
-            placeholder={
-              t("diseaseDetail.tipsPlaceholder") ||
-              "Share your tip, personal experience, or additional knowledge about this disease..."
-            }
-            className="input-field min-h-[120px]"
-            required
-          />
-          <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2">
-            <MessageCircle className="w-5 h-5" />
-            {t("diseaseDetail.submitTip") || "Share Your Tip"}
-          </button>
-        </form>
-      </motion.section>
+      </div>
     </motion.div>
   );
 };
