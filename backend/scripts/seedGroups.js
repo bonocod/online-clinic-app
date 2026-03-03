@@ -1,3 +1,4 @@
+//# FILE: backend/scripts/seedGroups.js
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const Group = require('../src/models/Group');
@@ -14,41 +15,16 @@ const connectDB = async () => {
 };
 
 const groups = [
-  {
-    name: 'Diabetes Support',
-    description: 'Share tips, experiences, and encouragement for managing diabetes.',
-    members: [],
-    privacy: 'public',
-    conditionTag: 'diabetes'
-  },
-  {
-    name: 'Mental Health Warriors',
-    description: 'A safe space to discuss mental health, anxiety, depression, and coping strategies.',
-    members: [],
-    privacy: 'public',
-    conditionTag: 'mental-health'
-  },
-  {
-    name: 'Pregnancy Journey',
-    description: 'Support for expecting mothers: tips, milestones, and Q&A.',
-    members: [],
-    privacy: 'public',
-    conditionTag: 'pregnancy'
-  },
-  {
-    name: 'HIV Support Group',
-    description: 'Confidential discussions on living with HIV, treatment, and wellness.',
-    members: [],
-    privacy: 'public',
-    conditionTag: 'hiv'
-  },
-  {
-    name: 'Cancer Survivors',
-    description: 'Stories of strength, treatment advice, and emotional support.',
-    members: [],
-    privacy: 'public',
-    conditionTag: 'cancer'
-  }
+  // Public groups based on categories
+  { name: 'Mental Health', description: 'Discuss mental health topics.', members: [], privacy: 'public', conditionTag: 'mental-health' },
+  { name: 'Pregnancy', description: 'Support for pregnancy journeys.', members: [], privacy: 'public', conditionTag: 'pregnancy' },
+  { name: 'Chronic Diseases', description: 'Managing chronic conditions.', members: [], privacy: 'public', conditionTag: 'chronic-diseases' },
+  { name: 'Infectious Diseases', description: 'Prevention and treatment of infections.', members: [], privacy: 'public', conditionTag: 'infectious-diseases' },
+  { name: 'Child Health', description: 'Child health and development.', members: [], privacy: 'public', conditionTag: 'child-health' },
+  { name: 'Nutrition', description: 'Healthy eating and nutrition tips.', members: [], privacy: 'public', conditionTag: 'nutrition' },
+  // Example support circles (private)
+  { name: 'Diabetes Support Circle', description: 'Private support for diabetes patients.', members: [], privacy: 'private', conditionTag: 'diabetes', approvalRequired: true },
+  { name: 'Mental Health Support Circle', description: 'Private mental health support.', members: [], privacy: 'private', conditionTag: 'mental-health', approvalRequired: true }
 ];
 
 const seedGroups = async () => {

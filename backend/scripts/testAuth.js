@@ -1,8 +1,8 @@
-// backend/scripts/seedAdmin.js
+// backend/scripts/seedForumCategories.js
+
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const bcrypt = require('bcryptjs');
-const User = require('../src/models/User');
+const Category = require('../src/models/Category');
 
 dotenv.config();
 
@@ -16,42 +16,27 @@ const connectDB = async () => {
   }
 };
 
-const seedAdmin = async () => {
+const forumCategories = [
+  { name: 'Mental Health', description: 'Discuss mental health topics.', type: 'forum' },
+  { name: 'Pregnancy', description: 'Support for pregnancy journeys.', type: 'forum' },
+  { name: 'Chronic Diseases', description: 'Managing chronic conditions.', type: 'forum' },
+  { name: 'Infectious Diseases', description: 'Prevention and treatment of infections.', type: 'forum' },
+  { name: 'Child Health', description: 'Child health and development.', type: 'forum' },
+  { name: 'Nutrition', description: 'Healthy eating and nutrition tips.', type: 'forum' }
+];
+
+const seedForumCategories = async () => {
   await connectDB();
-  
+
   try {
-    const adminEmail = process.env.ADMIN_EMAIL;
-    const adminPassword = process.env.ADMIN_PASSWORD; // Plain password from .env
-    
-    if (!adminEmail || !adminPassword) {
-      console.error('❌ ADMIN_EMAIL and ADMIN_PASSWORD must be set in .env');
-      process.exit(1);
-    }
-    
-    // Check if admin exists
-    let admin = await User.findOne({ email: adminEmail });
-    
-    if (admin) {
-      console.log('ℹ️ Admin user already exists');
-      process.exit(0);
-    }
-    
-    // Hash password
-    const hashedPassword = await bcrypt.hash(adminPassword, 10);
-    
-    // Create admin
-    admin = new User({
-      name: 'Admin',
-      email: adminEmail,
-      password: hashedPassword,
-      isAdmin: true  // Set DB flag
-    });
-    
-    await admin.save();
-    console.log('✅ Admin user seeded successfully!');
-    console.log(`Email: ${adminEmail}`);
-    console.log(`Password: ${adminPassword} (hashed in DB)`);
-    
+    // 🔥 Delete only forum categories
+    const deleted = await Category.deleteMany({ type: 'forum' });
+    console.log(`🗑 Deleted ${deleted.deletedCount} existing forum categories`);
+
+    // 🔥 Insert fresh forum categories
+    await Category.insertMany(forumCategories);
+    console.log('🌱 Forum categories seeded successfully!');
+
     process.exit(0);
   } catch (err) {
     console.error('❌ Seeding failed:', err);
@@ -59,4 +44,4 @@ const seedAdmin = async () => {
   }
 };
 
-seedAdmin();
+seedForumCategories();
