@@ -1,5 +1,4 @@
-//# FILE: backend/src/models/User.js
-// backend/src/models/User.js
+// FILE: backend/src/models/User.js
 const mongoose = require('mongoose');
 
 // backend/src/models/User.js
@@ -8,7 +7,7 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   isAdmin: { type: Boolean, default: false },
-  role: { type: String, enum: ['patient', 'chw', 'doctor', 'moderator', 'admin'], default: 'patient' },
+  role: { type: String, enum: ['patient', 'chw', 'doctor', 'admin'], default: 'patient' },
   verified: { type: Boolean, default: false }, // For doctors
   reputation: { type: Number, default: 0 },
   // New profile:

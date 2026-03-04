@@ -1,4 +1,4 @@
-// frontend/src/components/Navbar.jsx
+// FILE: frontend/src/components/Navbar.jsx
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +10,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
   const isAdmin = localStorage.getItem('isAdmin') === 'true';
+  const role = localStorage.getItem('role');
 
   const changeLang = (e) => {
     const newLang = e.target.value;
@@ -20,7 +21,22 @@ const Navbar = () => {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('isAdmin');
+    localStorage.removeItem('role');
     navigate('/login');
+  };
+
+  const dashboardPath = () => {
+    if (isAdmin) return '/admin';
+    if (role === 'doctor') return '/professional/doctor';
+    if (role === 'chw') return '/professional/chw';
+    return '/dashboard';
+  };
+
+  const dashboardLabel = () => {
+    if (isAdmin) return 'Admin';
+    if (role === 'doctor') return 'Doctor Console';
+    if (role === 'chw') return 'CHW Console';
+    return t('navbar.dashboard');
   };
 
   return (
@@ -38,14 +54,10 @@ const Navbar = () => {
         <div className="flex items-center gap-6">
           {token ? (
             <>
-              <Link to={isAdmin ? "/admin" : "/dashboard"} className="nav-link">
-                {isAdmin ? 'Admin' : t('navbar.dashboard')}
+              <Link to={dashboardPath()} className="nav-link">
+                {dashboardLabel()}
               </Link>
-              {!isAdmin && (
-                <>
-                  {/* Other user links if needed, but for now, keep minimal */}
-                </>
-              )}
+              {role !== 'admin' && <Link to="/dashboard" className="nav-link">User Dashboard</Link>}
               <button onClick={logout} className="icon-btn flex items-center">
                 <LogOut className="mr-1" size={18} />
                 {t('navbar.logout')}

@@ -1,4 +1,4 @@
-
+// FILE: backend/src/index.js
 // backend/src/index.js
 const express = require('express')
 const dotenv = require('dotenv')
@@ -14,7 +14,6 @@ const cloudinary = require('cloudinary').v2;
 
 dotenv.config()
 connectDB()
-
 const app = express()
 app.use(cors())
 app.use(express.json())
@@ -45,6 +44,8 @@ app.use('/api/behaviors', require('./routes/behaviors'));
 // New routes for videos
 app.use('/api/categories', require('./routes/categories'));
 app.use('/api/videos', require('./routes/videos'));
+// Admin routes
+app.use('/api/admin', require('./routes/admin'));
 
 // Socket.io setup
 const server = http.createServer(app);

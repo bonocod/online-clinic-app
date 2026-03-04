@@ -1,5 +1,4 @@
-//# FILE: frontend/src/App.js
-// frontend/src/App.js
+// FILE: frontend/src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
@@ -20,6 +19,8 @@ import HealthVideos from './pages/HealthVideos';
 import Admin from './pages/Admin';
 import Post from './pages/Post'; // New Post Page
 import Category from './pages/Category'; // New Category Feed
+import DoctorConsole from './pages/professional/DoctorConsole';
+import CHWConsole from './pages/professional/CHWConsole';
 
 function App() {
   return (
@@ -45,6 +46,8 @@ function App() {
             <Route path="/category/:id" element={<Category />} /> {/* Category Feed */}
             <Route path="/health-videos" element={<HealthVideos />} />
             <Route path="/admin" element={<Admin />} /> {/* New */}
+            <Route path="/professional/doctor" element={<DoctorConsole />} />
+            <Route path="/professional/chw" element={<CHWConsole />} />
           </Routes>
         </div>
       </AnimatePresence>

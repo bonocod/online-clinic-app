@@ -1,7 +1,10 @@
-//# FILE: backend/src/routes/forum.js
+// FILE: backend/src/routes/forum.js
 // backend/src/routes/forum.js
 const express = require('express');
 const authMiddleware = require('../middleware/auth');
+const isAdmin = require('../middleware/isAdmin')
+const isDoctor = require('../middleware/isDoctor');
+const isCHW = require('../middleware/isCHW');
 const Post = require('../models/Post');
 const Comment = require('../models/Comment');
 const Group = require('../models/Group');
@@ -12,6 +15,7 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+
 const router = express.Router();
 
 // ==================== MULTER CONFIGURATION ====================
@@ -71,30 +75,40 @@ router.get('/categories/:id', async (req, res) => {
 });
 
 // Get posts in category with enhanced filters
+// Get posts in category (SAFE + FULL POPULATE)
 router.get('/categories/:id/posts', authMiddleware, async (req, res) => {
   try {
-    const { tab, page = 1, limit = 20, pinned } = req.query;
-    const skip = (page - 1) * limit;
-    let query = { category: new mongoose.Types.ObjectId(req.params.id) };
+    const { tab = 'recent', page = 1, limit = 10, pinned } = req.query;
+
+    const query = { category: req.params.id };
+
     if (pinned === 'true') query.isPinned = true;
     if (tab === 'questions') query.type = 'question';
     if (tab === 'discussions') query.type = 'general';
 
-    let sortObj = { createdAt: -1 }; // recent
-    if (tab === 'popular') sortObj = { engagement: -1 }; // Need to compute engagement
+    let sortObj = { createdAt: -1 };
 
-    const posts = await Post.aggregate([
-      { $match: query },
-      { $addFields: { engagement: { $add: [{ $size: '$upvotes' }, { $size: '$comments' }] } } },
-      { $sort: sortObj },
-      { $skip: skip },
-      { $limit: parseInt(limit) },
-      { $lookup: { from: 'users', localField: 'author', foreignField: '_id', as: 'author' } },
-      { $unwind: '$author' }
-    ]);
+    if (tab === 'popular') {
+      sortObj = { upvotes: -1 };
+    }
+
+    const posts = await Post.find(query)
+      .sort(sortObj)
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit))
+      .populate('author', 'name role')
+      .populate({
+        path: 'comments',
+        populate: {
+          path: 'author',
+          select: 'name role'
+        }
+      });
 
     res.json(posts);
+
   } catch (err) {
+    console.error(err);
     res.status(500).json({ msg: 'Server error' });
   }
 });
@@ -109,6 +123,8 @@ router.get('/categories/:id/circles', authMiddleware, async (req, res) => {
     res.status(500).json({ msg: 'Server error' });
   }
 });
+
+
 
 // ==================== GROUPS/CIRCLES ====================
 // Get all groups/circles
@@ -205,24 +221,19 @@ router.post('/posts', authMiddleware, upload.single('media'), async (req, res) =
       anonymous: anonymous === 'true',
       type: type || (groupId ? 'general' : 'question') // Use provided type or default
     };
-
     if (req.file) {
       postData.mediaUrl = `/uploads/posts/${req.file.filename}`;
       postData.mediaType = req.file.mimetype.startsWith('image/') ? 'image' : 'video';
     }
-
     const post = new Post(postData);
     await post.save();
-
     const populated = await Post.findById(post._id)
       .populate('author', 'name role');
-
     if (groupId) {
       io.to(groupId).emit('newPost', populated);
     } else if (categoryId) {
       io.to(`category_${categoryId}`).emit('newPost', populated);
     }
-
     res.status(201).json(populated);
   } catch (err) {
     console.error('Post creation error:', err);
@@ -262,11 +273,11 @@ router.get('/posts/related/:id', authMiddleware, async (req, res) => {
   }
 });
 
-// Pin post (mod/admin only)
+// Pin post (admin only)
 router.post('/posts/:id/pin', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
-    if (!['moderator', 'admin'].includes(user.role)) return res.status(403).json({ msg: 'Unauthorized' });
+    if (user.role !== 'admin') return res.status(403).json({ msg: 'Admin access required' });
     const post = await Post.findByIdAndUpdate(req.params.id, { isPinned: true }, { new: true });
     res.json(post);
   } catch (err) {
@@ -274,11 +285,11 @@ router.post('/posts/:id/pin', authMiddleware, async (req, res) => {
   }
 });
 
-// Unpin post (similar to pin, but set isPinned: false)
+// Unpin post
 router.post('/posts/:id/unpin', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
-    if (!['moderator', 'admin'].includes(user.role)) return res.status(403).json({ msg: 'Unauthorized' });
+    if (user.role !== 'admin') return res.status(403).json({ msg: 'Admin access required' });
     const post = await Post.findByIdAndUpdate(req.params.id, { isPinned: false }, { new: true });
     res.json(post);
   } catch (err) {
@@ -306,67 +317,109 @@ router.get('/posts/trending', async (req, res) => {
   }
 });
 
-// Upvote post
+// Upvote post (toggle)
 router.post('/posts/:id/upvote', authMiddleware, async (req, res) => {
   try {
-    const io = req.app.get('io');
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ msg: 'Post not found' });
+
     const userId = req.user.id;
-    const index = post.upvotes.findIndex(id => id.toString() === userId);
+
+    const index = post.upvotes.findIndex(
+      id => id.toString() === userId.toString()
+    );
+
     if (index === -1) {
       post.upvotes.push(userId);
-      // Increase author reputation
-      await User.findByIdAndUpdate(post.author, { $inc: { reputation: 1 } });
     } else {
       post.upvotes.splice(index, 1);
-      await User.findByIdAndUpdate(post.author, { $inc: { reputation: -1 } });
     }
+
     await post.save();
-    io.to(post.group?.toString() || `category_${post.category?.toString()}`).emit('postUpvoted', { postId: post._id, upvotes: post.upvotes });
-    res.json({ upvotes: post.upvotes.length });
+
+    res.json({ upvotes: post.upvotes }); // RETURN ARRAY
+
   } catch (err) {
     res.status(500).json({ msg: 'Server error' });
   }
 });
 
-// Mark helpful (only verified/doctor)
+// Mark helpful (doctor only, toggle)
 router.post('/posts/:id/helpful', authMiddleware, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-    if (user.role !== 'doctor' && !user.verified) return res.status(403).json({ msg: 'Only verified doctors can mark helpful' });
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ msg: 'Post not found' });
-    const index = post.helpful.findIndex(id => id.toString() === req.user.id);
-    if (index === -1) post.helpful.push(req.user.id);
-    else post.helpful.splice(index, 1);
+
+    const userId = req.user.id;
+
+    const index = post.helpful.findIndex(
+      id => id.toString() === userId.toString()
+    );
+
+    if (index === -1) {
+      post.helpful.push(userId);
+    } else {
+      post.helpful.splice(index, 1);
+    }
+
     await post.save();
-    res.json({ helpful: post.helpful.length });
+
+    res.json({ helpful: post.helpful }); // RETURN ARRAY
+
   } catch (err) {
     res.status(500).json({ msg: 'Server error' });
   }
 });
 
-// Report post
+// Report post (toggle, but for MVP add if not reported)
+// Report a Post
 router.post('/posts/:id/report', authMiddleware, async (req, res) => {
   try {
+    const { reason } = req.body;
+
+    if (!reason || reason.trim() === '') {
+      return res.status(400).json({ msg: 'Reason is required' });
+    }
+
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ msg: 'Post not found' });
-    if (!post.reports.includes(req.user.id)) {
-      post.reports.push(req.user.id);
-      await post.save();
-      // Trigger moderation if reports > threshold, e.g., 5
-      if (post.reports.length >= 5) {
-        // Notify moderators or auto-hide
-      }
+
+    const alreadyReported = post.reports.find(
+      r => r.user.toString() === req.user.id
+    );
+
+    if (alreadyReported) {
+      return res.status(400).json({ msg: 'You already reported this post' });
     }
-    res.json({ reports: post.reports.length });
+
+    post.reports.push({
+      user: req.user.id,
+      reason
+    });
+
+    await post.save();
+
+    res.json({ reports: post.reports });
+
   } catch (err) {
     res.status(500).json({ msg: 'Server error' });
   }
 });
 
-// ==================== COMMENTS ====================
+// Get Reported Posts (Admin Only)
+router.get('/reported-posts', authMiddleware, isAdmin, async (req, res) => {
+  try {
+    const posts = await Post.find({ 'reports.0': { $exists: true } })
+      .populate('author', 'name role')
+      .populate('reports.user', 'name');
+
+    res.json(posts);
+
+  } catch (err) {
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
 // Create comment
 router.post('/posts/:id/comments', authMiddleware, async (req, res) => {
   try {
@@ -404,12 +457,83 @@ router.get('/posts/:id/comments', authMiddleware, async (req, res) => {
 });
 
 // Highlight comment (doctor only)
-router.post('/comments/:id/highlight', authMiddleware, async (req, res) => {
+router.post('/comments/:id/highlight', authMiddleware, isDoctor, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-    if (user.role !== 'doctor' || !user.verified) return res.status(403).json({ msg: 'Only verified doctors can highlight' });
     const comment = await Comment.findByIdAndUpdate(req.params.id, { isHighlighted: true }, { new: true });
     res.json(comment);
+  } catch (err) {
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
+// Delete Post (Admin Only)
+router.post('/posts/:id/delete-post', authMiddleware, isAdmin, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+
+    if (!post) {
+      return res.status(404).json({ msg: 'Post not found' });
+    }
+
+    await Post.findByIdAndDelete(req.params.id);
+
+    res.json({ msg: 'Post deleted successfully' });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
+// Mark comment as professional (doctor)
+router.post('/comments/:id/professional', authMiddleware, isDoctor, async (req, res) => {
+  try {
+    const comment = await Comment.findByIdAndUpdate(req.params.id, { isProfessional: true }, { new: true });
+    res.json(comment);
+  } catch (err) {
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
+// Mark comment as recommended (chw)
+router.post('/comments/:id/recommended', authMiddleware, isCHW, async (req, res) => {
+  try {
+    const comment = await Comment.findByIdAndUpdate(req.params.id, { isRecommended: true }, { new: true });
+    res.json(comment);
+  } catch (err) {
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
+// Mark comment as misinfo (doctor)
+router.post('/comments/:id/misinfo', authMiddleware, isDoctor, async (req, res) => {
+  try {
+    const comment = await Comment.findByIdAndUpdate(req.params.id, { isMisinfo: true }, { new: true });
+    res.json(comment);
+  } catch (err) {
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
+// Mark post as resolved (doctor)
+router.post('/posts/:id/resolve', authMiddleware, isDoctor, async (req, res) => {
+  try {
+    const post = await Post.findByIdAndUpdate(req.params.id, { isResolved: true }, { new: true });
+    res.json(post);
+  } catch (err) {
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
+// Escalate post (chw)
+router.post('/posts/:id/escalate', authMiddleware, isCHW, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post.escalatedBy.includes(req.user.id)) {
+      post.escalatedBy.push(req.user.id);
+      await post.save();
+    }
+    res.json(post);
   } catch (err) {
     res.status(500).json({ msg: 'Server error' });
   }

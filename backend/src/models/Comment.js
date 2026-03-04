@@ -1,6 +1,6 @@
-//# FILE: backend/src/models/Comment.js
+// FILE: backend/src/models/Comment.js
+// backend/src/models/Comment.js
 const mongoose = require('mongoose');
-
 const commentSchema = new mongoose.Schema({
   content: { type: String, required: true },
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -8,7 +8,10 @@ const commentSchema = new mongoose.Schema({
   parent: { type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }, // For nesting
   helpful: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Users who marked helpful
   reports: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Reported by users
-  isHighlighted: { type: Boolean, default: false } // For doctor highlights
+  isHighlighted: { type: Boolean, default: false }, // For doctor highlights
+  isProfessional: { type: Boolean, default: false }, // Doctor professional answer
+  isRecommended: { type: Boolean, default: false }, // CHW recommended
+  isMisinfo: { type: Boolean, default: false } // Marked as misinformation
 }, { timestamps: true });
 
 module.exports = mongoose.model('Comment', commentSchema);

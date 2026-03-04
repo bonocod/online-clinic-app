@@ -1,4 +1,4 @@
-// frontend/src/pages/Login.jsx
+// FILE: frontend/src/pages/Login.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -19,7 +19,12 @@ const Login = () => {
       const res = await api.post('/auth/login', { email, password });
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('isAdmin', res.data.isAdmin ? 'true' : 'false');
-      navigate(res.data.isAdmin ? '/admin' : '/dashboard');
+      localStorage.setItem('role', res.data.role);
+      let path = '/dashboard';
+      if (res.data.isAdmin) path = '/admin';
+      else if (res.data.role === 'doctor') path = '/professional/doctor';
+      else if (res.data.role === 'chw') path = '/professional/chw';
+      navigate(path);
     } catch (err) {
       setError(err.response?.data?.msg || 'Login failed');
     }

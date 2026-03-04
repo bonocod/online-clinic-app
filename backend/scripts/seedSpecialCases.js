@@ -1,22 +1,20 @@
 // backend/seedAdmin.js
+require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const User = require('./src/models/User'); // adjust path if needed
+const User = require('../src/models/User'); // adjust path if needed
 
 // MongoDB connection string
-const MONGO_URI = 'mongodb://127.0.0.1:27017/yourDatabaseName'; // replace with your DB
+const MONGO_URI = process.env.MONGO_URI// replace with your DB
 
 async function seedAdmin() {
   try {
-    await mongoose.connect(MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(MONGO_URI);
 
     console.log('MongoDB connected');
 
     // Check if admin already exists
-    const existingAdmin = await User.findOne({ email: 'admin@gmail.com' });
+    const existingAdmin = await User.findOne({ email: 'admine@gmail.com' });
     if (existingAdmin) {
       console.log('Admin user already exists');
       process.exit(0);
@@ -28,9 +26,10 @@ async function seedAdmin() {
     // Create admin user
     const adminUser = new User({
       name: 'Admin',
-      email: 'admin@gmail.com',
+      email: 'admine@gmail.com',
       password: hashedPassword,
       isAdmin: true,
+      role:'admin'
     });
 
     await adminUser.save();
