@@ -1,135 +1,280 @@
 // FILE: frontend/src/pages/professional/DoctorConsole.jsx
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import api from '../../services/api';
-import { AlertCircle, Clock, CheckCircle, Activity } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import api from '../../services/api'
+import {
+  AlertCircle,
+  Clock,
+  CheckCircle,
+  Activity,
+  HelpCircle,
+  Send,
+} from 'lucide-react'
 
 const DoctorConsole = () => {
-  const [tab, setTab] = useState('urgent');
-  const [urgentCases, setUrgentCases] = useState([]);
-  const [unansweredQuestions, setUnansweredQuestions] = useState([]);
-  const [myResponses, setMyResponses] = useState([]);
-  const [stats, setStats] = useState({ totalAnswers: 0, urgentHandled: 0 });
-  const [loading, setLoading] = useState(false);
+  const [tab, setTab] = useState('questions') // questions | attention | highlights | stats
+  const [filter, setFilter] = useState('general') // general | myposts
+
+  const [questions, setQuestions] = useState([])
+  const [attentionPosts, setAttentionPosts] = useState([])
+  const [highlights, setHighlights] = useState([])
+  const [stats, setStats] = useState({ answeredQuestions: 0, avgResponseMinutes: 0 })
+
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  // answer UI
+  const [answeringId, setAnsweringId] = useState(null)
+  const [answerText, setAnswerText] = useState('')
+  const [claiming, setClaiming] = useState(false)
+  const [answering, setAnswering] = useState(false)
 
   useEffect(() => {
-    fetchData();
-  }, [tab]);
+    fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, filter])
 
   const fetchData = async () => {
-    setLoading(true);
+    setLoading(true)
+    setError('')
     try {
-      if (tab === 'urgent' || tab === 'all') {
-        const res = await api.get('/forum/urgent-posts');
-        setUrgentCases(res.data);
+      if (tab === 'questions') {
+        const res = await api.get(`/professional/questions?filter=${filter}&status=unanswered`)
+        setQuestions(Array.isArray(res.data) ? res.data : [])
       }
-      if (tab === 'questions' || tab === 'all') {
-        const res = await api.get('/forum/unanswered-questions');
-        setUnansweredQuestions(res.data);
+      if (tab === 'attention') {
+        const res = await api.get('/professional/posts-needing-attention')
+        setAttentionPosts(Array.isArray(res.data) ? res.data : [])
       }
-      if (tab === 'responses' || tab === 'all') {
-        const res = await api.get('/forum/my-responses');
-        setMyResponses(res.data);
+      if (tab === 'highlights') {
+        const res = await api.get('/professional/discussion-highlights')
+        setHighlights(Array.isArray(res.data) ? res.data : [])
       }
-      if (tab === 'overview' || tab === 'all') {
-        const res = await api.get('/forum/doctor-stats');
-        setStats(res.data);
+      if (tab === 'stats') {
+        const res = await api.get('/professional/stats')
+        setStats(res.data || { answeredQuestions: 0, avgResponseMinutes: 0 })
       }
-    } catch (err) {
-      console.error('Failed to fetch data');
+    } catch (e) {
+      setError(e.response?.data?.msg || 'Failed to fetch data')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  const handleAction = async (postId, action) => {
+  const claimQuestion = async (id) => {
+    setClaiming(true)
     try {
-      await api.post(`/forum/posts/${postId}/${action}`);
-      fetchData(); // Refresh data
-    } catch (err) {
-      console.error(`${action} failed`);
+      await api.post(`/professional/questions/${id}/claim`)
+      await fetchData()
+    } catch (e) {
+      alert(e.response?.data?.msg || 'Claim failed')
+    } finally {
+      setClaiming(false)
     }
-  };
+  }
+
+  const submitAnswer = async (id) => {
+    if (!answerText.trim()) return
+    setAnswering(true)
+    try {
+      await api.post(`/professional/questions/${id}/answer`, { answer: answerText })
+      setAnswerText('')
+      setAnsweringId(null)
+      await fetchData()
+      alert('Answered')
+    } catch (e) {
+      alert(e.response?.data?.msg || 'Answer failed')
+    } finally {
+      setAnswering(false)
+    }
+  }
+
+  const markResolved = async (postId) => {
+    try {
+      await api.post(`/forum/posts/${postId}/resolve`)
+      fetchData()
+    } catch (e) {
+      alert(e.response?.data?.msg || 'Failed')
+    }
+  }
 
   const tabs = [
-    { id: 'urgent', label: 'Urgent Cases', icon: AlertCircle },
-    { id: 'questions', label: 'Unanswered Questions', icon: Clock },
-    { id: 'responses', label: 'My Responses', icon: CheckCircle },
-    { id: 'overview', label: 'Activity Overview', icon: Activity },
-  ];
+    { id: 'questions', label: 'Unanswered Questions', icon: HelpCircle },
+    { id: 'attention', label: 'Posts Needing Attention', icon: AlertCircle },
+    { id: 'highlights', label: 'Discussion Highlights', icon: Clock },
+    { id: 'stats', label: 'Stats', icon: Activity },
+  ]
+
+  const canAnswer = (q) => {
+    if (q.claimActive && q.claimedBy && q.claimedBy !== null) {
+      // backend also blocks if claimed by someone else; UI still shows answer but recommend claim
+      return true
+    }
+    return true
+  }
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 space-y-6">
       <h1 className="text-3xl font-bold">Doctor Console</h1>
-      <p>Welcome to the Doctor's professional dashboard.</p>
+      <p>Professional dashboard</p>
 
-      <div className="flex gap-4 overflow-x-auto">
-        {tabs.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} className={`px-4 py-2 rounded-full flex items-center gap-2 ${tab === t.id ? 'bg-primary text-white' : 'bg-gray-200'}`}>
+      <div className="flex gap-3 overflow-x-auto">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`px-4 py-2 rounded-full flex items-center gap-2 ${
+              tab === t.id ? 'bg-primary text-white' : 'bg-gray-200'
+            }`}
+          >
             <t.icon size={18} /> {t.label}
           </button>
         ))}
       </div>
 
-      {loading && <p>Loading...</p>}
-
-      {tab === 'urgent' && (
-        <div className="space-y-4">
-          {urgentCases.map(post => <CaseCard key={post._id} post={post} handleAction={handleAction} />)}
-          {urgentCases.length === 0 && <p>No urgent cases.</p>}
+      {tab === 'questions' && (
+        <div className="flex gap-2">
+          <button
+            onClick={() => setFilter('general')}
+            className={`px-4 py-2 rounded-full ${filter === 'general' ? 'bg-gray-900 text-white' : 'bg-gray-200'}`}
+          >
+            General
+          </button>
+          <button
+            onClick={() => setFilter('myposts')}
+            className={`px-4 py-2 rounded-full ${filter === 'myposts' ? 'bg-gray-900 text-white' : 'bg-gray-200'}`}
+          >
+            My Posts
+          </button>
         </div>
       )}
 
+      {loading && <p>Loading...</p>}
+      {error && <p className="text-red-500">{error}</p>}
+
+      {/* Questions */}
       {tab === 'questions' && (
         <div className="space-y-4">
-          {unansweredQuestions.map(post => <CaseCard key={post._id} post={post} handleAction={handleAction} isQuestion />)}
-          {unansweredQuestions.length === 0 && <p>No unanswered questions.</p>}
+          {questions.map((q) => (
+            <div key={q._id} className="glass-card p-4">
+              <div className="flex flex-wrap justify-between gap-2">
+                <p className="font-bold">Question</p>
+                <span className="text-xs px-2 py-1 rounded-full bg-gray-200 text-gray-700">
+                  {q.claimActive ? 'claimed' : 'unclaimed'}
+                </span>
+              </div>
+
+              {q.postId?._id ? (
+                <p className="text-sm text-gray-600 mt-1">
+                  On post: <Link to={`/post/${q.postId._id}`} className="text-primary underline">{q.postId.title}</Link>
+                </p>
+              ) : (
+                <p className="text-sm text-gray-600 mt-1">General queue</p>
+              )}
+
+              <p className="mt-3 text-gray-800 whitespace-pre-wrap">{q.body}</p>
+
+              <div className="flex flex-wrap gap-2 mt-4">
+                <button
+                  onClick={() => claimQuestion(q._id)}
+                  className="px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300"
+                  disabled={claiming}
+                >
+                  {claiming ? 'Claiming...' : 'Claim'}
+                </button>
+
+                <button
+                  onClick={() => setAnsweringId((v) => (v === q._id ? null : q._id))}
+                  className="btn-primary"
+                  disabled={!canAnswer(q)}
+                >
+                  Answer
+                </button>
+              </div>
+
+              {answeringId === q._id && (
+                <div className="mt-4 border rounded-xl p-3 bg-white/60">
+                  <textarea
+                    value={answerText}
+                    onChange={(e) => setAnswerText(e.target.value)}
+                    className="input-field w-full min-h-[120px]"
+                    placeholder="Write your answer..."
+                  />
+                  <button
+                    onClick={() => submitAnswer(q._id)}
+                    className="btn-primary mt-3 flex items-center gap-2"
+                    disabled={answering || !answerText.trim()}
+                  >
+                    <Send size={16} />
+                    {answering ? 'Submitting...' : 'Submit Answer'}
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+          {questions.length === 0 && !loading && <p>No unanswered questions.</p>}
         </div>
       )}
 
-      {tab === 'responses' && (
+      {/* Attention posts */}
+      {tab === 'attention' && (
         <div className="space-y-4">
-          {myResponses.map(post => <ResponseCard key={post._id} post={post} />)}
-          {myResponses.length === 0 && <p>No responses yet.</p>}
+          {attentionPosts.map((p) => (
+            <div key={p._id} className="glass-card p-4">
+              <h3 className="font-bold">{p.title}</h3>
+              <p className="text-sm text-gray-600">
+                Category: {p.category?.name || 'Unknown'} • {new Date(p.createdAt).toLocaleString()}
+              </p>
+              <p className="mt-2 text-gray-800 whitespace-pre-wrap">
+                {p.body?.length > 200 ? `${p.body.slice(0, 200)}...` : p.body}
+              </p>
+              <div className="flex gap-2 mt-3">
+                <Link to={`/post/${p._id}`} className="btn-primary">Open</Link>
+                <button onClick={() => markResolved(p._id)} className="btn-success">
+                  Mark handled
+                </button>
+              </div>
+            </div>
+          ))}
+          {attentionPosts.length === 0 && !loading && <p>No posts needing attention.</p>}
         </div>
       )}
 
-      {tab === 'overview' && (
-        <div className="glass-card p-4 space-y-4">
-          <p>Total Professional Answers: {stats.totalAnswers}</p>
-          <p>Urgent Cases Handled: {stats.urgentHandled}</p>
+      {/* Highlights */}
+      {tab === 'highlights' && (
+        <div className="space-y-4">
+          {highlights.map((c) => (
+            <div key={c._id} className="glass-card p-4">
+              <p className="text-sm text-gray-600">
+                Discussion:{' '}
+                <Link to={`/discussion/${c.discussion?._id}`} className="text-primary underline">
+                  {c.discussion?.title || 'Open'}
+                </Link>
+              </p>
+              <p className="text-sm text-gray-600 mt-1">
+                By {c.author?.name || 'Unknown'} • {new Date(c.createdAt).toLocaleString()}
+              </p>
+              <p className="mt-2 text-gray-800 whitespace-pre-wrap">{c.content}</p>
+            </div>
+          ))}
+          {highlights.length === 0 && !loading && <p>No highlights yet.</p>}
         </div>
       )}
 
-      <Link to="/dashboard" className="btn-primary">Go to User Dashboard</Link>
+      {/* Stats */}
+      {tab === 'stats' && (
+        <div className="glass-card p-4 space-y-2">
+          <p>Answered questions: {stats.answeredQuestions}</p>
+          <p>Average response time: {stats.avgResponseMinutes} minutes</p>
+        </div>
+      )}
+
+      <Link to="/dashboard" className="btn-primary">
+        Go to User Dashboard
+      </Link>
     </motion.div>
-  );
-};
+  )
+}
 
-const CaseCard = ({ post, handleAction, isQuestion = false }) => {
-  return (
-    <div className="glass-card p-4">
-      <h3 className="font-bold">{post.title}</h3>
-      <p className="text-sm text-gray-600">Category: {post.category.name} • {new Date(post.createdAt).toLocaleString()}</p>
-      <p>{post.content.substring(0, 100)}...</p>
-      <div className="flex gap-2 mt-2">
-        <Link to={`/post/${post._id}`} className="btn-primary">Respond</Link>
-        <button onClick={() => handleAction(post._id, 'mark-professional')} className="btn-secondary">Mark as Professional Answer</button>
-        <button onClick={() => handleAction(post._id, 'recommend-care')} className="btn-warning">Recommend Immediate Care</button>
-        <button onClick={() => handleAction(post._id, isQuestion ? 'mark-resolved' : 'mark-handled')} className="btn-success">{isQuestion ? 'Mark Resolved' : 'Mark Handled'}</button>
-      </div>
-    </div>
-  );
-};
-
-const ResponseCard = ({ post }) => {
-  return (
-    <div className="glass-card p-4">
-      <h3 className="font-bold">{post.title}</h3>
-      <p className="text-sm text-gray-600">Status: {post.status} • Responded: {new Date(post.respondedAt).toLocaleString()}</p>
-    </div>
-  );
-};
-
-export default DoctorConsole;
+export default DoctorConsole

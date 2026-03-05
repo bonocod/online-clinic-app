@@ -1,81 +1,279 @@
 // FILE: backend/src/controllers/adminController.js
-// backend/src/controllers/adminController.js
-const User = require('../models/User');
-const Post = require('../models/Post');
-const bcrypt = require('bcryptjs');
+const User = require('../models/User')
+const Post = require('../models/Post')
+const Category = require('../models/Category')
+const Discussion = require('../models/Discussion')
+const Report = require('../models/Report')
+const bcrypt = require('bcryptjs')
+const { logAudit } = require('../utils/audit')
 
 const createUser = async (req, res, next) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role } = req.body
+
     if (!['patient', 'chw', 'doctor'].includes(role)) {
-      return res.status(400).json({ msg: 'Invalid role' });
+      return res.status(400).json({ msg: 'Invalid role' })
     }
-    let user = await User.findOne({ email });
-    if (user) return res.status(400).json({ msg: 'User exists' });
+
+    let user = await User.findOne({ email })
+    if (user) return res.status(400).json({ msg: 'User exists' })
+
     user = new User({
       name,
       email,
       password: await bcrypt.hash(password, 10),
       role,
-      verified: role === 'doctor' ? false : true // Doctors need verification?
-    });
-    await user.save();
-    res.status(201).json({ msg: 'User created' });
+      // doctors & CHWs must be verified by admin
+      verified: role === 'patient' ? true : false,
+    })
+
+    await user.save()
+    await logAudit(req, { action: 'admin.create_user', targetType: 'user', targetId: user._id })
+
+    res.status(201).json({ msg: 'User created' })
   } catch (err) {
-    next(err);
+    next(err)
   }
-};
+}
 
+const listPendingProfessionals = async (req, res, next) => {
+  try {
+    const role = req.query.role
+    const query = { verified: false, role: { $in: ['doctor', 'chw'] } }
+    if (role && ['doctor', 'chw'].includes(role)) query.role = role
+    const users = await User.find(query).select('name email role verified createdAt')
+    res.json(users)
+  } catch (err) {
+    next(err)
+  }
+}
 
+const verifyProfessional = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id)
+    if (!user) return res.status(404).json({ msg: 'User not found' })
+    if (!['doctor', 'chw'].includes(user.role)) return res.status(400).json({ msg: 'Not a professional' })
 
+    user.verified = true
+    await user.save()
+
+    await logAudit(req, { action: 'admin.verify_professional', targetType: 'user', targetId: user._id })
+    res.json({ msg: 'Professional verified' })
+  } catch (err) {
+    next(err)
+  }
+}
+
+// existing reported-posts (kept)
 const getReportedPosts = async (req, res, next) => {
   try {
     const posts = await Post.find({ 'reports.0': { $exists: true } })
-      .populate('author', 'name role')
-      .populate('reports.user', 'name');
-
-    res.json(posts);
+      .populate('author', 'name role verified')
+      .populate('reports.user', 'name')
+    res.json(posts)
   } catch (err) {
-    next(err);
+    next(err)
   }
-};
+}
 
 const deletePost = async (req, res, next) => {
   try {
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findById(req.params.id)
+    if (!post) return res.status(404).json({ msg: 'Post not found' })
 
-    if (!post) {
-      return res.status(404).json({ msg: 'Post not found' });
-    }
+    await Post.findByIdAndDelete(req.params.id)
+    await logAudit(req, { action: 'admin.delete_post', targetType: 'post', targetId: req.params.id })
 
-    await Post.findByIdAndDelete(req.params.id);
-
-    res.json({ msg: 'Post deleted successfully' });
+    res.json({ msg: 'Post deleted successfully' })
   } catch (err) {
-    next(err);
+    next(err)
   }
-};
+}
 
+// existing: clears Post.reports
 const resolveReport = async (req, res, next) => {
   try {
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findById(req.params.id)
+    if (!post) return res.status(404).json({ msg: 'Post not found' })
 
-    if (!post) {
-      return res.status(404).json({ msg: 'Post not found' });
+    post.reports = []
+    await post.save()
+
+    await logAudit(req, { action: 'admin.clear_post_reports', targetType: 'post', targetId: post._id })
+    res.json({ msg: 'Reports cleared' })
+  } catch (err) {
+    next(err)
+  }
+}
+
+/**
+ * Discussions moderation
+ */
+const listDiscussions = async (req, res, next) => {
+  try {
+    const { status = 'waiting' } = req.query
+    const q = {}
+    if (['waiting', 'open', 'closed'].includes(status)) q.status = status
+
+    const discussions = await Discussion.find(q)
+      .sort({ createdAt: -1 })
+      .populate('createdBy', 'name role verified')
+      .populate('approvedBy', 'name role verified')
+
+    res.json(discussions)
+  } catch (err) {
+    next(err)
+  }
+}
+
+const approveDiscussion = async (req, res, next) => {
+  try {
+    const d = await Discussion.findById(req.params.id)
+    if (!d) return res.status(404).json({ msg: 'Discussion not found' })
+
+    d.status = 'open'
+    d.approvedBy = req.user.id
+    d.approvedAt = new Date()
+
+    // auto-close if closeAt already passed
+    if (d.closeAt && d.closeAt.getTime() <= Date.now()) {
+      d.status = 'closed'
+      d.closedBy = req.user.id
+      d.closedAt = new Date()
     }
 
-    post.reports = [];
-    await post.save();
+    await d.save()
+    await logAudit(req, { action: 'admin.approve_discussion', targetType: 'discussion', targetId: d._id })
 
-    res.json({ msg: 'Reports cleared' });
+    res.json({ msg: 'Discussion approved', discussion: d })
   } catch (err) {
-    next(err);
+    next(err)
   }
-};
+}
+
+const rejectDiscussion = async (req, res, next) => {
+  try {
+    const d = await Discussion.findById(req.params.id)
+    if (!d) return res.status(404).json({ msg: 'Discussion not found' })
+
+    await Discussion.findByIdAndDelete(d._id)
+    await logAudit(req, { action: 'admin.reject_discussion', targetType: 'discussion', targetId: d._id })
+
+    res.json({ msg: 'Discussion rejected and removed' })
+  } catch (err) {
+    next(err)
+  }
+}
+
+const pinDiscussion = async (req, res, next) => {
+  try {
+    const d = await Discussion.findByIdAndUpdate(req.params.id, { isPinned: true }, { new: true })
+    if (!d) return res.status(404).json({ msg: 'Discussion not found' })
+
+    await logAudit(req, { action: 'admin.pin_discussion', targetType: 'discussion', targetId: d._id })
+    res.json(d)
+  } catch (err) {
+    next(err)
+  }
+}
+
+const unpinDiscussion = async (req, res, next) => {
+  try {
+    const d = await Discussion.findByIdAndUpdate(req.params.id, { isPinned: false }, { new: true })
+    if (!d) return res.status(404).json({ msg: 'Discussion not found' })
+
+    await logAudit(req, { action: 'admin.unpin_discussion', targetType: 'discussion', targetId: d._id })
+    res.json(d)
+  } catch (err) {
+    next(err)
+  }
+}
+
+/**
+ * Reports moderation queue (unified)
+ */
+const listReports = async (req, res, next) => {
+  try {
+    const { resolved = 'false' } = req.query
+    const q = {}
+    if (resolved === 'true') q.resolved = true
+    else if (resolved === 'false') q.resolved = false
+
+    const reports = await Report.find(q)
+      .sort({ createdAt: -1 })
+      .populate('reportedBy', 'name role verified')
+
+    res.json(reports)
+  } catch (err) {
+    next(err)
+  }
+}
+
+const resolveModerationReport = async (req, res, next) => {
+  try {
+    const { note = '' } = req.body
+    const r = await Report.findById(req.params.id)
+    if (!r) return res.status(404).json({ msg: 'Report not found' })
+
+    r.resolved = true
+    r.resolvedBy = req.user.id
+    r.resolvedAt = new Date()
+    r.resolutionNote = note
+
+    await r.save()
+    await logAudit(req, { action: 'admin.resolve_report', targetType: 'report', targetId: r._id })
+
+    res.json({ msg: 'Report resolved', report: r })
+  } catch (err) {
+    next(err)
+  }
+}
+
+/**
+ * Category lock/unlock
+ */
+const lockCategory = async (req, res, next) => {
+  try {
+    const c = await Category.findByIdAndUpdate(req.params.id, { isLocked: true }, { new: true })
+    if (!c) return res.status(404).json({ msg: 'Category not found' })
+
+    await logAudit(req, { action: 'admin.lock_category', targetType: 'category', targetId: c._id })
+    res.json(c)
+  } catch (err) {
+    next(err)
+  }
+}
+
+const unlockCategory = async (req, res, next) => {
+  try {
+    const c = await Category.findByIdAndUpdate(req.params.id, { isLocked: false }, { new: true })
+    if (!c) return res.status(404).json({ msg: 'Category not found' })
+
+    await logAudit(req, { action: 'admin.unlock_category', targetType: 'category', targetId: c._id })
+    res.json(c)
+  } catch (err) {
+    next(err)
+  }
+}
 
 module.exports = {
   createUser,
+  listPendingProfessionals,
+  verifyProfessional,
+
   getReportedPosts,
   deletePost,
-  resolveReport
-};
+  resolveReport,
+
+  listDiscussions,
+  approveDiscussion,
+  rejectDiscussion,
+  pinDiscussion,
+  unpinDiscussion,
+
+  listReports,
+  resolveModerationReport,
+
+  lockCategory,
+  unlockCategory,
+}

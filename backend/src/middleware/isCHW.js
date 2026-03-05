@@ -1,10 +1,9 @@
 // FILE: backend/src/middleware/isCHW.js
-// backend/src/middleware/isCHW.js
 const isCHW = (req, res, next) => {
-  if (!req.user || req.user.role !== 'chw') {
-    return res.status(403).json({ msg: 'CHW access required' });
+  if (!req.user || req.user.role !== 'chw' || !req.user.verified) {
+    return res.status(403).json({ msg: 'Verified CHW access required' })
   }
-  next();
-};
+  next()
+}
 
-module.exports = isCHW;
+module.exports = isCHW
