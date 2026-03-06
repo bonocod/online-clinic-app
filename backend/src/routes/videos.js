@@ -6,6 +6,7 @@ const cloudinary = require('cloudinary').v2;
 const Video = require('../models/Video');
 const authMiddleware = require('../middleware/auth');
 const isAdmin = require('../middleware/isAdmin');
+const { logAudit } = require('../utils/audit')
 
 const router = express.Router();
 
@@ -41,15 +42,23 @@ router.post(
         quality: 'auto',
       });
 
-      const video = await Video.create({
-        title,
-        description,
-        videoUrl: result.secure_url,
-        thumbnailUrl,
-        category,
-      });
+      const publicId = result.public_id
 
-      res.json(video);
+const video = await Video.create({
+  title,
+  description,
+  videoUrl: result.secure_url,
+  thumbnailUrl,
+  cloudinaryPublicId: publicId,
+  category,
+})
+
+await logAudit(req, { action: 'video.upload', targetType: 'video', targetId: video._id })
+
+      
+  
+
+
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -82,4 +91,29 @@ router.get('/category/:id', async (req, res) => {
   }
 });
 
+
+// =============================
+// Delete Video (Admin Only)
+// =============================
+router.delete('/:id', authMiddleware, isAdmin, async (req, res) => {
+  try {
+    const v = await Video.findById(req.params.id)
+    if (!v) return res.status(404).json({ error: 'Video not found' })
+
+    // attempt cloudinary delete if we have public id
+    if (v.cloudinaryPublicId) {
+      try {
+        await cloudinary.uploader.destroy(v.cloudinaryPublicId, { resource_type: 'video' })
+      } catch {}
+    }
+
+    await Video.findByIdAndDelete(v._id)
+
+    await logAudit(req, { action: 'video.delete', targetType: 'video', targetId: v._id })
+
+    res.json({ msg: 'Video deleted' })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
 module.exports = router;

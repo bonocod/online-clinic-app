@@ -13,7 +13,6 @@ const Message = require('../models/Message')
 const Category = require('../models/Category')
 const User = require('../models/User')
 
-// NEW models
 const Discussion = require('../models/Discussion')
 const Question = require('../models/Question')
 const Report = require('../models/Report')
@@ -26,15 +25,23 @@ const fs = require('fs')
 
 const router = express.Router()
 
-/**
- * Helpers
- */
+/* ---------------- Helpers ---------------- */
+
 const sanitizeAnonymousUser = () => ({
   _id: null,
   name: 'Anonymous',
   role: 'patient',
   verified: false,
 })
+
+const toId = (v) => (v ? v.toString() : '')
+
+const pageParams = (page, limit, maxLimit = 50) => {
+  const p = Math.max(parseInt(page, 10) || 1, 1)
+  const l = Math.min(Math.max(parseInt(limit, 10) || 10, 1), maxLimit)
+  const skip = (p - 1) * l
+  return { p, l, skip }
+}
 
 const ensureForumCategoryWritable = async (categoryId, req, res) => {
   const c = await Category.findById(categoryId)
@@ -83,13 +90,35 @@ const detectUrgentKeywords = (text) => {
     'baby not moving',
     'high fever',
   ]
-  const matched = keywords.filter((k) => t.includes(k))
-  return matched
+  return keywords.filter((k) => t.includes(k))
 }
 
-/**
- * MULTER CONFIGURATION
- */
+/* ---------------- Socket emit helpers ---------------- */
+
+const emitPostEvent = (io, post, event, payload) => {
+  if (!io || !post?._id) return
+  const postId = toId(post._id)
+
+  // Optional future room
+  io.to(`post_${postId}`).emit(event, payload)
+
+  // Group feed room (Group.jsx uses joinGroup(groupId))
+  if (post.group) io.to(toId(post.group)).emit(event, payload)
+
+  // Category room (future Category live)
+  if (post.category) io.to(`category_${toId(post.category)}`).emit(event, payload)
+}
+
+const emitDiscussionEvent = (io, discussion, event, payload) => {
+  if (!io || !discussion?._id) return
+  const did = toId(discussion._id)
+
+  io.to(`discussion_${did}`).emit(event, payload)
+  if (discussion.categoryId) io.to(`category_${toId(discussion.categoryId)}`).emit(event, payload)
+}
+
+/* ---------------- Multer config ---------------- */
+
 const uploadDir = path.join(process.cwd(), 'uploads/posts')
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true })
 
@@ -117,16 +146,19 @@ const fileFilter = (req, file, cb) => {
   else cb(new Error('Invalid file type. Only images and videos are allowed.'), false)
 }
 
-const upload = multer({ storage, fileFilter, limits: { fileSize: 100 * 1024 * 1024 } })
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 100 * 1024 * 1024 },
+})
 
-/**
- * CATEGORIES
- */
+/* ---------------- Categories ---------------- */
+
 router.get('/categories', async (req, res) => {
   try {
     const categories = await Category.find({ type: 'forum' }).sort({ name: 1 })
     res.json(categories)
-  } catch (err) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
@@ -136,14 +168,13 @@ router.get('/categories/:id', async (req, res) => {
     const category = await Category.findById(req.params.id)
     if (!category) return res.status(404).json({ msg: 'Category not found' })
     res.json(category)
-  } catch (err) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
 
-/**
- * Follow / Unfollow category
- */
+/* ---------------- Follow / Unfollow category ---------------- */
+
 router.post('/categories/:id/follow', authMiddleware, async (req, res) => {
   try {
     const cat = await Category.findById(req.params.id)
@@ -154,7 +185,7 @@ router.post('/categories/:id/follow', authMiddleware, async (req, res) => {
 
     const u = await User.findById(req.user.id).select('followedCategories')
     res.json({ followedCategories: u.followedCategories })
-  } catch (e) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
@@ -169,63 +200,57 @@ router.post('/categories/:id/unfollow', authMiddleware, async (req, res) => {
 
     const u = await User.findById(req.user.id).select('followedCategories')
     res.json({ followedCategories: u.followedCategories })
-  } catch (e) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
 
-/**
- * CATEGORY FEED (NEW): /categories/:id/feed?tab=posts|discussions|replies
- */
+/* ---------------- Category feed (optional) ---------------- */
+
 router.get('/categories/:id/feed', authMiddleware, async (req, res) => {
   try {
     const { tab = 'posts', page = 1, limit = 10 } = req.query
     const categoryId = req.params.id
+    const { l, skip } = pageParams(page, limit, 50)
 
     if (tab === 'posts') {
       const posts = await Post.find({ category: categoryId })
         .sort({ isPinned: -1, highlighted: -1, createdAt: -1 })
-        .skip((parseInt(page) - 1) * parseInt(limit))
-        .limit(parseInt(limit))
+        .skip(skip)
+        .limit(l)
         .populate('author', 'name role verified')
         .populate({ path: 'comments', populate: { path: 'author', select: 'name role verified' } })
 
-      // likes compatibility
       const mapped = posts.map((p) => {
         const obj = p.toObject()
         obj.likes = Array.isArray(obj.likes) && obj.likes.length ? obj.likes : obj.upvotes || []
         return obj
       })
-
       return res.json(mapped)
     }
 
     if (tab === 'discussions') {
       const open = await Discussion.find({ categoryId, status: 'open' })
         .sort({ isPinned: -1, createdAt: -1 })
-        .skip((parseInt(page) - 1) * parseInt(limit))
-        .limit(parseInt(limit))
+        .skip(skip)
+        .limit(l)
         .populate('createdBy', 'name role verified')
 
-      // ensure auto-close if needed
       await Promise.all(open.map((d) => maybeAutoCloseDiscussion(d)))
 
       const closed = await Discussion.find({ categoryId, status: 'closed' })
         .sort({ isPinned: -1, closedAt: -1, createdAt: -1 })
-        .limit(parseInt(limit))
+        .limit(l)
         .populate('createdBy', 'name role verified')
 
-      return res.json({
-        open,
-        closed,
-      })
+      return res.json({ open, closed })
     }
 
     if (tab === 'replies') {
       const answered = await Question.find({ categoryId, status: 'answered' })
         .sort({ answeredAt: -1 })
-        .skip((parseInt(page) - 1) * parseInt(limit))
-        .limit(parseInt(limit))
+        .skip(skip)
+        .limit(l)
         .populate('askedBy', 'name role verified')
         .populate('answeredBy', 'name role verified')
         .populate('postId', 'title author')
@@ -240,41 +265,32 @@ router.get('/categories/:id/feed', authMiddleware, async (req, res) => {
     }
 
     return res.status(400).json({ msg: 'Invalid tab' })
-  } catch (e) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
 
+/* ---------------- Category posts (frontend uses this) ---------------- */
 /**
- * Backward-compatible posts list (your current frontend uses it):
- * GET /categories/:id/posts?tab=recent|popular|questions|discussions|posts|replies
+ * GET /forum/categories/:id/posts?tab=recent|popular|questions|discussions|posts|replies&pinned=true&page=1&limit=10
+ * - Category.jsx uses:
+ *   - pinned=true
+ *   - tab=recent OR tab=popular
+ *   - tab=replies
  */
 router.get('/categories/:id/posts', authMiddleware, async (req, res) => {
   try {
     const { tab = 'recent', page = 1, limit = 10, pinned } = req.query
+    const { l, skip } = pageParams(page, limit, 50)
 
-    const query = { category: req.params.id }
-    if (pinned === 'true') query.isPinned = true
+    const categoryId = req.params.id
 
-    // legacy tabs
-    let sortObj = { createdAt: -1 }
-
-    if (tab === 'popular') sortObj = { upvotes: -1 }
-
-    if (tab === 'questions') query.type = 'question'
-    if (tab === 'discussions') query.type = 'general'
-
-    // NEW tab name "posts" -> show all posts
-    if (tab === 'posts') {
-      // no extra filter
-    }
-
-    // NEW tab name "replies" -> answered questions
+    // Replies tab = answered questions
     if (tab === 'replies') {
-      const answered = await Question.find({ categoryId: req.params.id, status: 'answered' })
+      const answered = await Question.find({ categoryId, status: 'answered' })
         .sort({ answeredAt: -1 })
-        .skip((parseInt(page) - 1) * parseInt(limit))
-        .limit(parseInt(limit))
+        .skip(skip)
+        .limit(l)
         .populate('askedBy', 'name role verified')
         .populate('answeredBy', 'name role verified')
         .populate('postId', 'title author')
@@ -287,15 +303,117 @@ router.get('/categories/:id/posts', authMiddleware, async (req, res) => {
       return res.json(mapped)
     }
 
+    // Base post query
+    const query = { category: categoryId }
+    if (pinned === 'true') query.isPinned = true
+
+    if (tab === 'questions') query.type = 'question'
+    if (tab === 'discussions') query.type = 'general'
+    // tab === 'posts' => no extra filter
+
+    // ✅ Popular tab: correct sorting with aggregation (pagination-safe)
+    if (tab === 'popular') {
+      const items = await Post.aggregate([
+        { $match: query },
+        {
+          $addFields: {
+            upvotesCount: { $size: { $ifNull: ['$upvotes', []] } },
+            commentsCount: { $size: { $ifNull: ['$comments', []] } },
+          },
+        },
+        { $sort: { isPinned: -1, highlighted: -1, upvotesCount: -1, commentsCount: -1, createdAt: -1 } },
+        { $skip: skip },
+        { $limit: l },
+
+        // author
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'author',
+            foreignField: '_id',
+            as: 'author',
+          },
+        },
+        { $unwind: { path: '$author', preserveNullAndEmptyArrays: true } },
+
+        // comments + comment authors
+        {
+          $lookup: {
+            from: 'comments',
+            let: { commentIds: '$comments' },
+            pipeline: [
+              { $match: { $expr: { $in: ['$_id', '$$commentIds'] } } },
+              { $sort: { createdAt: 1 } },
+              {
+                $lookup: {
+                  from: 'users',
+                  localField: 'author',
+                  foreignField: '_id',
+                  as: 'author',
+                },
+              },
+              { $unwind: { path: '$author', preserveNullAndEmptyArrays: true } },
+              {
+                $project: {
+                  _id: 1,
+                  content: 1,
+                  anonymous: 1,
+                  isProfessional: 1,
+                  isHighlighted: 1,
+                  isRecommended: 1,
+                  isMisinfo: 1,
+                  createdAt: 1,
+                  author: {
+                    _id: '$author._id',
+                    name: '$author.name',
+                    role: '$author.role',
+                    verified: '$author.verified',
+                  },
+                },
+              },
+            ],
+            as: 'comments',
+          },
+        },
+
+        // normalize likes for old UI
+        {
+          $addFields: {
+            likes: {
+              $cond: [
+                { $gt: [{ $size: { $ifNull: ['$likes', []] } }, 0] },
+                '$likes',
+                { $ifNull: ['$upvotes', []] },
+              ],
+            },
+          },
+        },
+
+        // shrink author fields
+        {
+          $addFields: {
+            author: {
+              _id: '$author._id',
+              name: '$author.name',
+              role: '$author.role',
+              verified: '$author.verified',
+            },
+          },
+        },
+
+        { $project: { upvotesCount: 0, commentsCount: 0 } },
+      ])
+
+      return res.json(items)
+    }
+
+    // Recent/default
     const posts = await Post.find(query)
-      .sort(sortObj)
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit))
+      .sort({ isPinned: -1, highlighted: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(l)
       .populate('author', 'name role verified')
-      .populate({
-        path: 'comments',
-        populate: { path: 'author', select: 'name role verified' },
-      })
+      .populate({ path: 'comments', populate: { path: 'author', select: 'name role verified' } })
 
     const mapped = posts.map((p) => {
       const obj = p.toObject()
@@ -304,7 +422,7 @@ router.get('/categories/:id/posts', authMiddleware, async (req, res) => {
     })
 
     res.json(mapped)
-  } catch (err) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
@@ -312,19 +430,18 @@ router.get('/categories/:id/posts', authMiddleware, async (req, res) => {
 router.get('/categories/:id/circles', authMiddleware, async (req, res) => {
   try {
     const category = await Category.findById(req.params.id)
-    const circles = await Group.find({
-      conditionTag: category.name.toLowerCase().replace(' ', '-'),
-      type: 'circle',
-    })
+    if (!category) return res.status(404).json({ msg: 'Category not found' })
+
+    const tag = category.name.toLowerCase().trim().replace(/\s+/g, '-')
+    const circles = await Group.find({ conditionTag: tag, type: 'circle' })
     res.json(circles)
-  } catch (err) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
 
-/**
- * DISCUSSIONS (NEW)
- */
+/* ---------------- Discussions ---------------- */
+
 router.post('/discussions', authMiddleware, async (req, res) => {
   try {
     const { categoryId, title, body, closeAt, anonymous } = req.body
@@ -347,11 +464,12 @@ router.post('/discussions', authMiddleware, async (req, res) => {
 
     await logAudit(req, { action: 'discussion.create_request', targetType: 'discussion', targetId: d._id })
 
-    res.status(201).json({
-      msg: 'Discussion submitted — waiting admin approval',
-      discussion: d,
-    })
-  } catch (e) {
+    // notify admins (if your admin UI joins "admin" room)
+    const io = req.app.get('io')
+    if (io) io.to('admin').emit('discussion:pending', { discussionId: toId(d._id), categoryId: toId(categoryId) })
+
+    res.status(201).json({ msg: 'Discussion submitted — waiting admin approval', discussion: d })
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
@@ -360,6 +478,7 @@ router.get('/categories/:id/discussions', authMiddleware, async (req, res) => {
   try {
     const { status = 'all', page = 1, limit = 20 } = req.query
     const categoryId = req.params.id
+    const { l, skip } = pageParams(page, limit, 50)
 
     const base = { categoryId }
     const include = status === 'all'
@@ -368,22 +487,21 @@ router.get('/categories/:id/discussions', authMiddleware, async (req, res) => {
 
     const open = await Discussion.find(openQuery)
       .sort({ isPinned: -1, createdAt: -1 })
-      .skip((parseInt(page) - 1) * parseInt(limit))
-      .limit(parseInt(limit))
+      .skip(skip)
+      .limit(l)
       .populate('createdBy', 'name role verified')
 
     await Promise.all(open.map((d) => maybeAutoCloseDiscussion(d)))
 
-    // if requesting only open, skip closed
     if (status === 'open') return res.json({ open, closed: [] })
 
     const closed = await Discussion.find(closedQuery)
       .sort({ isPinned: -1, closedAt: -1, createdAt: -1 })
-      .limit(parseInt(limit))
+      .limit(l)
       .populate('createdBy', 'name role verified')
 
     res.json({ open, closed })
-  } catch (e) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
@@ -406,7 +524,7 @@ router.get('/discussions/:id', authMiddleware, async (req, res) => {
     if (dObj.anonymous) dObj.createdBy = sanitizeAnonymousUser()
 
     res.json({ discussion: dObj, comments })
-  } catch (e) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
@@ -435,8 +553,15 @@ router.post('/discussions/:id/comments', authMiddleware, async (req, res) => {
     await logAudit(req, { action: 'discussion.comment', targetType: 'discussion', targetId: d._id })
 
     const populated = await Comment.findById(c._id).populate('author', 'name role verified')
+
+    const io = req.app.get('io')
+    emitDiscussionEvent(io, d, 'discussion:newComment', {
+      ...populated.toObject(),
+      discussion: d._id,
+    })
+
     res.status(201).json(populated)
-  } catch (e) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
@@ -454,24 +579,26 @@ router.post('/discussions/:id/close', authMiddleware, async (req, res) => {
     d.status = 'closed'
     d.closedBy = req.user.id
     d.closedAt = new Date()
-
     await d.save()
+
     await logAudit(req, { action: 'discussion.close', targetType: 'discussion', targetId: d._id })
 
+    const io = req.app.get('io')
+    emitDiscussionEvent(io, d, 'discussion:closed', { discussionId: toId(d._id) })
+
     res.json({ msg: 'Discussion closed', discussion: d })
-  } catch (e) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
 
-/**
- * GROUPS/CIRCLES
- */
+/* ---------------- Groups / Circles ---------------- */
+
 router.get('/groups', authMiddleware, async (req, res) => {
   try {
     const groups = await Group.find()
     res.json(groups)
-  } catch (err) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
@@ -481,7 +608,7 @@ router.get('/groups/:id', authMiddleware, async (req, res) => {
     const group = await Group.findById(req.params.id)
     if (!group) return res.status(404).json({ msg: 'Group not found' })
     res.json(group)
-  } catch (err) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
@@ -501,7 +628,7 @@ router.post('/groups/:id/join', authMiddleware, async (req, res) => {
     }
 
     res.json(group)
-  } catch (err) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
@@ -520,26 +647,36 @@ router.get('/groups/:id/posts', authMiddleware, async (req, res) => {
     })
 
     res.json(mapped)
-  } catch (err) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
 
-/**
- * POSTS (Global)
- */
+/* ---------------- Posts: global ---------------- */
+
 router.get('/posts', authMiddleware, async (req, res) => {
   try {
-    const { type, sort, limit } = req.query
+    const { type, sort, limit = 10 } = req.query
+    const lim = Math.min(Math.max(parseInt(limit, 10) || 10, 1), 50)
+
     const query = {}
     if (type) query.type = type
 
-    let sortObj = { createdAt: -1 }
-    if (sort === 'upvoted') sortObj = { 'upvotes.length': -1 }
+    if (sort === 'upvoted') {
+      const items = await Post.aggregate([
+        { $match: query },
+        { $addFields: { upvotesCount: { $size: { $ifNull: ['$upvotes', []] } } } },
+        { $sort: { upvotesCount: -1, createdAt: -1 } },
+        { $limit: lim },
+        { $lookup: { from: 'users', localField: 'author', foreignField: '_id', as: 'author' } },
+        { $unwind: { path: '$author', preserveNullAndEmptyArrays: true } },
+      ])
+      return res.json(items)
+    }
 
     const posts = await Post.find(query)
-      .sort(sortObj)
-      .limit(parseInt(limit) || 10)
+      .sort({ createdAt: -1 })
+      .limit(lim)
       .populate('author', 'name role verified')
       .populate({ path: 'comments', populate: { path: 'author', select: 'name role verified' } })
 
@@ -550,14 +687,13 @@ router.get('/posts', authMiddleware, async (req, res) => {
     })
 
     res.json(mapped)
-  } catch (err) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
 
-/**
- * FIXED ORDER: trending + related must be BEFORE /posts/:id
- */
+/* --- trending + related must be BEFORE /posts/:id --- */
+
 router.get('/posts/trending', async (req, res) => {
   try {
     const sevenDaysAgo = new Date()
@@ -576,13 +712,18 @@ router.get('/posts/trending', async (req, res) => {
           category: 1,
           comments: { $size: '$comments' },
           upvotes: { $size: '$upvotes' },
-          author: { name: 1, role: 1, verified: 1 },
+          author: {
+            _id: '$author._id',
+            name: '$author.name',
+            role: '$author.role',
+            verified: '$author.verified',
+          },
         },
       },
     ])
 
     res.json(posts)
-  } catch (err) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
@@ -602,15 +743,13 @@ router.get('/posts/related/:id', authMiddleware, async (req, res) => {
     ])
 
     res.json(related)
-  } catch (err) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
 
-/**
- * Create post (patients cannot set urgency or proType)
- * Professionals can set proType (advice/general/lesson)
- */
+/* ---------------- Create post ---------------- */
+
 router.post('/posts', authMiddleware, upload.single('media'), async (req, res) => {
   try {
     if (!req.body.title || !req.body.body) {
@@ -620,7 +759,6 @@ router.post('/posts', authMiddleware, upload.single('media'), async (req, res) =
     const io = req.app.get('io')
     const { title, body, groupId, categoryId, anonymous, type, proType } = req.body
 
-    // validate forum category lock if posting in a category
     if (categoryId) {
       const cat = await ensureForumCategoryWritable(categoryId, req, res)
       if (!cat) return
@@ -628,8 +766,6 @@ router.post('/posts', authMiddleware, upload.single('media'), async (req, res) =
 
     const isProf = ['doctor', 'chw'].includes(req.user.role) && req.user.verified
     const isPatient = req.user.role === 'patient'
-
-    // patients: no urgency control, always general
     const urgency = isPatient ? 'general' : req.body.urgency || 'general'
 
     const postData = {
@@ -644,7 +780,6 @@ router.post('/posts', authMiddleware, upload.single('media'), async (req, res) =
       proType: isProf && proType ? proType : null,
     }
 
-    // keyword flagging (system triage)
     const matched = detectUrgentKeywords(`${title} ${body}`)
     if (matched.length) {
       postData.flaggedByKeywords = true
@@ -662,18 +797,23 @@ router.post('/posts', authMiddleware, upload.single('media'), async (req, res) =
 
     const populated = await Post.findById(post._id).populate('author', 'name role verified')
 
-    if (groupId) io.to(groupId).emit('newPost', populated)
-    else if (categoryId) io.to(`category_${categoryId}`).emit('newPost', populated)
+    // Group.jsx expects newPost in group room
+    if (groupId) io.to(toId(groupId)).emit('newPost', populated)
+
+    // category live room (future)
+    if (categoryId) io.to(`category_${toId(categoryId)}`).emit('newPost', populated)
+
+    // also emit via helper for consistency
+    emitPostEvent(io, post, 'newPost', populated)
 
     res.status(201).json(populated)
-  } catch (err) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
 
-/**
- * Get single post and increment views
- */
+/* ---------------- Single post ---------------- */
+
 router.get('/posts/:id', authMiddleware, async (req, res) => {
   try {
     const post = await Post.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } }, { new: true })
@@ -686,20 +826,19 @@ router.get('/posts/:id', authMiddleware, async (req, res) => {
     obj.likes = Array.isArray(obj.likes) && obj.likes.length ? obj.likes : obj.upvotes || []
 
     res.json(obj)
-  } catch (err) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
 
-/**
- * Admin pin/unpin posts (kept)
- */
+/* ---------------- Admin pin/unpin ---------------- */
+
 router.post('/posts/:id/pin', authMiddleware, async (req, res) => {
   try {
     if (!req.user.isAdmin) return res.status(403).json({ msg: 'Admin access required' })
     const post = await Post.findByIdAndUpdate(req.params.id, { isPinned: true }, { new: true })
     res.json(post)
-  } catch (err) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
@@ -709,16 +848,16 @@ router.post('/posts/:id/unpin', authMiddleware, async (req, res) => {
     if (!req.user.isAdmin) return res.status(403).json({ msg: 'Admin access required' })
     const post = await Post.findByIdAndUpdate(req.params.id, { isPinned: false }, { new: true })
     res.json(post)
-  } catch (err) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
 
-/**
- * Upvote post toggle (kept) + keeps likes in sync for old frontend
- */
+/* ---------------- Upvote / Like (Group.jsx depends on postLiked) ---------------- */
+
 router.post('/posts/:id/upvote', authMiddleware, async (req, res) => {
   try {
+    const io = req.app.get('io')
     const post = await Post.findById(req.params.id)
     if (!post) return res.status(404).json({ msg: 'Post not found' })
 
@@ -728,7 +867,7 @@ router.post('/posts/:id/upvote', authMiddleware, async (req, res) => {
     if (idx === -1) post.upvotes.push(req.user.id)
     else post.upvotes.splice(idx, 1)
 
-    // sync likes
+    // keep likes in sync for older UI
     const idx2 = post.likes.findIndex((id) => id.toString() === userId)
     if (idx2 === -1) post.likes.push(req.user.id)
     else post.likes.splice(idx2, 1)
@@ -736,18 +875,22 @@ router.post('/posts/:id/upvote', authMiddleware, async (req, res) => {
     await post.save()
     await logAudit(req, { action: 'post.upvote_toggle', targetType: 'post', targetId: post._id })
 
+    // 🔥 LIVE: Group.jsx listens for postLiked
+    emitPostEvent(io, post, 'postLiked', {
+      postId: toId(post._id),
+      likes: post.likes,
+      upvotes: post.upvotes,
+    })
+
     res.json({ upvotes: post.upvotes, likes: post.likes })
-  } catch (err) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
 
-/**
- * Compatibility alias: /posts/:id/like (Group.jsx uses it)
- */
 router.post('/posts/:id/like', authMiddleware, async (req, res) => {
-  // same as upvote
   try {
+    const io = req.app.get('io')
     const r = await Post.findById(req.params.id)
     if (!r) return res.status(404).json({ msg: 'Post not found' })
 
@@ -765,19 +908,24 @@ router.post('/posts/:id/like', authMiddleware, async (req, res) => {
     await r.save()
     await logAudit(req, { action: 'post.like_toggle', targetType: 'post', targetId: r._id })
 
+    // 🔥 LIVE: Group.jsx listens for postLiked
+    emitPostEvent(io, r, 'postLiked', {
+      postId: toId(r._id),
+      likes: r.likes,
+      upvotes: r.upvotes,
+    })
+
     res.json({ likes: r.likes, upvotes: r.upvotes })
-  } catch (e) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
 
-/**
- * Professional-only: mark helpful (distinct from upvote)
- * - only verified professionals
- * - cannot mark own post
- */
+/* ---------------- Helpful / highlight ---------------- */
+
 router.post('/posts/:id/mark-helpful', authMiddleware, isProfessional, async (req, res) => {
   try {
+    const io = req.app.get('io')
     const post = await Post.findById(req.params.id).populate('author', '_id')
     if (!post) return res.status(404).json({ msg: 'Post not found' })
 
@@ -793,21 +941,20 @@ router.post('/posts/:id/mark-helpful', authMiddleware, isProfessional, async (re
 
     await post.save()
     await User.findByIdAndUpdate(req.user.id, { $inc: { reputation: 1 } })
-
     await logAudit(req, { action: 'post.helpful_toggle', targetType: 'post', targetId: post._id })
 
+    emitPostEvent(io, post, 'post:helpful', { postId: toId(post._id), helpful: post.helpful })
+
     res.json({ helpful: post.helpful })
-  } catch (e) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
 
-/**
- * Backward-compatible: /posts/:id/helpful (your frontend uses it)
- */
 router.post('/posts/:id/helpful', authMiddleware, isProfessional, async (req, res) => {
-  // proxy to mark-helpful logic
+  // backward compatible alias
   try {
+    const io = req.app.get('io')
     const post = await Post.findById(req.params.id).populate('author', '_id')
     if (!post) return res.status(404).json({ msg: 'Post not found' })
 
@@ -823,20 +970,19 @@ router.post('/posts/:id/helpful', authMiddleware, isProfessional, async (req, re
 
     await post.save()
     await User.findByIdAndUpdate(req.user.id, { $inc: { reputation: 1 } })
-
     await logAudit(req, { action: 'post.helpful_toggle', targetType: 'post', targetId: post._id })
 
+    emitPostEvent(io, post, 'post:helpful', { postId: toId(post._id), helpful: post.helpful })
+
     res.json({ helpful: post.helpful })
-  } catch (e) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
 
-/**
- * Professional-only: highlight own post
- */
 router.post('/posts/:id/highlight', authMiddleware, isProfessional, async (req, res) => {
   try {
+    const io = req.app.get('io')
     const post = await Post.findById(req.params.id)
     if (!post) return res.status(404).json({ msg: 'Post not found' })
 
@@ -851,17 +997,16 @@ router.post('/posts/:id/highlight', authMiddleware, isProfessional, async (req, 
     await post.save()
     await logAudit(req, { action: 'post.highlight_toggle', targetType: 'post', targetId: post._id })
 
+    emitPostEvent(io, post, 'post:highlight', { postId: toId(post._id), highlighted: post.highlighted })
+
     res.json({ highlighted: post.highlighted })
-  } catch (e) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
 
-/**
- * Report post:
- * - keeps old Post.reports
- * - also creates unified Report document for moderation queue
- */
+/* ---------------- Reports ---------------- */
+
 router.post('/posts/:id/report', authMiddleware, async (req, res) => {
   try {
     const { reason } = req.body
@@ -885,293 +1030,15 @@ router.post('/posts/:id/report', authMiddleware, async (req, res) => {
 
     await logAudit(req, { action: 'report.create', targetType: 'post', targetId: post._id })
 
-    res.json({ reports: post.reports })
-  } catch (e) {
-    res.status(500).json({ msg: 'Server error' })
-  }
-})
-
-/**
- * Create comment on a post
- */
-router.post('/posts/:id/comments', authMiddleware, async (req, res) => {
-  try {
     const io = req.app.get('io')
-    const { content, anonymous } = req.body
-    if (!content?.trim()) return res.status(400).json({ msg: 'Content required' })
+    if (io) io.to('admin').emit('report:new', { contentType: 'post', contentId: toId(post._id) })
 
-    const comment = await Comment.create({
-      content: content.trim(),
-      author: req.user.id,
-      post: req.params.id,
-      anonymous: anonymous === 'true' || !!anonymous,
-      isProfessional: ['doctor', 'chw'].includes(req.user.role) && req.user.verified,
-    })
-
-    const post = await Post.findById(req.params.id)
-    post.comments.push(comment._id)
-    await post.save()
-
-    const populatedComment = await Comment.findById(comment._id).populate('author', 'name role verified')
-    io.to(post.group?.toString() || `category_${post.category?.toString()}`).emit('newComment', {
-      ...populatedComment.toObject(),
-      post: post._id,
-    })
-
-    await logAudit(req, { action: 'post.comment', targetType: 'post', targetId: post._id })
-
-    res.status(201).json(populatedComment)
-  } catch (e) {
+    res.json({ reports: post.reports })
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
 
-/**
- * Compatibility alias: /posts/:id/comment (your Post.jsx currently calls it)
- */
-router.post('/posts/:id/comment', authMiddleware, async (req, res) => {
-  // proxy to /comments
-  try {
-    const { content, anonymous } = req.body
-    if (!content?.trim()) return res.status(400).json({ msg: 'Content required' })
-
-    const comment = await Comment.create({
-      content: content.trim(),
-      author: req.user.id,
-      post: req.params.id,
-      anonymous: anonymous === 'true' || !!anonymous,
-      isProfessional: ['doctor', 'chw'].includes(req.user.role) && req.user.verified,
-    })
-
-    const post = await Post.findById(req.params.id)
-    post.comments.push(comment._id)
-    await post.save()
-
-    const populatedComment = await Comment.findById(comment._id).populate('author', 'name role verified')
-    await logAudit(req, { action: 'post.comment', targetType: 'post', targetId: post._id })
-
-    res.status(201).json(populatedComment)
-  } catch (e) {
-    res.status(500).json({ msg: 'Server error' })
-  }
-})
-
-router.get('/posts/:id/comments', authMiddleware, async (req, res) => {
-  try {
-    const comments = await Comment.find({ post: req.params.id })
-      .populate('author', 'name role verified')
-      .sort({ createdAt: 1 })
-    res.json(comments)
-  } catch (e) {
-    res.status(500).json({ msg: 'Server error' })
-  }
-})
-
-/**
- * Comment moderation (kept + improved security)
- */
-router.post('/comments/:id/highlight', authMiddleware, isDoctor, async (req, res) => {
-  try {
-    const comment = await Comment.findByIdAndUpdate(req.params.id, { isHighlighted: true }, { new: true })
-    res.json(comment)
-  } catch (e) {
-    res.status(500).json({ msg: 'Server error' })
-  }
-})
-
-router.post('/comments/:id/professional', authMiddleware, isDoctor, async (req, res) => {
-  try {
-    const comment = await Comment.findByIdAndUpdate(req.params.id, { isProfessional: true }, { new: true })
-    res.json(comment)
-  } catch (e) {
-    res.status(500).json({ msg: 'Server error' })
-  }
-})
-
-router.post('/comments/:id/recommended', authMiddleware, isCHW, async (req, res) => {
-  try {
-    const comment = await Comment.findByIdAndUpdate(req.params.id, { isRecommended: true }, { new: true })
-    res.json(comment)
-  } catch (e) {
-    res.status(500).json({ msg: 'Server error' })
-  }
-})
-
-router.post('/comments/:id/misinfo', authMiddleware, isDoctor, async (req, res) => {
-  try {
-    const comment = await Comment.findByIdAndUpdate(req.params.id, { isMisinfo: true }, { new: true })
-    res.json(comment)
-  } catch (e) {
-    res.status(500).json({ msg: 'Server error' })
-  }
-})
-
-/**
- * Escalate post (CHW) -> doctors attention queue
- */
-router.post('/posts/:id/escalate', authMiddleware, isCHW, async (req, res) => {
-  try {
-    const post = await Post.findById(req.params.id)
-    if (!post) return res.status(404).json({ msg: 'Post not found' })
-
-    if (!post.escalatedBy.includes(req.user.id)) {
-      post.escalatedBy.push(req.user.id)
-    }
-    post.needsAttention = true
-
-    await post.save()
-    await logAudit(req, { action: 'post.escalate', targetType: 'post', targetId: post._id })
-
-    res.json(post)
-  } catch (e) {
-    res.status(500).json({ msg: 'Server error' })
-  }
-})
-
-/**
- * Doctor resolves/handles (legacy)
- */
-router.post('/posts/:id/resolve', authMiddleware, isDoctor, async (req, res) => {
-  try {
-    const post = await Post.findByIdAndUpdate(req.params.id, { isResolved: true, needsAttention: false }, { new: true })
-    res.json(post)
-  } catch (e) {
-    res.status(500).json({ msg: 'Server error' })
-  }
-})
-
-/**
- * ASK-AN-EXPERT (NEW)
- * - Post-based question: only patients can ask, only on professional posts (doctor/chw verified)
- * POST /forum/posts/:id/question
- */
-router.post('/posts/:id/question', authMiddleware, async (req, res) => {
-  try {
-    const { body, anonymous } = req.body
-    if (!body || !body.trim()) return res.status(400).json({ msg: 'Question body required' })
-
-    // only normal users can ask here
-    if (req.user.role !== 'patient') {
-      return res.status(403).json({ msg: 'Only normal users can ask questions on professional posts' })
-    }
-
-    const post = await Post.findById(req.params.id).populate('author', 'role verified')
-    if (!post) return res.status(404).json({ msg: 'Post not found' })
-
-    const isProPost = ['doctor', 'chw'].includes(post.author.role) && post.author.verified
-    if (!isProPost) return res.status(403).json({ msg: 'Questions can only be asked on professional posts' })
-
-    // category lock applies
-    if (post.category) {
-      const cat = await ensureForumCategoryWritable(post.category, req, res)
-      if (!cat) return
-    }
-
-    const q = await Question.create({
-      categoryId: post.category,
-      postId: post._id,
-      postOwner: post.author._id,
-      askedBy: req.user.id,
-      body: body.trim(),
-      anonymous: !!anonymous,
-    })
-
-    await logAudit(req, { action: 'question.create_on_post', targetType: 'question', targetId: q._id })
-
-    res.status(201).json({ msg: 'Question submitted', question: q })
-  } catch (e) {
-    res.status(500).json({ msg: 'Server error' })
-  }
-})
-
-/**
- * General Ask-an-Expert (NEW)
- * POST /forum/questions
- * body: { categoryId, body, anonymous }
- */
-router.post('/questions', authMiddleware, async (req, res) => {
-  try {
-    const { categoryId, body, anonymous } = req.body
-    if (!categoryId || !body || !body.trim()) {
-      return res.status(400).json({ msg: 'categoryId and body required' })
-    }
-
-    // only normal users for general question queue
-    if (req.user.role !== 'patient') {
-      return res.status(403).json({ msg: 'Only normal users can submit general questions' })
-    }
-
-    const cat = await ensureForumCategoryWritable(categoryId, req, res)
-    if (!cat) return
-
-    const q = await Question.create({
-      categoryId,
-      postId: null,
-      postOwner: null,
-      askedBy: req.user.id,
-      body: body.trim(),
-      anonymous: !!anonymous,
-    })
-
-    await logAudit(req, { action: 'question.create_general', targetType: 'question', targetId: q._id })
-
-    res.status(201).json({ msg: 'Question submitted', question: q })
-  } catch (e) {
-    res.status(500).json({ msg: 'Server error' })
-  }
-})
-
-/**
- * Replies tab helpers:
- * - GET /forum/categories/:id/replies  (answered questions in category)
- * - GET /forum/posts/:id/replies       (answered questions for a post)
- */
-router.get('/categories/:id/replies', authMiddleware, async (req, res) => {
-  try {
-    const { page = 1, limit = 20 } = req.query
-    const items = await Question.find({ categoryId: req.params.id, status: 'answered' })
-      .sort({ answeredAt: -1 })
-      .skip((parseInt(page) - 1) * parseInt(limit))
-      .limit(parseInt(limit))
-      .populate('askedBy', 'name role verified')
-      .populate('answeredBy', 'name role verified')
-      .populate('postId', 'title author')
-
-    const mapped = items.map((q) => {
-      const obj = q.toObject()
-      if (obj.anonymous) obj.askedBy = sanitizeAnonymousUser()
-      return obj
-    })
-
-    res.json(mapped)
-  } catch (e) {
-    res.status(500).json({ msg: 'Server error' })
-  }
-})
-
-router.get('/posts/:id/replies', authMiddleware, async (req, res) => {
-  try {
-    const items = await Question.find({ postId: req.params.id, status: 'answered' })
-      .sort({ answeredAt: -1 })
-      .populate('askedBy', 'name role verified')
-      .populate('answeredBy', 'name role verified')
-
-    const mapped = items.map((q) => {
-      const obj = q.toObject()
-      if (obj.anonymous) obj.askedBy = sanitizeAnonymousUser()
-      return obj
-    })
-
-    res.json(mapped)
-  } catch (e) {
-    res.status(500).json({ msg: 'Server error' })
-  }
-})
-
-/**
- * Unified reports endpoint (NEW): POST /forum/reports
- * body: { contentType, contentId, reason }
- */
 router.post('/reports', authMiddleware, async (req, res) => {
   try {
     const { contentType, contentId, reason } = req.body
@@ -1191,29 +1058,303 @@ router.post('/reports', authMiddleware, async (req, res) => {
 
     await logAudit(req, { action: 'report.create', targetType: contentType, targetId: contentId })
 
+    const io = req.app.get('io')
+    if (io) io.to('admin').emit('report:new', { contentType, contentId: toId(contentId) })
+
     res.status(201).json(report)
-  } catch (e) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
 
-/**
- * Admin-only: Get reported posts (kept for your existing Admin UI)
- */
+/* ---------------- Comments ---------------- */
+
+router.post('/posts/:id/comments', authMiddleware, async (req, res) => {
+  try {
+    const io = req.app.get('io')
+    const { content, anonymous } = req.body
+    if (!content?.trim()) return res.status(400).json({ msg: 'Content required' })
+
+    const post = await Post.findById(req.params.id)
+    if (!post) return res.status(404).json({ msg: 'Post not found' })
+
+    const comment = await Comment.create({
+      content: content.trim(),
+      author: req.user.id,
+      post: req.params.id,
+      anonymous: anonymous === 'true' || !!anonymous,
+      isProfessional: ['doctor', 'chw'].includes(req.user.role) && req.user.verified,
+    })
+
+    post.comments.push(comment._id)
+    await post.save()
+
+    const populatedComment = await Comment.findById(comment._id).populate('author', 'name role verified')
+
+    emitPostEvent(io, post, 'newComment', {
+      ...populatedComment.toObject(),
+      post: post._id,
+    })
+
+    await logAudit(req, { action: 'post.comment', targetType: 'post', targetId: post._id })
+
+    res.status(201).json(populatedComment)
+  } catch {
+    res.status(500).json({ msg: 'Server error' })
+  }
+})
+
+router.post('/posts/:id/comment', authMiddleware, async (req, res) => {
+  // compatibility alias
+  try {
+    const io = req.app.get('io')
+    const { content, anonymous } = req.body
+    if (!content?.trim()) return res.status(400).json({ msg: 'Content required' })
+
+    const post = await Post.findById(req.params.id)
+    if (!post) return res.status(404).json({ msg: 'Post not found' })
+
+    const comment = await Comment.create({
+      content: content.trim(),
+      author: req.user.id,
+      post: req.params.id,
+      anonymous: anonymous === 'true' || !!anonymous,
+      isProfessional: ['doctor', 'chw'].includes(req.user.role) && req.user.verified,
+    })
+
+    post.comments.push(comment._id)
+    await post.save()
+
+    const populatedComment = await Comment.findById(comment._id).populate('author', 'name role verified')
+
+    emitPostEvent(io, post, 'newComment', {
+      ...populatedComment.toObject(),
+      post: post._id,
+    })
+
+    await logAudit(req, { action: 'post.comment', targetType: 'post', targetId: post._id })
+
+    res.status(201).json(populatedComment)
+  } catch {
+    res.status(500).json({ msg: 'Server error' })
+  }
+})
+
+router.get('/posts/:id/comments', authMiddleware, async (req, res) => {
+  try {
+    const comments = await Comment.find({ post: req.params.id })
+      .populate('author', 'name role verified')
+      .sort({ createdAt: 1 })
+    res.json(comments)
+  } catch {
+    res.status(500).json({ msg: 'Server error' })
+  }
+})
+
+/* ---------------- Comment moderation ---------------- */
+
+router.post('/comments/:id/highlight', authMiddleware, isDoctor, async (req, res) => {
+  try {
+    const comment = await Comment.findByIdAndUpdate(req.params.id, { isHighlighted: true }, { new: true })
+    res.json(comment)
+  } catch {
+    res.status(500).json({ msg: 'Server error' })
+  }
+})
+
+router.post('/comments/:id/professional', authMiddleware, isDoctor, async (req, res) => {
+  try {
+    const comment = await Comment.findByIdAndUpdate(req.params.id, { isProfessional: true }, { new: true })
+    res.json(comment)
+  } catch {
+    res.status(500).json({ msg: 'Server error' })
+  }
+})
+
+router.post('/comments/:id/recommended', authMiddleware, isCHW, async (req, res) => {
+  try {
+    const comment = await Comment.findByIdAndUpdate(req.params.id, { isRecommended: true }, { new: true })
+    res.json(comment)
+  } catch {
+    res.status(500).json({ msg: 'Server error' })
+  }
+})
+
+router.post('/comments/:id/misinfo', authMiddleware, isDoctor, async (req, res) => {
+  try {
+    const comment = await Comment.findByIdAndUpdate(req.params.id, { isMisinfo: true }, { new: true })
+    res.json(comment)
+  } catch {
+    res.status(500).json({ msg: 'Server error' })
+  }
+})
+
+/* ---------------- Escalation / resolve ---------------- */
+
+router.post('/posts/:id/escalate', authMiddleware, isCHW, async (req, res) => {
+  try {
+    const io = req.app.get('io')
+    const post = await Post.findById(req.params.id)
+    if (!post) return res.status(404).json({ msg: 'Post not found' })
+
+    if (!post.escalatedBy.includes(req.user.id)) post.escalatedBy.push(req.user.id)
+    post.needsAttention = true
+
+    await post.save()
+    await logAudit(req, { action: 'post.escalate', targetType: 'post', targetId: post._id })
+
+    emitPostEvent(io, post, 'post:attention', { postId: toId(post._id), needsAttention: true })
+    res.json(post)
+  } catch {
+    res.status(500).json({ msg: 'Server error' })
+  }
+})
+
+router.post('/posts/:id/resolve', authMiddleware, isDoctor, async (req, res) => {
+  try {
+    const io = req.app.get('io')
+    const post = await Post.findByIdAndUpdate(
+      req.params.id,
+      { isResolved: true, needsAttention: false },
+      { new: true }
+    )
+    if (!post) return res.status(404).json({ msg: 'Post not found' })
+
+    emitPostEvent(io, post, 'post:resolved', { postId: toId(post._id), isResolved: true, needsAttention: false })
+    res.json(post)
+  } catch {
+    res.status(500).json({ msg: 'Server error' })
+  }
+})
+
+/* ---------------- Ask-an-expert ---------------- */
+
+router.post('/posts/:id/question', authMiddleware, async (req, res) => {
+  try {
+    const { body, anonymous } = req.body
+    if (!body || !body.trim()) return res.status(400).json({ msg: 'Question body required' })
+
+    if (req.user.role !== 'patient') {
+      return res.status(403).json({ msg: 'Only normal users can ask questions on professional posts' })
+    }
+
+    const post = await Post.findById(req.params.id).populate('author', 'role verified')
+    if (!post) return res.status(404).json({ msg: 'Post not found' })
+
+    const isProPost = ['doctor', 'chw'].includes(post.author.role) && post.author.verified
+    if (!isProPost) return res.status(403).json({ msg: 'Questions can only be asked on professional posts' })
+
+    if (post.category) {
+      const cat = await ensureForumCategoryWritable(post.category, req, res)
+      if (!cat) return
+    }
+
+    const q = await Question.create({
+      categoryId: post.category,
+      postId: post._id,
+      postOwner: post.author._id,
+      askedBy: req.user.id,
+      body: body.trim(),
+      anonymous: !!anonymous,
+    })
+
+    await logAudit(req, { action: 'question.create_on_post', targetType: 'question', targetId: q._id })
+    res.status(201).json({ msg: 'Question submitted', question: q })
+  } catch {
+    res.status(500).json({ msg: 'Server error' })
+  }
+})
+
+router.post('/questions', authMiddleware, async (req, res) => {
+  try {
+    const { categoryId, body, anonymous } = req.body
+    if (!categoryId || !body || !body.trim()) {
+      return res.status(400).json({ msg: 'categoryId and body required' })
+    }
+
+    if (req.user.role !== 'patient') {
+      return res.status(403).json({ msg: 'Only normal users can submit general questions' })
+    }
+
+    const cat = await ensureForumCategoryWritable(categoryId, req, res)
+    if (!cat) return
+
+    const q = await Question.create({
+      categoryId,
+      postId: null,
+      postOwner: null,
+      askedBy: req.user.id,
+      body: body.trim(),
+      anonymous: !!anonymous,
+    })
+
+    await logAudit(req, { action: 'question.create_general', targetType: 'question', targetId: q._id })
+
+    res.status(201).json({ msg: 'Question submitted', question: q })
+  } catch {
+    res.status(500).json({ msg: 'Server error' })
+  }
+})
+
+/* ---------------- Replies helpers ---------------- */
+
+router.get('/categories/:id/replies', authMiddleware, async (req, res) => {
+  try {
+    const { page = 1, limit = 20 } = req.query
+    const { l, skip } = pageParams(page, limit, 50)
+
+    const items = await Question.find({ categoryId: req.params.id, status: 'answered' })
+      .sort({ answeredAt: -1 })
+      .skip(skip)
+      .limit(l)
+      .populate('askedBy', 'name role verified')
+      .populate('answeredBy', 'name role verified')
+      .populate('postId', 'title author')
+
+    const mapped = items.map((q) => {
+      const obj = q.toObject()
+      if (obj.anonymous) obj.askedBy = sanitizeAnonymousUser()
+      return obj
+    })
+
+    res.json(mapped)
+  } catch {
+    res.status(500).json({ msg: 'Server error' })
+  }
+})
+
+router.get('/posts/:id/replies', authMiddleware, async (req, res) => {
+  try {
+    const items = await Question.find({ postId: req.params.id, status: 'answered' })
+      .sort({ answeredAt: -1 })
+      .populate('askedBy', 'name role verified')
+      .populate('answeredBy', 'name role verified')
+
+    const mapped = items.map((q) => {
+      const obj = q.toObject()
+      if (obj.anonymous) obj.askedBy = sanitizeAnonymousUser()
+      return obj
+    })
+
+    res.json(mapped)
+  } catch {
+    res.status(500).json({ msg: 'Server error' })
+  }
+})
+
+/* ---------------- Legacy admin support ---------------- */
+
 router.get('/reported-posts', authMiddleware, isAdmin, async (req, res) => {
   try {
     const posts = await Post.find({ 'reports.0': { $exists: true } })
       .populate('author', 'name role verified')
       .populate('reports.user', 'name')
     res.json(posts)
-  } catch (e) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
 
-/**
- * Delete Post (Admin Only) - kept
- */
 router.post('/posts/:id/delete-post', authMiddleware, isAdmin, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id)
@@ -1223,21 +1364,20 @@ router.post('/posts/:id/delete-post', authMiddleware, isAdmin, async (req, res) 
     await logAudit(req, { action: 'admin.delete_post', targetType: 'post', targetId: req.params.id })
 
     res.json({ msg: 'Post deleted successfully' })
-  } catch (e) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
 
-/**
- * MESSAGES
- */
+/* ---------------- Group chat messages ---------------- */
+
 router.get('/groups/:id/messages', authMiddleware, async (req, res) => {
   try {
     const messages = await Message.find({ group: req.params.id })
       .populate('author', 'name')
       .sort({ createdAt: 1 })
     res.json(messages)
-  } catch (e) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
@@ -1258,15 +1398,13 @@ router.post('/groups/:id/messages', authMiddleware, async (req, res) => {
     io.to(req.params.id).emit('message', populated)
 
     res.status(201).json(populated)
-  } catch (e) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
 
-/**
- * Legacy endpoints used by your current DoctorConsole/CHWConsole pages
- * (kept so you don't break before frontend refactor)
- */
+/* ---------------- Legacy Doctor/CHW endpoints ---------------- */
+
 router.get('/urgent-posts', authMiddleware, isDoctor, async (req, res) => {
   try {
     const posts = await Post.find({
@@ -1278,7 +1416,7 @@ router.get('/urgent-posts', authMiddleware, isDoctor, async (req, res) => {
       .populate('category', 'name description isLocked')
 
     res.json(posts)
-  } catch (e) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
@@ -1298,7 +1436,7 @@ router.get('/unanswered-questions', authMiddleware, isDoctor, async (req, res) =
     })
 
     res.json(mapped)
-  } catch (e) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
@@ -1308,7 +1446,7 @@ router.get('/doctor-stats', authMiddleware, isDoctor, async (req, res) => {
     const answered = await Question.countDocuments({ answeredBy: req.user.id, status: 'answered' })
     const urgentHandled = await Post.countDocuments({ needsAttention: false, escalatedBy: { $in: [req.user.id] } })
     res.json({ totalAnswers: answered, urgentHandled })
-  } catch (e) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
@@ -1322,7 +1460,7 @@ router.get('/attention-posts', authMiddleware, isCHW, async (req, res) => {
       .populate('category', 'name description isLocked')
 
     res.json(posts)
-  } catch (e) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
@@ -1335,7 +1473,7 @@ router.get('/my-escalations', authMiddleware, isCHW, async (req, res) => {
       .populate('author', 'name role verified')
       .populate('category', 'name description isLocked')
     res.json(posts)
-  } catch (e) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })
@@ -1345,7 +1483,7 @@ router.get('/chw-stats', authMiddleware, isCHW, async (req, res) => {
     const escalations = await Post.countDocuments({ escalatedBy: { $in: [req.user.id] } })
     const postsSupported = await Comment.countDocuments({ author: req.user.id })
     res.json({ postsSupported, escalations })
-  } catch (e) {
+  } catch {
     res.status(500).json({ msg: 'Server error' })
   }
 })

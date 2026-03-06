@@ -1,11 +1,15 @@
 // FILE: backend/src/controllers/adminController.js
 const User = require('../models/User')
+
+
 const Post = require('../models/Post')
 const Category = require('../models/Category')
 const Discussion = require('../models/Discussion')
 const Report = require('../models/Report')
 const bcrypt = require('bcryptjs')
 const { logAudit } = require('../utils/audit')
+const { notifyUser } = require('../utils/notify')
+const AuditLog = require('../models/AuditLog')
 
 const createUser = async (req, res, next) => {
   try {
@@ -143,6 +147,13 @@ const approveDiscussion = async (req, res, next) => {
     }
 
     await d.save()
+    await notifyUser(req, d.createdBy, {
+  type: 'discussion.approved',
+  title: 'Discussion approved',
+  message: 'Your discussion is now live in the category.',
+  link: `/discussion/${d._id.toString()}`,
+  metadata: { discussionId: d._id.toString(), categoryId: d.categoryId.toString() },
+})
     await logAudit(req, { action: 'admin.approve_discussion', targetType: 'discussion', targetId: d._id })
 
     res.json({ msg: 'Discussion approved', discussion: d })
@@ -155,6 +166,13 @@ const rejectDiscussion = async (req, res, next) => {
   try {
     const d = await Discussion.findById(req.params.id)
     if (!d) return res.status(404).json({ msg: 'Discussion not found' })
+      await notifyUser(req, d.createdBy, {
+  type: 'discussion.rejected',
+  title: 'Discussion rejected',
+  message: 'Your discussion request was rejected by an admin.',
+  link: `/category/${d.categoryId.toString()}?tab=discussions`,
+  metadata: { discussionId: d._id.toString(), categoryId: d.categoryId.toString() },
+})
 
     await Discussion.findByIdAndDelete(d._id)
     await logAudit(req, { action: 'admin.reject_discussion', targetType: 'discussion', targetId: d._id })
@@ -238,6 +256,9 @@ const lockCategory = async (req, res, next) => {
     if (!c) return res.status(404).json({ msg: 'Category not found' })
 
     await logAudit(req, { action: 'admin.lock_category', targetType: 'category', targetId: c._id })
+    const io = req.app.get('io')
+if (io) io.to(`category_${c._id.toString()}`).emit('categoryUpdated', c)
+io.to('admin').emit('categoryUpdated', c)
     res.json(c)
   } catch (err) {
     next(err)
@@ -250,30 +271,113 @@ const unlockCategory = async (req, res, next) => {
     if (!c) return res.status(404).json({ msg: 'Category not found' })
 
     await logAudit(req, { action: 'admin.unlock_category', targetType: 'category', targetId: c._id })
+    const io = req.app.get('io')
+if (io) io.to(`category_${c._id.toString()}`).emit('categoryUpdated', c)
+io.to('admin').emit('categoryUpdated', c)
     res.json(c)
   } catch (err) {
     next(err)
   }
 }
 
+
+// ADD these functions anywhere in this file
+const getAuditLogs = async (req, res, next) => {
+  try {
+    const {
+      action,
+      actorId,
+      actorRole,
+      targetType,
+      targetId,
+      from,
+      to,
+      page = 1,
+      limit = 30,
+    } = req.query
+
+    const q = {}
+    if (action) q.action = action
+    if (actorId) q.actor = actorId
+    if (actorRole) q.actorRole = actorRole
+    if (targetType) q.targetType = targetType
+    if (targetId) q.targetId = targetId
+
+    if (from || to) {
+      q.createdAt = {}
+      if (from) q.createdAt.$gte = new Date(from)
+      if (to) q.createdAt.$lte = new Date(to)
+    }
+
+    const lim = Math.min(parseInt(limit) || 30, 100)
+    const skip = (parseInt(page) - 1) * lim
+
+    const items = await AuditLog.find(q)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(lim)
+      .populate('actor', 'name email role verified')
+
+    const total = await AuditLog.countDocuments(q)
+
+    res.json({
+      page: parseInt(page),
+      limit: lim,
+      total,
+      hasMore: skip + items.length < total,
+      items,
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+
+const getAuditSummary = async (req, res, next) => {
+  try {
+    // last 24h counts by action (simple but useful)
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000)
+
+    const byAction = await AuditLog.aggregate([
+      { $match: { createdAt: { $gte: since } } },
+      { $group: { _id: '$action', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 30 },
+    ])
+
+    const topActors = await AuditLog.aggregate([
+      { $match: { createdAt: { $gte: since } } },
+      { $group: { _id: '$actor', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 10 },
+    ])
+
+    res.json({ since, byAction, topActors })
+  } catch (err) {
+    next(err)
+  }
+}
+
+// In module.exports at bottom, ADD:
 module.exports = {
+  // ... your existing exports
   createUser,
   listPendingProfessionals,
   verifyProfessional,
-
   getReportedPosts,
   deletePost,
   resolveReport,
-
   listDiscussions,
   approveDiscussion,
   rejectDiscussion,
   pinDiscussion,
   unpinDiscussion,
-
   listReports,
   resolveModerationReport,
-
   lockCategory,
   unlockCategory,
+
+  // NEW:
+  getAuditLogs,
+  getAuditSummary,
 }
+

@@ -1,8 +1,8 @@
 // FILE: frontend/src/pages/Category.jsx
-import React, { useEffect, useMemo, useState } from 'react'
-import { useLocation, useParams, Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import api from '../services/api'
+import React, { useEffect, useMemo, useState, useCallback } from "react";
+import { useLocation, useParams, Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import api from "../services/api";
 import {
   AlertCircle,
   ArrowLeft,
@@ -16,319 +16,490 @@ import {
   Sparkles,
   Clock,
   CheckCircle2,
-} from 'lucide-react'
+} from "lucide-react";
+
+import { connectSocket, joinCategory, leaveCategory } from "../utils/socket";
 
 const Category = () => {
-  const { id } = useParams()
-  const location = useLocation()
+  const { id } = useParams();
+  const location = useLocation();
 
-  const qs = useMemo(() => new URLSearchParams(location.search), [location.search])
-  const initialTab = qs.get('tab') || 'posts'
+  const qs = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const initialTab = qs.get("tab") || "posts";
 
-  const [category, setCategory] = useState(null)
-  const [user, setUser] = useState(null)
+  const [category, setCategory] = useState(null);
+  const [user, setUser] = useState(null);
 
-  // Tabs required: Posts / Discussions / Replies
-  const [tab, setTab] = useState(['posts', 'discussions', 'replies'].includes(initialTab) ? initialTab : 'posts')
+  // Required tabs
+  const [tab, setTab] = useState(["posts", "discussions", "replies"].includes(initialTab) ? initialTab : "posts");
 
-  // Posts list state
-  const [postSort, setPostSort] = useState('recent') // recent | popular
-  const [posts, setPosts] = useState([])
-  const [pinnedPosts, setPinnedPosts] = useState([])
-  const [postsPage, setPostsPage] = useState(1)
-  const [postsHasMore, setPostsHasMore] = useState(true)
+  // Posts state
+  const [postSort, setPostSort] = useState("recent"); // recent | popular
+  const [posts, setPosts] = useState([]);
+  const [pinnedPosts, setPinnedPosts] = useState([]);
+  const [postsPage, setPostsPage] = useState(1);
+  const [postsHasMore, setPostsHasMore] = useState(true);
 
   // Discussions state
-  const [openDiscussions, setOpenDiscussions] = useState([])
-  const [closedDiscussions, setClosedDiscussions] = useState([])
+  const [openDiscussions, setOpenDiscussions] = useState([]);
+  const [closedDiscussions, setClosedDiscussions] = useState([]);
 
   // Replies state
-  const [replies, setReplies] = useState([])
-  const [repliesPage, setRepliesPage] = useState(1)
-  const [repliesHasMore, setRepliesHasMore] = useState(true)
+  const [replies, setReplies] = useState([]);
+  const [repliesPage, setRepliesPage] = useState(1);
+  const [repliesHasMore, setRepliesHasMore] = useState(true);
 
-  // Common
-  const [relatedCircles, setRelatedCircles] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [loadingMore, setLoadingMore] = useState(false)
-  const [error, setError] = useState('')
+  // Support circles (existing)
+  const [relatedCircles, setRelatedCircles] = useState([]);
 
-  const limit = 10
+  // Common UI state
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState("");
 
+  const limit = 10;
+
+  const isProfessionalUser = !!user && ["doctor", "chw"].includes(user.role) && user.verified;
+  const isPatientUser = !!user && user.role === "patient";
+  const categoryLocked = !!category?.isLocked;
+
+  const isProfessionalPost = (post) => {
+    const a = post?.author;
+    if (!a) return false;
+    return ["doctor", "chw"].includes(a.role) && !!a.verified;
+  };
+
+  const sanitizeAnonLabel = (u) => {
+    if (!u) return "Unknown User";
+    return `${u.name} (${u.role}${u.verified ? " • Verified" : ""})`;
+  };
+
+  // ---------------------------
+  // Helpers to update lists live
+  // ---------------------------
+  const mergePostById = useCallback((postId, patch) => {
+    setPosts((prev) => prev.map((p) => (p._id === postId ? { ...p, ...patch } : p)));
+    setPinnedPosts((prev) => prev.map((p) => (p._id === postId ? { ...p, ...patch } : p)));
+  }, []);
+
+  const addCommentToPost = useCallback((postId, comment) => {
+    const apply = (arr) =>
+      arr.map((p) => {
+        if (p._id !== postId) return p;
+        const existing = Array.isArray(p.comments) ? p.comments : [];
+        const already = existing.some((c) => c?._id === comment?._id);
+        return already ? p : { ...p, comments: [...existing, comment] };
+      });
+
+    setPosts((prev) => apply(prev));
+    setPinnedPosts((prev) => apply(prev));
+  }, []);
+
+  const prependPostIfNotExists = useCallback((post) => {
+    if (!post?._id) return;
+    if (String(post.category || "") !== String(id)) return;
+
+    // Always keep likes compatibility
+    const normalized = {
+      ...post,
+      likes: Array.isArray(post.likes) && post.likes.length ? post.likes : post.upvotes || [],
+    };
+
+    setPosts((prev) => {
+      const exists = prev.some((p) => p._id === normalized._id);
+      if (exists) return prev;
+      return [normalized, ...prev];
+    });
+
+    if (normalized.isPinned) {
+      setPinnedPosts((prev) => {
+        const exists = prev.some((p) => p._id === normalized._id);
+        if (exists) return prev;
+        return [normalized, ...prev];
+      });
+    }
+  }, [id]);
+
+  const upsertReply = useCallback((q) => {
+    if (!q?._id) return;
+    const qCat = q.categoryId?._id || q.categoryId;
+    if (String(qCat || "") !== String(id)) return;
+
+    setReplies((prev) => {
+      const exists = prev.some((x) => x._id === q._id);
+      if (exists) {
+        return prev.map((x) => (x._id === q._id ? { ...x, ...q } : x));
+      }
+      return [q, ...prev];
+    });
+  }, [id]);
+
+  const moveDiscussionToClosed = useCallback((d) => {
+    if (!d?._id) return;
+    const dCat = d.categoryId?._id || d.categoryId;
+    if (String(dCat || "") !== String(id)) return;
+
+    setOpenDiscussions((prev) => prev.filter((x) => x._id !== d._id));
+    setClosedDiscussions((prev) => {
+      const exists = prev.some((x) => x._id === d._id);
+      if (exists) return prev.map((x) => (x._id === d._id ? { ...x, ...d } : x));
+      return [{ ...d }, ...prev];
+    });
+  }, [id]);
+
+  const upsertOpenDiscussion = useCallback((d) => {
+    if (!d?._id) return;
+    const dCat = d.categoryId?._id || d.categoryId;
+    if (String(dCat || "") !== String(id)) return;
+
+    if (d.status === "closed") {
+      moveDiscussionToClosed(d);
+      return;
+    }
+
+    if (d.status !== "open") return; // we don't show waiting discussions in category page
+
+    setClosedDiscussions((prev) => prev.filter((x) => x._id !== d._id));
+    setOpenDiscussions((prev) => {
+      const exists = prev.some((x) => x._id === d._id);
+      if (exists) return prev.map((x) => (x._id === d._id ? { ...x, ...d } : x));
+      return [{ ...d }, ...prev];
+    });
+  }, [id, moveDiscussionToClosed]);
+
+  // ---------------------------
+  // Base data: profile, category, circles
+  // ---------------------------
   useEffect(() => {
-    api
-      .get('/auth/profile')
+    api.get("/auth/profile")
       .then((res) => setUser(res.data))
-      .catch(() => {})
-  }, [])
+      .catch(() => {});
+  }, []);
 
-  // Fetch category + circles once
   useEffect(() => {
+    let mounted = true;
+
     const fetchBase = async () => {
       try {
-        setLoading(true)
-        setError('')
+        setLoading(true);
+        setError("");
 
-        const resCat = await api.get(`/forum/categories/${id}`)
-        setCategory(resCat.data)
+        const resCat = await api.get(`/forum/categories/${id}`);
+        const resCircles = await api.get(`/forum/categories/${id}/circles`);
 
-        const resCircles = await api.get(`/forum/categories/${id}/circles`)
-        setRelatedCircles(resCircles.data || [])
+        if (!mounted) return;
+
+        setCategory(resCat.data);
+        setRelatedCircles(resCircles.data || []);
       } catch (e) {
-        setError('Failed to load category')
+        if (!mounted) return;
+        setError("Failed to load category");
       } finally {
-        setLoading(false)
+        if (mounted) setLoading(false);
       }
-    }
-    fetchBase()
-  }, [id])
+    };
 
+    fetchBase();
+    return () => {
+      mounted = false;
+    };
+  }, [id]);
+
+  // ---------------------------
   // Fetch tab data
-  useEffect(() => {
-    if (!id) return
-    if (tab === 'posts') fetchPosts(true)
-    if (tab === 'discussions') fetchDiscussions()
-    if (tab === 'replies') fetchReplies(true)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, tab, postSort])
-
-  const changeTab = (newTab) => {
-    setTab(newTab)
-    setError('')
-  }
-
-  const fetchPosts = async (reset = false) => {
+  // ---------------------------
+  const fetchPosts = useCallback(async (reset = false) => {
     try {
       if (reset) {
-        setPosts([])
-        setPinnedPosts([])
-        setPostsPage(1)
-        setPostsHasMore(true)
-        setLoading(true)
+        setPosts([]);
+        setPinnedPosts([]);
+        setPostsPage(1);
+        setPostsHasMore(true);
+        setLoading(true);
       } else {
-        setLoadingMore(true)
+        setLoadingMore(true);
       }
 
-      // pinned posts (admin pinned)
-      const resPinned = await api.get(`/forum/categories/${id}/posts?pinned=true`)
-      setPinnedPosts(Array.isArray(resPinned.data) ? resPinned.data : [])
+      // pinned posts
+      const resPinned = await api.get(`/forum/categories/${id}/posts?pinned=true`);
+      setPinnedPosts(Array.isArray(resPinned.data) ? resPinned.data : []);
 
-      // main list
-      const page = reset ? 1 : postsPage
-      const sortTab = postSort === 'popular' ? 'popular' : 'recent'
-      const resPosts = await api.get(`/forum/categories/${id}/posts?tab=${sortTab}&page=${page}&limit=${limit}`)
+      const page = reset ? 1 : postsPage;
+      const sortTab = postSort === "popular" ? "popular" : "recent";
+      const resPosts = await api.get(`/forum/categories/${id}/posts?tab=${sortTab}&page=${page}&limit=${limit}`);
 
-      const data = Array.isArray(resPosts.data) ? resPosts.data : []
-      setPosts((prev) => (reset ? data : [...prev, ...data]))
-      setPostsHasMore(data.length === limit)
+      const data = Array.isArray(resPosts.data) ? resPosts.data : [];
+      setPosts((prev) => (reset ? data : [...prev, ...data]));
+      setPostsHasMore(data.length === limit);
     } catch (e) {
-      setError('Failed to load posts')
+      setError("Failed to load posts");
     } finally {
-      setLoading(false)
-      setLoadingMore(false)
+      setLoading(false);
+      setLoadingMore(false);
     }
-  }
+  }, [id, limit, postSort, postsPage]);
+
+  const fetchDiscussions = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const res = await api.get(`/forum/categories/${id}/discussions`);
+      setOpenDiscussions(Array.isArray(res.data?.open) ? res.data.open : []);
+      setClosedDiscussions(Array.isArray(res.data?.closed) ? res.data.closed : []);
+    } catch (e) {
+      setError("Failed to load discussions");
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  const fetchReplies = useCallback(async (reset = false) => {
+    try {
+      if (reset) {
+        setReplies([]);
+        setRepliesPage(1);
+        setRepliesHasMore(true);
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+
+      const page = reset ? 1 : repliesPage;
+      const res = await api.get(`/forum/categories/${id}/replies?page=${page}&limit=${limit}`);
+      const data = Array.isArray(res.data) ? res.data : [];
+      setReplies((prev) => (reset ? data : [...prev, ...data]));
+      setRepliesHasMore(data.length === limit);
+    } catch (e) {
+      setError("Failed to load replies");
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [id, limit, repliesPage]);
+
+  useEffect(() => {
+    if (!id) return;
+    if (tab === "posts") fetchPosts(true);
+    if (tab === "discussions") fetchDiscussions();
+    if (tab === "replies") fetchReplies(true);
+  }, [id, tab, postSort, fetchPosts, fetchDiscussions, fetchReplies]);
 
   const loadMorePosts = async () => {
-    if (!postsHasMore || loadingMore) return
-    const next = postsPage + 1
-    setPostsPage(next)
+    if (!postsHasMore || loadingMore) return;
+    const next = postsPage + 1;
+    setPostsPage(next);
     try {
-      setLoadingMore(true)
-      const sortTab = postSort === 'popular' ? 'popular' : 'recent'
-      const resPosts = await api.get(`/forum/categories/${id}/posts?tab=${sortTab}&page=${next}&limit=${limit}`)
-      const data = Array.isArray(resPosts.data) ? resPosts.data : []
-      setPosts((prev) => [...prev, ...data])
-      setPostsHasMore(data.length === limit)
+      setLoadingMore(true);
+      const sortTab = postSort === "popular" ? "popular" : "recent";
+      const resPosts = await api.get(`/forum/categories/${id}/posts?tab=${sortTab}&page=${next}&limit=${limit}`);
+      const data = Array.isArray(resPosts.data) ? resPosts.data : [];
+      setPosts((prev) => [...prev, ...data]);
+      setPostsHasMore(data.length === limit);
     } catch (e) {
-      setError('Failed to load more posts')
+      setError("Failed to load more posts");
     } finally {
-      setLoadingMore(false)
+      setLoadingMore(false);
     }
-  }
-
-  const fetchDiscussions = async () => {
-    try {
-      setLoading(true)
-      setError('')
-      const res = await api.get(`/forum/categories/${id}/discussions`)
-      setOpenDiscussions(Array.isArray(res.data?.open) ? res.data.open : [])
-      setClosedDiscussions(Array.isArray(res.data?.closed) ? res.data.closed : [])
-    } catch (e) {
-      setError('Failed to load discussions')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const fetchReplies = async (reset = false) => {
-    try {
-      if (reset) {
-        setReplies([])
-        setRepliesPage(1)
-        setRepliesHasMore(true)
-        setLoading(true)
-      } else {
-        setLoadingMore(true)
-      }
-
-      const page = reset ? 1 : repliesPage
-      const res = await api.get(`/forum/categories/${id}/replies?page=${page}&limit=${limit}`)
-      const data = Array.isArray(res.data) ? res.data : []
-      setReplies((prev) => (reset ? data : [...prev, ...data]))
-      setRepliesHasMore(data.length === limit)
-    } catch (e) {
-      setError('Failed to load replies')
-    } finally {
-      setLoading(false)
-      setLoadingMore(false)
-    }
-  }
+  };
 
   const loadMoreReplies = async () => {
-    if (!repliesHasMore || loadingMore) return
-    const next = repliesPage + 1
-    setRepliesPage(next)
+    if (!repliesHasMore || loadingMore) return;
+    const next = repliesPage + 1;
+    setRepliesPage(next);
     try {
-      setLoadingMore(true)
-      const res = await api.get(`/forum/categories/${id}/replies?page=${next}&limit=${limit}`)
-      const data = Array.isArray(res.data) ? res.data : []
-      setReplies((prev) => [...prev, ...data])
-      setRepliesHasMore(data.length === limit)
+      setLoadingMore(true);
+      const res = await api.get(`/forum/categories/${id}/replies?page=${next}&limit=${limit}`);
+      const data = Array.isArray(res.data) ? res.data : [];
+      setReplies((prev) => [...prev, ...data]);
+      setRepliesHasMore(data.length === limit);
     } catch (e) {
-      setError('Failed to load more replies')
+      setError("Failed to load more replies");
     } finally {
-      setLoadingMore(false)
+      setLoadingMore(false);
     }
-  }
+  };
+
+  // ---------------------------
+  // LIVE SOCKETS (category room)
+  // ---------------------------
+  useEffect(() => {
+    const s = connectSocket();
+    joinCategory(id);
+
+    // Posts
+    const onNewPost = (post) => {
+      // Works because backend emits to category room
+      prependPostIfNotExists(post);
+    };
+
+    const onNewComment = (payload) => {
+      // expected payload: { ...commentFields, post: postId }
+      const postId = payload?.post;
+      if (!postId) return;
+      addCommentToPost(postId, payload);
+    };
+
+    // Likes/upvotes
+    const onPostLiked = ({ postId, likes, upvotes }) => {
+      if (!postId) return;
+      // keep both in sync
+      mergePostById(postId, { likes: likes || [], upvotes: upvotes || [] });
+    };
+
+    // Category lock/unlock updates (optional backend emit)
+    const onCategoryUpdated = (cat) => {
+      if (!cat?._id) return;
+      if (String(cat._id) !== String(id)) return;
+      setCategory(cat);
+    };
+
+    // Discussions live (optional backend emit)
+    const onDiscussionApproved = (d) => upsertOpenDiscussion(d);
+    const onDiscussionClosed = (d) => moveDiscussionToClosed(d);
+
+    // Replies live (optional backend emit)
+    const onQuestionAnswered = (q) => upsertReply(q);
+
+    s.on("newPost", onNewPost);
+    s.on("newComment", onNewComment);
+    s.on("postLiked", onPostLiked);
+
+    s.on("categoryUpdated", onCategoryUpdated);
+    s.on("discussionApproved", onDiscussionApproved);
+    s.on("discussionClosed", onDiscussionClosed);
+    s.on("questionAnswered", onQuestionAnswered);
+
+    return () => {
+      leaveCategory(id);
+      s.off("newPost", onNewPost);
+      s.off("newComment", onNewComment);
+      s.off("postLiked", onPostLiked);
+
+      s.off("categoryUpdated", onCategoryUpdated);
+      s.off("discussionApproved", onDiscussionApproved);
+      s.off("discussionClosed", onDiscussionClosed);
+      s.off("questionAnswered", onQuestionAnswered);
+    };
+  }, [id, prependPostIfNotExists, addCommentToPost, mergePostById, upsertOpenDiscussion, moveDiscussionToClosed, upsertReply]);
+
+  // ---------------------------
+  // UI actions
+  // ---------------------------
+  const changeTab = (newTab) => {
+    setTab(newTab);
+    setError("");
+  };
 
   const handleJoinCircle = async (circleId) => {
     try {
-      await api.post(`/forum/groups/${circleId}/join`)
-      alert('Joined successfully')
+      await api.post(`/forum/groups/${circleId}/join`);
+      alert("Joined successfully");
     } catch {
-      alert('Failed to join')
+      alert("Failed to join");
     }
-  }
+  };
 
-  const updatePost = (postId, updates) => {
-    setPosts((prev) => prev.map((p) => (p._id === postId ? { ...p, ...updates } : p)))
-    setPinnedPosts((prev) => prev.map((p) => (p._id === postId ? { ...p, ...updates } : p)))
-  }
-
-  const isProfessionalUser = !!user && ['doctor', 'chw'].includes(user.role) && user.verified
-  const isPatientUser = !!user && user.role === 'patient'
-  const categoryLocked = !!category?.isLocked
-
-  const isProfessionalPost = (post) => {
-    const a = post?.author
-    if (!a) return false
-    return ['doctor', 'chw'].includes(a.role) && !!a.verified
-  }
-
+  // ---------------------------
+  // Cards
+  // ---------------------------
   const PostCard = ({ post }) => {
-    const upvoted = user && post.upvotes?.some((pid) => pid?.toString?.() === user._id?.toString?.())
-    const helpfulMarked = user && post.helpful?.some((pid) => pid?.toString?.() === user._id?.toString?.())
+    const upvoted =
+      user && (post.upvotes || []).some((pid) => pid?.toString?.() === user._id?.toString?.());
 
-    const [comments, setComments] = useState(post.comments || [])
-    const [commentText, setCommentText] = useState('')
-    const [asking, setAsking] = useState(false)
-    const [questionText, setQuestionText] = useState('')
-    const [questionAnon, setQuestionAnon] = useState(false)
-    const [questionLoading, setQuestionLoading] = useState(false)
+    const helpfulMarked =
+      user && (post.helpful || []).some((pid) => pid?.toString?.() === user._id?.toString?.());
 
-    const proPost = isProfessionalPost(post)
+    const [commentText, setCommentText] = useState("");
+    const [asking, setAsking] = useState(false);
+    const [questionText, setQuestionText] = useState("");
+    const [questionAnon, setQuestionAnon] = useState(false);
+    const [questionLoading, setQuestionLoading] = useState(false);
 
-    const canAskOnPost = isPatientUser && proPost
-    const canMarkHelpful = isProfessionalUser && post?.author?._id?.toString?.() !== user?._id?.toString?.()
-    const canHighlightOwn = isProfessionalUser && post?.author?._id?.toString?.() === user?._id?.toString?.()
+    const proPost = isProfessionalPost(post);
+
+    const canAskOnPost = isPatientUser && proPost;
+    const canMarkHelpful = isProfessionalUser && post?.author?._id?.toString?.() !== user?._id?.toString?.();
+    const canHighlightOwn = isProfessionalUser && post?.author?._id?.toString?.() === user?._id?.toString?.();
 
     const handleUpvote = async () => {
-      const res = await api.post(`/forum/posts/${post._id}/upvote`)
-      updatePost(post._id, { upvotes: res.data.upvotes })
-    }
+      const res = await api.post(`/forum/posts/${post._id}/upvote`);
+      // optimistic local update (broadcast comes via socket for others)
+      mergePostById(post._id, { upvotes: res.data.upvotes, likes: res.data.likes || res.data.upvotes });
+    };
 
     const handleHelpful = async () => {
-      const res = await api.post(`/forum/posts/${post._id}/mark-helpful`)
-      updatePost(post._id, { helpful: res.data.helpful })
-    }
+      const res = await api.post(`/forum/posts/${post._id}/mark-helpful`);
+      mergePostById(post._id, { helpful: res.data.helpful });
+    };
 
     const handleHighlight = async () => {
-      const res = await api.post(`/forum/posts/${post._id}/highlight`)
-      updatePost(post._id, { highlighted: res.data.highlighted })
-    }
+      const res = await api.post(`/forum/posts/${post._id}/highlight`);
+      mergePostById(post._id, { highlighted: res.data.highlighted });
+    };
 
     const handleReport = async () => {
-      const reason = window.prompt('Reason for reporting?')
-      if (!reason) return
-      await api.post(`/forum/posts/${post._id}/report`, { reason })
-      alert('Reported successfully')
-    }
+      const reason = window.prompt("Reason for reporting?");
+      if (!reason) return;
+      await api.post(`/forum/posts/${post._id}/report`, { reason });
+      alert("Reported successfully");
+    };
 
     const handleComment = async (e) => {
-      e.preventDefault()
-      if (!commentText.trim()) return
-      const res = await api.post(`/forum/posts/${post._id}/comments`, { content: commentText })
-      setComments([...comments, res.data])
-      setCommentText('')
-    }
+      e.preventDefault();
+      if (!commentText.trim()) return;
+
+      // Do NOT keep local comments state — socket will push the comment
+      await api.post(`/forum/posts/${post._id}/comments`, { content: commentText });
+      setCommentText("");
+    };
 
     const submitQuestion = async () => {
-      if (!questionText.trim()) return
+      if (!questionText.trim()) return;
       try {
-        setQuestionLoading(true)
+        setQuestionLoading(true);
         await api.post(`/forum/posts/${post._id}/question`, {
           body: questionText,
           anonymous: questionAnon,
-        })
-        setQuestionText('')
-        setQuestionAnon(false)
-        setAsking(false)
-        alert('Question sent to the professional. It will appear in Replies after it is answered.')
+        });
+        setQuestionText("");
+        setQuestionAnon(false);
+        setAsking(false);
+        alert("Question sent. It will appear in Replies after it is answered.");
       } catch (e) {
-        alert(e.response?.data?.msg || 'Failed to submit question')
+        alert(e.response?.data?.msg || "Failed to submit question");
       } finally {
-        setQuestionLoading(false)
+        setQuestionLoading(false);
       }
-    }
+    };
 
     const authorLabel = post.anonymous
-      ? 'Anonymous'
+      ? "Anonymous"
       : post.author
-        ? `${post.author.name} (${post.author.role}${post.author.verified ? ' • Verified' : ''})`
-        : 'Unknown User'
+      ? sanitizeAnonLabel(post.author)
+      : "Unknown User";
 
     const proBadge = proPost ? (
-      <span className="ml-2 text-xs px-2 py-1 rounded-full bg-indigo-100 text-indigo-700">
-        Professional
-      </span>
-    ) : null
+      <span className="ml-2 text-xs px-2 py-1 rounded-full bg-indigo-100 text-indigo-700">Professional</span>
+    ) : null;
 
     const helpfulBadge =
       (post.helpful?.length || 0) > 0 ? (
-        <span className="ml-2 text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">
-          Helpful
-        </span>
-      ) : null
+        <span className="ml-2 text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">Helpful</span>
+      ) : null;
 
-    const highlightBadge =
-      post.highlighted ? (
-        <span className="ml-2 text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">
-          Highlighted
-        </span>
-      ) : null
+    const highlightBadge = post.highlighted ? (
+      <span className="ml-2 text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">Highlighted</span>
+    ) : null;
 
-    const proTypeBadge =
-      post.proType ? (
-        <span className="ml-2 text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">
-          {String(post.proType).toUpperCase()}
-        </span>
-      ) : null
+    const proTypeBadge = post.proType ? (
+      <span className="ml-2 text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">
+        {String(post.proType).toUpperCase()}
+      </span>
+    ) : null;
 
-    const cardClass =
-      proPost
-        ? 'glass-card p-4 border border-indigo-200 bg-white/50'
-        : 'glass-card p-4'
+    const cardClass = proPost
+      ? "glass-card p-4 border border-indigo-200 bg-white/50"
+      : "glass-card p-4";
 
     return (
       <div className={cardClass}>
@@ -358,16 +529,14 @@ const Category = () => {
           )}
         </div>
 
-        {/* Post body preview */}
         <p className="mt-3 text-gray-700 whitespace-pre-wrap">
           {post.body?.length > 280 ? `${post.body.slice(0, 280)}...` : post.body}
         </p>
 
-        {/* Actions row */}
         <div className="flex flex-wrap gap-4 mt-3 text-sm items-center">
           <button
             onClick={handleUpvote}
-            className={upvoted ? 'text-blue-500 flex items-center gap-1' : 'flex items-center gap-1'}
+            className={upvoted ? "text-blue-500 flex items-center gap-1" : "flex items-center gap-1"}
           >
             <ArrowUp size={16} />
             {post.upvotes?.length || 0}
@@ -376,7 +545,7 @@ const Category = () => {
           {canMarkHelpful && (
             <button
               onClick={handleHelpful}
-              className={helpfulMarked ? 'text-green-600 flex items-center gap-1' : 'flex items-center gap-1'}
+              className={helpfulMarked ? "text-green-600 flex items-center gap-1" : "flex items-center gap-1"}
             >
               <ThumbsUp size={16} />
               Helpful ({post.helpful?.length || 0})
@@ -386,13 +555,13 @@ const Category = () => {
           {canHighlightOwn && (
             <button onClick={handleHighlight} className="flex items-center gap-1 text-yellow-700">
               <Sparkles size={16} />
-              {post.highlighted ? 'Unhighlight' : 'Highlight'}
+              {post.highlighted ? "Unhighlight" : "Highlight"}
             </button>
           )}
 
           <span className="flex items-center gap-1">
             <MessageCircle size={16} />
-            {comments.length}
+            {(post.comments || []).length}
           </span>
 
           <button onClick={handleReport} className="flex items-center gap-1 text-red-500">
@@ -401,7 +570,7 @@ const Category = () => {
           </button>
         </div>
 
-        {/* Ask question inline panel */}
+        {/* Ask question panel */}
         {asking && canAskOnPost && (
           <div className="mt-4 border rounded-xl p-3 bg-white/60">
             <p className="text-sm text-gray-700 mb-2">
@@ -414,11 +583,7 @@ const Category = () => {
               placeholder="Type your question..."
             />
             <label className="flex items-center gap-2 mt-2 text-sm">
-              <input
-                type="checkbox"
-                checked={questionAnon}
-                onChange={(e) => setQuestionAnon(e.target.checked)}
-              />
+              <input type="checkbox" checked={questionAnon} onChange={(e) => setQuestionAnon(e.target.checked)} />
               Ask anonymously
             </label>
             <div className="flex gap-2 mt-3">
@@ -428,7 +593,7 @@ const Category = () => {
                 disabled={questionLoading || !questionText.trim()}
                 className="btn-primary"
               >
-                {questionLoading ? 'Sending...' : 'Send Question'}
+                {questionLoading ? "Sending..." : "Send Question"}
               </button>
               <button
                 type="button"
@@ -443,14 +608,14 @@ const Category = () => {
 
         {/* Comments preview + add comment */}
         <div className="mt-4">
-          {comments.slice(0, 3).map((c) => (
+          {(post.comments || []).slice(0, 3).map((c) => (
             <div key={c._id} className="border-l pl-3 mt-2">
               <p className="text-sm text-gray-700">
                 {c.anonymous
-                  ? 'Anonymous'
+                  ? "Anonymous"
                   : c.author
-                    ? `${c.author.name} (${c.author.role}${c.author.verified ? ' • Verified' : ''})`
-                    : 'Unknown User'}
+                  ? sanitizeAnonLabel(c.author)
+                  : "Unknown User"}
                 {c.isProfessional ? (
                   <span className="ml-2 text-xs px-2 py-1 rounded-full bg-indigo-100 text-indigo-700">
                     Professional opinion
@@ -481,20 +646,19 @@ const Category = () => {
           )}
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   const DiscussionCard = ({ d }) => {
-    const status = d.status
-    const isClosed = status === 'closed'
-    const isWaiting = status === 'waiting'
-    const isOpen = status === 'open'
+    const isClosed = d.status === "closed";
+    const isWaiting = d.status === "waiting";
+    const isOpen = d.status === "open";
 
     const createdByLabel = d.anonymous
-      ? 'Anonymous'
+      ? "Anonymous"
       : d.createdBy
-        ? `${d.createdBy.name} (${d.createdBy.role}${d.createdBy.verified ? ' • Verified' : ''})`
-        : 'Unknown'
+      ? sanitizeAnonLabel(d.createdBy)
+      : "Unknown";
 
     const statusBadge = isWaiting ? (
       <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">Waiting approval</span>
@@ -502,7 +666,7 @@ const Category = () => {
       <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">Open</span>
     ) : (
       <span className="text-xs px-2 py-1 rounded-full bg-gray-200 text-gray-700">Closed</span>
-    )
+    );
 
     return (
       <div className="glass-card p-4">
@@ -527,25 +691,21 @@ const Category = () => {
           {d.body?.length > 240 ? `${d.body.slice(0, 240)}...` : d.body}
         </p>
 
-        {isClosed && (
-          <p className="text-xs text-gray-500 mt-2">
-            Closed discussions are read-only.
-          </p>
-        )}
+        {isClosed && <p className="text-xs text-gray-500 mt-2">Closed discussions are read-only.</p>}
       </div>
-    )
-  }
+    );
+  };
 
   const ReplyCard = ({ q }) => {
     const askedByLabel = q.anonymous
-      ? 'Anonymous'
+      ? "Anonymous"
       : q.askedBy
-        ? `${q.askedBy.name} (${q.askedBy.role}${q.askedBy.verified ? ' • Verified' : ''})`
-        : 'Unknown'
+      ? sanitizeAnonLabel(q.askedBy)
+      : "Unknown";
 
     const answeredByLabel = q.answeredBy
-      ? `${q.answeredBy.name} (${q.answeredBy.role}${q.answeredBy.verified ? ' • Verified' : ''})`
-      : 'Professional'
+      ? sanitizeAnonLabel(q.answeredBy)
+      : "Professional";
 
     return (
       <div className="glass-card p-4">
@@ -579,10 +739,10 @@ const Category = () => {
           </p>
         ) : null}
       </div>
-    )
-  }
+    );
+  };
 
-  if (loading && !category) return <p>Loading...</p>
+  if (loading && !category) return <p>Loading...</p>;
 
   if (error)
     return (
@@ -590,7 +750,7 @@ const Category = () => {
         <AlertCircle className="mr-2" />
         {error}
       </p>
-    )
+    );
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 space-y-6">
@@ -606,7 +766,7 @@ const Category = () => {
         </div>
       </div>
 
-      {/* Safety Disclaimer */}
+      {/* Disclaimer */}
       <div className="bg-yellow-100 p-4 rounded-lg flex items-center">
         <AlertTriangle className="mr-2 text-yellow-600" />
         <p className="text-yellow-800">
@@ -614,7 +774,7 @@ const Category = () => {
         </p>
       </div>
 
-      {/* Category lock banner */}
+      {/* Lock banner */}
       {categoryLocked && (
         <div className="bg-red-100 p-4 rounded-lg">
           <p className="text-red-700 font-medium">
@@ -623,19 +783,17 @@ const Category = () => {
         </div>
       )}
 
-      {/* Required Tabs */}
+      {/* Tabs */}
       <div className="flex gap-3 overflow-x-auto">
         {[
-          { key: 'posts', label: 'Posts' },
-          { key: 'discussions', label: 'Discussions' },
-          { key: 'replies', label: 'Replies' },
+          { key: "posts", label: "Posts" },
+          { key: "discussions", label: "Discussions" },
+          { key: "replies", label: "Replies" },
         ].map((t) => (
           <button
             key={t.key}
             onClick={() => changeTab(t.key)}
-            className={`px-4 py-2 rounded-full ${
-              tab === t.key ? 'bg-primary text-white' : 'bg-gray-200'
-            }`}
+            className={`px-4 py-2 rounded-full ${tab === t.key ? "bg-primary text-white" : "bg-gray-200"}`}
           >
             {t.label}
           </button>
@@ -643,18 +801,18 @@ const Category = () => {
       </div>
 
       {/* Actions per tab */}
-      {tab === 'posts' && (
+      {tab === "posts" && (
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setPostSort('recent')}
-              className={`px-4 py-2 rounded-full ${postSort === 'recent' ? 'bg-gray-900 text-white' : 'bg-gray-200'}`}
+              onClick={() => setPostSort("recent")}
+              className={`px-4 py-2 rounded-full ${postSort === "recent" ? "bg-gray-900 text-white" : "bg-gray-200"}`}
             >
               Recent
             </button>
             <button
-              onClick={() => setPostSort('popular')}
-              className={`px-4 py-2 rounded-full ${postSort === 'popular' ? 'bg-gray-900 text-white' : 'bg-gray-200'}`}
+              onClick={() => setPostSort("popular")}
+              className={`px-4 py-2 rounded-full ${postSort === "popular" ? "bg-gray-900 text-white" : "bg-gray-200"}`}
             >
               Popular
             </button>
@@ -662,7 +820,7 @@ const Category = () => {
 
           <Link
             to={`/category/${id}/create-post?mode=post`}
-            className={`btn-primary flex items-center justify-center gap-2 ${categoryLocked ? 'opacity-50 pointer-events-none' : ''}`}
+            className={`btn-primary flex items-center justify-center gap-2 ${categoryLocked ? "opacity-50 pointer-events-none" : ""}`}
           >
             <Plus size={16} />
             Create Post
@@ -670,11 +828,11 @@ const Category = () => {
         </div>
       )}
 
-      {tab === 'discussions' && (
+      {tab === "discussions" && (
         <div className="flex flex-wrap items-center gap-3">
           <Link
             to={`/category/${id}/create-post?mode=discussion`}
-            className={`btn-primary flex items-center justify-center gap-2 ${categoryLocked ? 'opacity-50 pointer-events-none' : ''}`}
+            className={`btn-primary flex items-center justify-center gap-2 ${categoryLocked ? "opacity-50 pointer-events-none" : ""}`}
           >
             <Plus size={16} />
             Start a Discussion
@@ -682,11 +840,11 @@ const Category = () => {
         </div>
       )}
 
-      {tab === 'replies' && (
+      {tab === "replies" && (
         <div className="flex flex-wrap items-center gap-3">
           <Link
             to={`/category/${id}/create-post?mode=ask`}
-            className={`btn-primary flex items-center justify-center gap-2 ${categoryLocked ? 'opacity-50 pointer-events-none' : ''}`}
+            className={`btn-primary flex items-center justify-center gap-2 ${categoryLocked ? "opacity-50 pointer-events-none" : ""}`}
           >
             <HelpCircle size={16} />
             Ask an Expert
@@ -695,9 +853,8 @@ const Category = () => {
       )}
 
       {/* Content */}
-      {tab === 'posts' && (
+      {tab === "posts" && (
         <>
-          {/* Pinned Posts */}
           {pinnedPosts.length > 0 && (
             <div className="space-y-4">
               <h2 className="text-xl font-bold">Pinned</h2>
@@ -707,7 +864,6 @@ const Category = () => {
             </div>
           )}
 
-          {/* Posts Feed */}
           <div className="space-y-4">
             {posts.length === 0 && !loading ? (
               <p className="text-center text-gray-600">No posts yet.</p>
@@ -726,7 +882,7 @@ const Category = () => {
         </>
       )}
 
-      {tab === 'discussions' && (
+      {tab === "discussions" && (
         <div className="space-y-6">
           <div className="space-y-4">
             <h2 className="text-xl font-bold">Open Discussions</h2>
@@ -748,7 +904,7 @@ const Category = () => {
         </div>
       )}
 
-      {tab === 'replies' && (
+      {tab === "replies" && (
         <div className="space-y-4">
           {replies.length === 0 && !loading ? (
             <p className="text-center text-gray-600">No replies yet.</p>
@@ -766,7 +922,7 @@ const Category = () => {
         </div>
       )}
 
-      {/* Support Circles */}
+      {/* Circles */}
       <div className="glass-card p-4">
         <h2 className="text-xl font-bold mb-4">Related Support Circles</h2>
 
@@ -785,7 +941,7 @@ const Category = () => {
         {relatedCircles.length === 0 && <p>No related circles yet.</p>}
       </div>
     </motion.div>
-  )
-}
+  );
+};
 
-export default Category
+export default Category;
