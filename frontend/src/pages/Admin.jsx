@@ -26,8 +26,8 @@ import {
   PlusCircle,
   Trash2,
   UserCheck,
+  HeartPulse,
 } from "lucide-react";
-
 import { connectSocket, joinAdmin, leaveAdmin } from "../utils/socket";
 
 const fmt = (d) => {
@@ -37,11 +37,9 @@ const fmt = (d) => {
     return "";
   }
 };
-
 const pill = (cls, text) => (
   <span className={`text-xs px-2 py-1 rounded-full border ${cls}`}>{text}</span>
 );
-
 const circleStatusPill = (status) => {
   if (status === "approved") {
     return pill("bg-green-50 border-green-200 text-green-700", "approved");
@@ -54,23 +52,16 @@ const circleStatusPill = (status) => {
 
 export default function Admin() {
   const [tab, setTab] = useState("reports");
-  // reports | reported-posts | discussions | professionals | categories | circles | live-sessions | audit | videos
-
+  // reports | reported-posts | discussions | professionals | categories | circles | live-sessions | audit | videos | public-health
   const [loading, setLoading] = useState(false);
   const [joinRequestsLoading, setJoinRequestsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Reports queue
+  // ==================== EXISTING STATES ====================
   const [reports, setReports] = useState([]);
-
-  // Legacy reported posts
   const [reportedPosts, setReportedPosts] = useState([]);
-
-  // Discussions approval
   const [pendingDiscussions, setPendingDiscussions] = useState([]);
-
-  // Professionals verification
   const [pendingPros, setPendingPros] = useState([]);
   const [newProf, setNewProf] = useState({
     name: "",
@@ -78,11 +69,7 @@ export default function Admin() {
     password: "",
     role: "doctor",
   });
-
-  // Categories lock/unlock
   const [forumCategories, setForumCategories] = useState([]);
-
-  // Circles management
   const [circles, setCircles] = useState([]);
   const [circleStatusFilter, setCircleStatusFilter] = useState("all");
   const [newCircle, setNewCircle] = useState({
@@ -91,17 +78,11 @@ export default function Admin() {
     conditionTag: "",
     privacy: "private",
   });
-
-  // Circle join requests
   const [selectedCircleIdForRequests, setSelectedCircleIdForRequests] = useState("");
   const [circleJoinRequests, setCircleJoinRequests] = useState([]);
-
-  // Live sessions monitor
   const [liveSessions, setLiveSessions] = useState([]);
   const [selectedLiveId, setSelectedLiveId] = useState("");
   const [liveSessionDetail, setLiveSessionDetail] = useState(null);
-
-  // Audit
   const [auditItems, setAuditItems] = useState([]);
   const [auditTotal, setAuditTotal] = useState(0);
   const [auditPage, setAuditPage] = useState(1);
@@ -109,8 +90,6 @@ export default function Admin() {
   const [auditQuery, setAuditQuery] = useState("");
   const [auditAction, setAuditAction] = useState("");
   const [auditTargetType, setAuditTargetType] = useState("");
-
-  // Videos
   const [videos, setVideos] = useState([]);
   const [videoCategories, setVideoCategories] = useState([]);
   const [newVideo, setNewVideo] = useState({
@@ -121,15 +100,15 @@ export default function Admin() {
   });
   const [uploadProgress, setUploadProgress] = useState(0);
   const [previewURL, setPreviewURL] = useState("");
-
-  // Live activity sidebar
   const [activityFeed, setActivityFeed] = useState([]);
 
-  const selectedCircleForRequests = useMemo(
-    () =>
-      circles.find((circle) => String(circle._id) === String(selectedCircleIdForRequests)) || null,
-    [circles, selectedCircleIdForRequests]
-  );
+  // ==================== NEW: PUBLIC HEALTH HUB STATES ====================
+  const [phTab, setPhTab] = useState("campaigns");
+  const [phCampaigns, setPhCampaigns] = useState([]);
+  const [phNews, setPhNews] = useState([]);
+  const [phTips, setPhTips] = useState([]);
+  const [phEvents, setPhEvents] = useState([]);
+  const [phPendingQuestions, setPhPendingQuestions] = useState([]);
 
   // ---------------- Fetchers ----------------
   const fetchReports = useCallback(async () => {
@@ -204,7 +183,6 @@ export default function Admin() {
       const res = await api.get(`/forum/circles?status=${circleStatusFilter}`);
       const items = Array.isArray(res.data) ? res.data : [];
       setCircles(items);
-
       if (
         selectedCircleIdForRequests &&
         !items.some((circle) => String(circle._id) === String(selectedCircleIdForRequests))
@@ -224,7 +202,6 @@ export default function Admin() {
       setCircleJoinRequests([]);
       return;
     }
-
     setJoinRequestsLoading(true);
     setError("");
     try {
@@ -246,11 +223,9 @@ export default function Admin() {
       const res = await api.get("/forum/live-sessions?status=live");
       const items = Array.isArray(res.data) ? res.data : [];
       setLiveSessions(items);
-
       if (!selectedLiveId && items[0]?._id) {
         setSelectedLiveId(items[0]._id);
       }
-
       if (
         selectedLiveId &&
         !items.some((item) => String(item._id) === String(selectedLiveId))
@@ -272,7 +247,6 @@ export default function Admin() {
         setLiveSessionDetail(null);
         return;
       }
-
       setLoading(true);
       setError("");
       try {
@@ -296,16 +270,13 @@ export default function Admin() {
         const params = new URLSearchParams();
         params.set("page", String(p));
         params.set("limit", String(auditLimit));
-
         if (auditQuery.trim()) params.set("q", auditQuery.trim());
         if (auditAction.trim()) params.set("action", auditAction.trim());
         if (auditTargetType.trim()) params.set("targetType", auditTargetType.trim());
-
         const res = await api.get(`/admin/audit-logs?${params.toString()}`);
         setAuditItems(Array.isArray(res.data?.items) ? res.data.items : []);
         setAuditTotal(res.data?.total || 0);
         setAuditPage(res.data?.page || p);
-
         if (p === 1) {
           setActivityFeed(Array.isArray(res.data?.items) ? res.data.items.slice(0, 12) : []);
         }
@@ -340,6 +311,59 @@ export default function Admin() {
     }
   }, []);
 
+  // ---------------- NEW PUBLIC HEALTH FETCHERS ----------------
+  const fetchPhCampaigns = useCallback(async () => {
+    try {
+      const res = await api.get("/public-health/manage/campaigns");
+      setPhCampaigns(Array.isArray(res.data) ? res.data : res.data.items || []);
+    } catch (e) {}
+  }, []);
+
+  const fetchPhNews = useCallback(async () => {
+    try {
+      const res = await api.get("/public-health/manage/news");
+      setPhNews(Array.isArray(res.data) ? res.data : res.data.items || []);
+    } catch (e) {}
+  }, []);
+
+  const fetchPhTips = useCallback(async () => {
+    try {
+      const res = await api.get("/public-health/manage/tips");
+      setPhTips(Array.isArray(res.data) ? res.data : res.data.items || []);
+    } catch (e) {}
+  }, []);
+
+  const fetchPhEvents = useCallback(async () => {
+    try {
+      const res = await api.get("/public-health/manage/events");
+      setPhEvents(Array.isArray(res.data) ? res.data : res.data.items || []);
+    } catch (e) {}
+  }, []);
+
+  const fetchPhPendingQuestions = useCallback(async () => {
+    try {
+      const res = await api.get("/public-health/manage/questions?status=pending");
+      setPhPendingQuestions(Array.isArray(res.data) ? res.data : []);
+    } catch (e) {}
+  }, []);
+
+  const fetchPublicHealth = useCallback(async () => {
+    setLoading(true);
+    try {
+      await Promise.all([
+        fetchPhCampaigns(),
+        fetchPhNews(),
+        fetchPhTips(),
+        fetchPhEvents(),
+        fetchPhPendingQuestions(),
+      ]);
+    } catch (e) {
+      setError("Failed to load Public Health data");
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchPhCampaigns, fetchPhNews, fetchPhTips, fetchPhEvents, fetchPhPendingQuestions]);
+
   // ---------------- Current tab refresh ----------------
   const refreshCurrentTab = useCallback(() => {
     if (tab === "reports") return fetchReports();
@@ -363,7 +387,9 @@ export default function Admin() {
     if (tab === "videos") {
       fetchVideos();
       fetchVideoCategories();
+      return;
     }
+    if (tab === "public-health") return fetchPublicHealth();
   }, [
     tab,
     selectedLiveId,
@@ -380,6 +406,7 @@ export default function Admin() {
     fetchAudit,
     fetchVideos,
     fetchVideoCategories,
+    fetchPublicHealth,
   ]);
 
   useEffect(() => {
@@ -403,13 +430,11 @@ export default function Admin() {
 
     const onAuditNew = (log) => {
       if (!log?._id) return;
-
       setActivityFeed((prev) => {
         const exists = prev.some((x) => String(x._id) === String(log._id));
         if (exists) return prev;
         return [log, ...prev].slice(0, 12);
       });
-
       if (tab === "audit" && auditPage === 1) {
         setAuditItems((prev) => {
           const exists = prev.some((x) => String(x._id) === String(log._id));
@@ -418,9 +443,7 @@ export default function Admin() {
         });
         setAuditTotal((t) => t + 1);
       }
-
       const action = String(log.action || "");
-
       if (action.includes("admin.lock_category") || action.includes("admin.unlock_category")) {
         fetchForumCategories();
       }
@@ -443,6 +466,9 @@ export default function Admin() {
       if (action.includes("report.create")) {
         fetchReports();
       }
+      if (action.includes("publicHealth")) {
+        if (tab === "public-health") fetchPublicHealth();
+      }
     };
 
     const onCategoryUpdated = (cat) => {
@@ -464,6 +490,10 @@ export default function Admin() {
       if (selectedLiveId) fetchLiveSessionDetail(selectedLiveId);
     };
 
+    const onPublicHealthUpdate = () => {
+      if (tab === "public-health") fetchPublicHealth();
+    };
+
     s.on("audit:new", onAuditNew);
     s.on("categoryUpdated", onCategoryUpdated);
     s.on("circle:pending", onCircleChanged);
@@ -476,6 +506,7 @@ export default function Admin() {
     s.on("liveSession:updated", onLiveChanged);
     s.on("liveSession:ended", onLiveChanged);
     s.on("liveSession:state", onLiveChanged);
+    s.on("publicHealth:update", onPublicHealthUpdate);
 
     return () => {
       leaveAdmin();
@@ -491,6 +522,7 @@ export default function Admin() {
       s.off("liveSession:updated", onLiveChanged);
       s.off("liveSession:ended", onLiveChanged);
       s.off("liveSession:state", onLiveChanged);
+      s.off("publicHealth:update", onPublicHealthUpdate);
     };
   }, [
     tab,
@@ -506,6 +538,7 @@ export default function Admin() {
     fetchReports,
     fetchLiveSessions,
     fetchLiveSessionDetail,
+    fetchPublicHealth,
   ]);
 
   // ---------------- Actions ----------------
@@ -601,7 +634,6 @@ export default function Admin() {
     e.preventDefault();
     setError("");
     setSuccess("");
-
     try {
       await api.post("/forum/circles", {
         name: newCircle.name.trim(),
@@ -609,14 +641,12 @@ export default function Admin() {
         conditionTag: newCircle.conditionTag.trim(),
         privacy: newCircle.privacy,
       });
-
       setNewCircle({
         name: "",
         description: "",
         conditionTag: "",
         privacy: "private",
       });
-
       fetchCircles();
       setSuccess("Circle created successfully");
     } catch (err) {
@@ -661,7 +691,6 @@ export default function Admin() {
     setError("");
     setSuccess("");
     if (!window.confirm("Are you sure you want to delete this circle?")) return;
-
     try {
       await api.delete(`/forum/circles/${id}`);
       if (selectedCircleIdForRequests === id) {
@@ -681,7 +710,6 @@ export default function Admin() {
       setCircleJoinRequests([]);
       return;
     }
-
     setSelectedCircleIdForRequests(circleId);
     await fetchCircleJoinRequests(circleId, true);
   };
@@ -690,7 +718,6 @@ export default function Admin() {
     const note = window.prompt("Approval note (optional):") || "";
     setError("");
     setSuccess("");
-
     try {
       await api.patch(`/forum/circles/${circleId}/join-requests/${requestId}/approve`, { note });
       await fetchCircleJoinRequests(circleId, true);
@@ -705,7 +732,6 @@ export default function Admin() {
     const note = window.prompt("Rejection note (optional):") || "";
     setError("");
     setSuccess("");
-
     try {
       await api.patch(`/forum/circles/${circleId}/join-requests/${requestId}/reject`, { note });
       await fetchCircleJoinRequests(circleId, true);
@@ -752,19 +778,16 @@ export default function Admin() {
     setError("");
     setSuccess("");
     setUploadProgress(0);
-
     if (!newVideo.file) {
       setError("Please select a video file");
       return;
     }
-
     setLoading(true);
     const formData = new FormData();
     formData.append("title", newVideo.title);
     formData.append("description", newVideo.description);
     formData.append("category", newVideo.category);
     formData.append("video", newVideo.file);
-
     try {
       await api.post("/videos/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -798,6 +821,79 @@ export default function Admin() {
     }
   };
 
+  // ---------------- NEW PUBLIC HEALTH ACTIONS ----------------
+  const archiveCampaign = async (id) => {
+    setError("");
+    setSuccess("");
+    try {
+      await api.patch(`/public-health/manage/campaigns/${id}/archive`);
+      fetchPhCampaigns();
+      setSuccess("Campaign archived");
+    } catch (err) {
+      setError(err.response?.data?.msg || "Archive failed");
+    }
+  };
+
+  const publishNews = async (id) => {
+    setError("");
+    setSuccess("");
+    try {
+      await api.patch(`/public-health/manage/news/${id}/publish`);
+      fetchPhNews();
+      setSuccess("News published");
+    } catch (err) {
+      setError(err.response?.data?.msg || "Publish failed");
+    }
+  };
+
+  const startLiveEvent = async (id) => {
+    setError("");
+    setSuccess("");
+    try {
+      await api.post(`/public-health/manage/events/${id}/start`);
+      fetchPhEvents();
+      setSuccess("Live event started");
+    } catch (err) {
+      setError(err.response?.data?.msg || "Start failed");
+    }
+  };
+
+  const endLiveEvent = async (id) => {
+    setError("");
+    setSuccess("");
+    try {
+      await api.post(`/public-health/manage/events/${id}/end`);
+      fetchPhEvents();
+      setSuccess("Live event ended");
+    } catch (err) {
+      setError(err.response?.data?.msg || "End failed");
+    }
+  };
+
+  const approveQuestion = async (questionId) => {
+    setError("");
+    setSuccess("");
+    try {
+      await api.patch(`/public-health/manage/questions/${questionId}/approve`);
+      fetchPhPendingQuestions();
+      setSuccess("Question approved");
+    } catch (err) {
+      setError(err.response?.data?.msg || "Approve failed");
+    }
+  };
+
+  const rejectQuestion = async (questionId) => {
+    setError("");
+    setSuccess("");
+    try {
+      await api.patch(`/public-health/manage/questions/${questionId}/reject`);
+      fetchPhPendingQuestions();
+      setSuccess("Question rejected");
+    } catch (err) {
+      setError(err.response?.data?.msg || "Reject failed");
+    }
+  };
+
   // ---------------- Tabs ----------------
   const tabs = useMemo(
     () => [
@@ -810,6 +906,7 @@ export default function Admin() {
       { id: "live-sessions", label: "Live Sessions", icon: Radio },
       { id: "audit", label: "Audit Logs", icon: FileText },
       { id: "videos", label: "Manage Videos", icon: Video },
+      { id: "public-health", label: "Public Health Hub", icon: HeartPulse },
     ],
     []
   );
@@ -828,7 +925,6 @@ export default function Admin() {
             Moderation, circle management, live session monitoring, verification, and audit logs.
           </p>
         </div>
-
         <button
           onClick={refreshCurrentTab}
           className="px-4 py-2 rounded-xl bg-gray-900 text-white hover:bg-gray-800 flex items-center gap-2"
@@ -845,7 +941,6 @@ export default function Admin() {
           {error}
         </div>
       )}
-
       {success && (
         <div className="glass-card p-4 border border-green-200 bg-green-50/50 text-green-700 flex items-center gap-2">
           <CheckCircle2 size={18} />
@@ -854,10 +949,9 @@ export default function Admin() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Left */}
+        {/* Left Sidebar */}
         <div className="glass-card p-4 lg:col-span-1">
           <p className="text-xs uppercase tracking-wide text-gray-500 mb-3">Navigation</p>
-
           <div className="space-y-2">
             {tabs.map((t) => (
               <button
@@ -874,12 +968,10 @@ export default function Admin() {
               </button>
             ))}
           </div>
-
           <div className="mt-6 border-t border-white/40 pt-4">
             <p className="text-xs uppercase tracking-wide text-gray-500 mb-2 flex items-center gap-2">
               <UserPlus size={14} /> Create Professional
             </p>
-
             <form onSubmit={handleCreateProf} className="space-y-2">
               <input
                 className="input-field"
@@ -912,7 +1004,6 @@ export default function Admin() {
                 <option value="doctor">Doctor</option>
                 <option value="chw">CHW</option>
               </select>
-
               <button
                 className="btn-primary w-full flex items-center justify-center gap-2"
                 type="submit"
@@ -924,7 +1015,7 @@ export default function Admin() {
           </div>
         </div>
 
-        {/* Middle */}
+        {/* Middle Content */}
         <div className="lg:col-span-2 space-y-4">
           {tab === "reports" && (
             <div className="glass-card p-5">
@@ -943,12 +1034,10 @@ export default function Admin() {
                         </p>
                         {pill("bg-yellow-50 border-yellow-200 text-yellow-800", "unresolved")}
                       </div>
-
                       <p className="mt-2 text-gray-800">{r.reason}</p>
                       <p className="mt-2 text-xs text-gray-500">
                         Reported by: {r.reportedBy?.name || "Unknown"} • {fmt(r.createdAt)}
                       </p>
-
                       <div className="mt-3">
                         <button
                           onClick={() => resolveModerationReport(r._id)}
@@ -978,7 +1067,6 @@ export default function Admin() {
                     <div key={post._id} className="bg-white/60 border border-white/40 rounded-2xl p-4">
                       <p className="font-bold text-gray-900">{post.title}</p>
                       <p className="text-sm text-gray-600">Reports: {post.reports.length}</p>
-
                       <div className="space-y-1 mt-2">
                         {post.reports.map((r, idx) => (
                           <p key={idx} className="text-sm text-gray-800">
@@ -986,7 +1074,6 @@ export default function Admin() {
                           </p>
                         ))}
                       </div>
-
                       <div className="mt-4 flex gap-2">
                         <button
                           onClick={() => handleResolveLegacy(post._id)}
@@ -1030,9 +1117,7 @@ export default function Admin() {
                         </div>
                         {pill("bg-blue-50 border-blue-200 text-blue-800", "waiting")}
                       </div>
-
                       <p className="mt-3 text-gray-800 whitespace-pre-wrap">{d.body}</p>
-
                       <div className="mt-4 flex gap-2">
                         <button
                           onClick={() => approveDiscussion(d._id)}
@@ -1077,7 +1162,6 @@ export default function Admin() {
                           role: {p.role} • created: {fmt(p.createdAt)}
                         </p>
                       </div>
-
                       <button
                         onClick={() => verifyProfessional(p._id)}
                         className="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2"
@@ -1115,7 +1199,6 @@ export default function Admin() {
                         </p>
                         <p className="text-sm text-gray-600 line-clamp-2">{c.description}</p>
                       </div>
-
                       {c.isLocked ? (
                         <button
                           onClick={() => unlockCategory(c._id)}
@@ -1147,7 +1230,6 @@ export default function Admin() {
                   <PlusCircle className="text-blue-600" />
                   Create Circle
                 </h2>
-
                 <form onSubmit={handleCreateCircle} className="space-y-3">
                   <input
                     className="input-field"
@@ -1156,7 +1238,6 @@ export default function Admin() {
                     onChange={(e) => setNewCircle((prev) => ({ ...prev, name: e.target.value }))}
                     required
                   />
-
                   <textarea
                     className="input-field min-h-[90px]"
                     placeholder="Description"
@@ -1165,7 +1246,6 @@ export default function Admin() {
                       setNewCircle((prev) => ({ ...prev, description: e.target.value }))
                     }
                   />
-
                   <input
                     className="input-field"
                     placeholder="Condition tag (optional)"
@@ -1174,7 +1254,6 @@ export default function Admin() {
                       setNewCircle((prev) => ({ ...prev, conditionTag: e.target.value }))
                     }
                   />
-
                   <select
                     className="input-field"
                     value={newCircle.privacy}
@@ -1185,7 +1264,6 @@ export default function Admin() {
                     <option value="private">Private</option>
                     <option value="public">Public</option>
                   </select>
-
                   <button
                     type="submit"
                     className="btn-primary flex items-center gap-2"
@@ -1196,11 +1274,9 @@ export default function Admin() {
                   </button>
                 </form>
               </div>
-
               <div className="glass-card p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                   <h2 className="text-xl font-bold text-gray-900">Manage Circles</h2>
-
                   <select
                     className="input-field w-auto min-w-[180px]"
                     value={circleStatusFilter}
@@ -1212,7 +1288,6 @@ export default function Admin() {
                     <option value="rejected">Rejected</option>
                   </select>
                 </div>
-
                 {loading ? (
                   <p className="text-gray-600">Loading...</p>
                 ) : circles.length === 0 ? (
@@ -1222,7 +1297,6 @@ export default function Admin() {
                     {circles.map((circle) => {
                       const requestsOpen =
                         String(selectedCircleIdForRequests) === String(circle._id);
-
                       return (
                         <div
                           key={circle._id}
@@ -1234,11 +1308,9 @@ export default function Admin() {
                                 <p className="font-semibold text-gray-900">{circle.name}</p>
                                 {circleStatusPill(circle.status)}
                               </div>
-
                               <p className="text-sm text-gray-600 mt-1">
                                 {circle.description || "No description"}
                               </p>
-
                               <div className="mt-2 text-xs text-gray-500 space-y-1">
                                 <p>
                                   By {circle.createdBy?.name || "Unknown"} • {fmt(circle.createdAt)}
@@ -1252,7 +1324,6 @@ export default function Admin() {
                                   {circle.joinRequestsCount || 0}
                                 </p>
                               </div>
-
                               {circle.requestReason ? (
                                 <p className="mt-3 text-sm text-gray-800 whitespace-pre-wrap">
                                   Request reason: {circle.requestReason}
@@ -1260,7 +1331,6 @@ export default function Admin() {
                               ) : null}
                             </div>
                           </div>
-
                           <div className="mt-4 flex flex-wrap gap-2">
                             {circle.status === "waiting" && (
                               <>
@@ -1280,7 +1350,6 @@ export default function Admin() {
                                 </button>
                               </>
                             )}
-
                             {circle.status === "approved" && (
                               <button
                                 onClick={() => toggleCircleJoinRequests(circle._id)}
@@ -1292,7 +1361,6 @@ export default function Admin() {
                                   : `Manage Join Requests (${circle.joinRequestsCount || 0})`}
                               </button>
                             )}
-
                             <button
                               onClick={() => deleteCircle(circle._id)}
                               className="px-4 py-2 rounded-xl bg-gray-900 text-white hover:bg-black flex items-center gap-2"
@@ -1301,7 +1369,6 @@ export default function Admin() {
                               Delete
                             </button>
                           </div>
-
                           {requestsOpen && circle.status === "approved" && (
                             <div className="mt-4 rounded-2xl border border-white/40 bg-white/70 p-4">
                               <div className="flex items-center justify-between gap-2 mb-3">
@@ -1310,7 +1377,6 @@ export default function Admin() {
                                   {circleJoinRequests.length} pending
                                 </span>
                               </div>
-
                               {joinRequestsLoading ? (
                                 <p className="text-gray-600">Loading join requests...</p>
                               ) : circleJoinRequests.length === 0 ? (
@@ -1340,14 +1406,12 @@ export default function Admin() {
                                           request.status || "pending"
                                         )}
                                       </div>
-
                                       <div className="mt-3">
                                         <p className="text-xs text-gray-500 mb-1">Reason</p>
                                         <p className="text-sm text-gray-800 whitespace-pre-wrap">
                                           {request.reason || "No reason provided."}
                                         </p>
                                       </div>
-
                                       <div className="mt-4 flex flex-wrap gap-2">
                                         <button
                                           onClick={() =>
@@ -1420,10 +1484,8 @@ export default function Admin() {
                   </div>
                 )}
               </div>
-
               <div className="glass-card p-5">
                 <h2 className="text-xl font-bold text-gray-900 mb-3">Session Detail</h2>
-
                 {!selectedLiveId ? (
                   <p className="text-gray-600">Select a session to inspect details.</p>
                 ) : !liveSessionDetail ? (
@@ -1437,7 +1499,6 @@ export default function Admin() {
                       <p className="text-sm text-gray-600 mt-1">
                         {liveSessionDetail.session?.description || "No description"}
                       </p>
-
                       <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div>
                           <p className="text-xs text-gray-500">Status</p>
@@ -1463,7 +1524,6 @@ export default function Admin() {
                         </div>
                       </div>
                     </div>
-
                     <div className="bg-white/60 border border-white/40 rounded-2xl p-4">
                       <p className="font-semibold text-gray-900 mb-2">Current Active Question</p>
                       {liveSessionDetail.activeQuestion ? (
@@ -1479,7 +1539,6 @@ export default function Admin() {
                         <p className="text-gray-600">No active question.</p>
                       )}
                     </div>
-
                     <div className="bg-white/60 border border-white/40 rounded-2xl p-4">
                       <p className="font-semibold text-gray-900 mb-2">Queued Questions</p>
                       {Array.isArray(liveSessionDetail.queue) && liveSessionDetail.queue.length > 0 ? (
@@ -1498,7 +1557,6 @@ export default function Admin() {
                         <p className="text-gray-600">No queued questions.</p>
                       )}
                     </div>
-
                     <div className="bg-white/60 border border-white/40 rounded-2xl p-4">
                       <p className="font-semibold text-gray-900 mb-2">Recently Answered</p>
                       {Array.isArray(liveSessionDetail.answeredQuestions) &&
@@ -1532,7 +1590,6 @@ export default function Admin() {
                   Total: <b>{auditTotal}</b>
                 </div>
               </div>
-
               <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="relative">
                   <Search
@@ -1546,14 +1603,12 @@ export default function Admin() {
                     placeholder="Search action / ip / role..."
                   />
                 </div>
-
                 <input
                   value={auditAction}
                   onChange={(e) => setAuditAction(e.target.value)}
                   className="input-field"
                   placeholder="Filter action"
                 />
-
                 <input
                   value={auditTargetType}
                   onChange={(e) => setAuditTargetType(e.target.value)}
@@ -1561,7 +1616,6 @@ export default function Admin() {
                   placeholder="Filter targetType"
                 />
               </div>
-
               <div className="mt-3 flex flex-wrap gap-2">
                 <button
                   onClick={() => fetchAudit(1)}
@@ -1581,7 +1635,6 @@ export default function Admin() {
                   Clear
                 </button>
               </div>
-
               <div className="mt-4 space-y-3">
                 {loading ? (
                   <p className="text-gray-600">Loading...</p>
@@ -1596,7 +1649,6 @@ export default function Admin() {
                           <Clock size={14} /> {fmt(a.createdAt)}
                         </span>
                       </div>
-
                       <p className="text-sm text-gray-700 mt-1">
                         Actor: <b>{a.actor?.name || String(a.actor || "Unknown")}</b>{" "}
                         <span className="text-xs text-gray-500">
@@ -1604,21 +1656,18 @@ export default function Admin() {
                           {a.actor?.verified ? " • verified" : ""})
                         </span>
                       </p>
-
                       <p className="text-xs text-gray-500 mt-2">
                         Target: {a.targetType || "-"} {a.targetId ? `• ${String(a.targetId)}` : ""}
                       </p>
-
                       {a.metadata && Object.keys(a.metadata || {}).length > 0 ? (
                         <pre className="mt-3 text-xs bg-gray-900 text-gray-100 p-3 rounded-xl overflow-auto">
-{JSON.stringify(a.metadata, null, 2)}
+                          {JSON.stringify(a.metadata, null, 2)}
                         </pre>
                       ) : null}
                     </div>
                   ))
                 )}
               </div>
-
               <div className="mt-4 flex items-center justify-between">
                 <button
                   className={`px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 ${
@@ -1628,11 +1677,9 @@ export default function Admin() {
                 >
                   Prev
                 </button>
-
                 <p className="text-sm text-gray-600">
                   Page <b>{auditPage}</b> / {auditPages}
                 </p>
-
                 <button
                   className={`px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 ${
                     auditPage >= auditPages ? "opacity-50 pointer-events-none" : ""
@@ -1648,7 +1695,6 @@ export default function Admin() {
           {tab === "videos" && (
             <div className="glass-card p-5">
               <h2 className="text-xl font-bold text-gray-900 mb-3">Manage Videos</h2>
-
               {loading ? (
                 <p className="text-gray-600">Loading...</p>
               ) : (
@@ -1661,7 +1707,6 @@ export default function Admin() {
                       onChange={(e) => setNewVideo({ ...newVideo, title: e.target.value })}
                       required
                     />
-
                     <textarea
                       className="input-field min-h-[80px]"
                       placeholder="Description"
@@ -1670,7 +1715,6 @@ export default function Admin() {
                         setNewVideo({ ...newVideo, description: e.target.value })
                       }
                     />
-
                     <select
                       className="input-field"
                       value={newVideo.category}
@@ -1684,7 +1728,6 @@ export default function Admin() {
                         </option>
                       ))}
                     </select>
-
                     <div className="relative">
                       <Upload
                         className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
@@ -1698,13 +1741,11 @@ export default function Admin() {
                         required
                       />
                     </div>
-
                     {previewURL && (
                       <video controls className="w-full mt-3 rounded-2xl">
                         <source src={previewURL} type={newVideo.file?.type} />
                       </video>
                     )}
-
                     {uploadProgress > 0 && (
                       <div className="bg-white/60 rounded-full h-2.5 mt-3">
                         <div
@@ -1713,7 +1754,6 @@ export default function Admin() {
                         />
                       </div>
                     )}
-
                     <button
                       type="submit"
                       disabled={loading}
@@ -1722,7 +1762,6 @@ export default function Admin() {
                       {loading ? `Uploading... ${uploadProgress}%` : "Upload Video"}
                     </button>
                   </form>
-
                   <div className="space-y-3">
                     {videos.map((video) => (
                       <div
@@ -1735,7 +1774,6 @@ export default function Admin() {
                             {video.description}
                           </p>
                         </div>
-
                         <button
                           onClick={() => handleDeleteVideo(video._id)}
                           className="px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700 flex items-center gap-2"
@@ -1751,9 +1789,159 @@ export default function Admin() {
               )}
             </div>
           )}
+
+          {/* ==================== PUBLIC HEALTH HUB TAB ==================== */}
+          {tab === "public-health" && (
+            <div className="space-y-6">
+              <div className="glass-card p-6 flex justify-between items-center">
+                <h2 className="text-2xl font-bold flex items-center gap-3">
+                  <HeartPulse className="text-primary" size={32} />
+                  Public Health Hub — Editor Console
+                </h2>
+                <div className="flex gap-2">
+                  {["campaigns", "news", "tips", "events", "questions"].map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setPhTab(t)}
+                      className={`px-5 py-2 rounded-2xl text-sm font-medium transition ${
+                        phTab === t ? "bg-blue-600 text-white" : "bg-white border hover:bg-gray-50"
+                      }`}
+                    >
+                      {t.charAt(0).toUpperCase() + t.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {phTab === "campaigns" && (
+                <div className="glass-card p-6">
+                  <h3 className="font-bold text-xl mb-4">Campaigns</h3>
+                  {phCampaigns.length === 0 ? (
+                    <p className="text-gray-600">No campaigns yet.</p>
+                  ) : (
+                    phCampaigns.map((c) => (
+                      <div key={c._id} className="bg-white/60 p-5 rounded-2xl mb-4 flex justify-between items-center">
+                        <div>
+                          <p className="font-semibold">{c.title}</p>
+                          <p className="text-sm text-gray-600">{c.summary}</p>
+                        </div>
+                        <button
+                          onClick={() => archiveCampaign(c._id)}
+                          className="px-4 py-2 rounded-xl bg-orange-600 text-white hover:bg-orange-700"
+                        >
+                          Archive
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {phTab === "news" && (
+                <div className="glass-card p-6">
+                  <h3 className="font-bold text-xl mb-4">Official News</h3>
+                  {phNews.length === 0 ? (
+                    <p className="text-gray-600">No news yet.</p>
+                  ) : (
+                    phNews.map((n) => (
+                      <div key={n._id} className="bg-white/60 p-5 rounded-2xl mb-4 flex justify-between items-center">
+                        <div>
+                          <p className="font-semibold">{n.title}</p>
+                          <p className="text-sm text-gray-600">{n.summary}</p>
+                        </div>
+                        <button
+                          onClick={() => publishNews(n._id)}
+                          className="px-4 py-2 rounded-xl bg-green-600 text-white hover:bg-green-700"
+                        >
+                          Publish
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {phTab === "tips" && (
+                <div className="glass-card p-6">
+                  <h3 className="font-bold text-xl mb-4">Health Tips</h3>
+                  {phTips.length === 0 ? (
+                    <p className="text-gray-600">No tips yet.</p>
+                  ) : (
+                    phTips.map((t) => (
+                      <div key={t._id} className="bg-white/60 p-5 rounded-2xl mb-4">
+                        <p className="font-semibold">{t.title}</p>
+                        <p className="text-sm text-gray-600 mt-1">{t.shortText}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {phTab === "events" && (
+                <div className="glass-card p-6">
+                  <h3 className="font-bold text-xl mb-4">Live Teaching Events</h3>
+                  {phEvents.length === 0 ? (
+                    <p className="text-gray-600">No events yet.</p>
+                  ) : (
+                    phEvents.map((e) => (
+                      <div key={e._id} className="bg-white/60 p-5 rounded-2xl mb-4 flex justify-between items-center">
+                        <div>
+                          <p className="font-semibold">{e.title}</p>
+                          <p className="text-sm text-gray-600">{new Date(e.scheduledAt).toLocaleString()}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => startLiveEvent(e._id)}
+                            className="px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700"
+                          >
+                            Start Live
+                          </button>
+                          <button
+                            onClick={() => endLiveEvent(e._id)}
+                            className="px-4 py-2 rounded-xl bg-gray-900 text-white hover:bg-black"
+                          >
+                            End
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {phTab === "questions" && (
+                <div className="glass-card p-6">
+                  <h3 className="font-bold text-xl mb-4">Pending Questions</h3>
+                  {phPendingQuestions.length === 0 ? (
+                    <p className="text-gray-600">No pending questions.</p>
+                  ) : (
+                    phPendingQuestions.map((q) => (
+                      <div key={q._id} className="bg-white/60 p-5 rounded-2xl mb-4">
+                        <p className="font-medium">{q.questionText}</p>
+                        <div className="flex gap-2 mt-4">
+                          <button
+                            onClick={() => approveQuestion(q._id)}
+                            className="px-4 py-2 rounded-xl bg-green-600 text-white hover:bg-green-700"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => rejectQuestion(q._id)}
+                            className="px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Right */}
+        {/* Right Sidebar */}
         <div className="lg:col-span-1 space-y-4">
           <div className="glass-card p-5">
             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
@@ -1763,7 +1951,6 @@ export default function Admin() {
             <p className="text-xs text-gray-500 mt-1">
               Updates in real time from audit and moderation events.
             </p>
-
             <div className="mt-4 space-y-3">
               {activityFeed.length === 0 ? (
                 <p className="text-gray-600">No activity yet.</p>
@@ -1782,7 +1969,6 @@ export default function Admin() {
                 ))
               )}
             </div>
-
             <button
               onClick={() => {
                 setTab("audit");
@@ -1793,7 +1979,6 @@ export default function Admin() {
               View full audit
             </button>
           </div>
-
           <div className="glass-card p-5">
             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
               <Users className="text-blue-600" />

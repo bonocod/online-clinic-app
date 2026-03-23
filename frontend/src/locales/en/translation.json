@@ -236,4 +236,13 @@
     "moderate": "Moderate",
     "serious": "Serious"
   }
+  ,"publicHealth": {
+    "hubTitle": "Public Health Hub",
+    "campaigns": "Campaigns",
+    "news": "Official News",
+    "tips": "Health Tips",
+    "events": "Live Events",
+    "saved": "My Saved & Reminders",
+    "back": "Back to Hub"
+  }
 }

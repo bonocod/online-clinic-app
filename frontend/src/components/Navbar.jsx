@@ -1,8 +1,7 @@
-// FILE: frontend/src/components/Navbar.jsx
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LogOut, User, Globe } from 'lucide-react';
+import { LogOut, User, Globe, HeartPulse } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Navbar = () => {
@@ -58,6 +57,13 @@ const Navbar = () => {
                 {dashboardLabel()}
               </Link>
               {role !== 'admin' && <Link to="/dashboard" className="nav-link">User Dashboard</Link>}
+              
+              {/* NEW PUBLIC HEALTH LINK */}
+              <Link to="/public-health" className="nav-link flex items-center gap-1">
+                <HeartPulse size={18} />
+                Public Health Hub
+              </Link>
+
               <button onClick={logout} className="icon-btn flex items-center">
                 <LogOut className="mr-1" size={18} />
                 {t('navbar.logout')}
@@ -86,5 +92,4 @@ const Navbar = () => {
     </motion.nav>
   );
 };
-
 export default Navbar;

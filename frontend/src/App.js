@@ -24,6 +24,15 @@ import Discussion from "./pages/Discussion";
 import LiveSession from "./pages/LiveSession";
 import PastSessions from "./pages/PastSessions";
 
+// NEW PUBLIC HEALTH HUB PAGES
+import PublicHealth from "./pages/PublicHealth";
+import PublicHealthCampaigns from "./pages/PublicHealthCampaigns";
+import PublicHealthNews from "./pages/PublicHealthNews";
+import PublicHealthTips from "./pages/PublicHealthTips";
+import PublicHealthEvents from "./pages/PublicHealthEvents";
+import PublicHealthEventDetail from "./pages/PublicHealthEventDetail";
+import PublicHealthSaved from "./pages/PublicHealthSaved";
+
 function App() {
   return (
     <Router>
@@ -53,11 +62,19 @@ function App() {
             <Route path="/admin" element={<Admin />} />
             <Route path="/professional/doctor" element={<DoctorConsole />} />
             <Route path="/professional/chw" element={<CHWConsole />} />
+
+            {/* PUBLIC HEALTH HUB ROUTES */}
+            <Route path="/public-health" element={<PublicHealth />} />
+            <Route path="/public-health/campaigns" element={<PublicHealthCampaigns />} />
+            <Route path="/public-health/news" element={<PublicHealthNews />} />
+            <Route path="/public-health/tips" element={<PublicHealthTips />} />
+            <Route path="/public-health/events" element={<PublicHealthEvents />} />
+            <Route path="/public-health/events/:id" element={<PublicHealthEventDetail />} />
+            <Route path="/public-health/saved" element={<PublicHealthSaved />} />
           </Routes>
         </div>
       </AnimatePresence>
     </Router>
   );
 }
-
 export default App;

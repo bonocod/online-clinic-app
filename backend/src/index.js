@@ -51,6 +51,7 @@ app.use('/api/categories', require('./routes/categories'))
 app.use('/api/videos', require('./routes/videos'))
 app.use('/api/admin', require('./routes/admin'))
 app.use('/api/notifications', require('./routes/notifications'))
+app.use('/api/public-health', require('./routes/publicHealth'))
 
 const server = http.createServer(app)
 const io = new Server(server, {
@@ -142,6 +143,19 @@ io.on('connection', (socket) => {
     if (!userId) return
     socket.leave(`user_${String(userId)}`)
     if (socket.data.userId === String(userId)) socket.data.userId = null
+  })
+
+  socket.on('joinPublicHealthHub', () => socket.join('public_health_hub'))
+  socket.on('leavePublicHealthHub', () => socket.leave('public_health_hub'))
+
+  socket.on('joinPublicHealthEvent', (eventId) => {
+    if (!eventId) return
+    socket.join(`public_health_event_${String(eventId)}`)
+  })
+
+  socket.on('leavePublicHealthEvent', (eventId) => {
+    if (!eventId) return
+    socket.leave(`public_health_event_${String(eventId)}`)
   })
 
   socket.on('disconnect', () => {
