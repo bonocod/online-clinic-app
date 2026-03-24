@@ -37,22 +37,21 @@ const fmt = (d) => {
     return "";
   }
 };
+
 const pill = (cls, text) => (
   <span className={`text-xs px-2 py-1 rounded-full border ${cls}`}>{text}</span>
 );
+
 const circleStatusPill = (status) => {
-  if (status === "approved") {
+  if (status === "approved")
     return pill("bg-green-50 border-green-200 text-green-700", "approved");
-  }
-  if (status === "rejected") {
+  if (status === "rejected")
     return pill("bg-red-50 border-red-200 text-red-700", "rejected");
-  }
   return pill("bg-yellow-50 border-yellow-200 text-yellow-800", "waiting");
 };
 
 export default function Admin() {
   const [tab, setTab] = useState("reports");
-  // reports | reported-posts | discussions | professionals | categories | circles | live-sessions | audit | videos | public-health
   const [loading, setLoading] = useState(false);
   const [joinRequestsLoading, setJoinRequestsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -102,13 +101,44 @@ export default function Admin() {
   const [previewURL, setPreviewURL] = useState("");
   const [activityFeed, setActivityFeed] = useState([]);
 
-  // ==================== NEW: PUBLIC HEALTH HUB STATES ====================
+  // ==================== PUBLIC HEALTH HUB STATES ====================
   const [phTab, setPhTab] = useState("campaigns");
   const [phCampaigns, setPhCampaigns] = useState([]);
   const [phNews, setPhNews] = useState([]);
   const [phTips, setPhTips] = useState([]);
   const [phEvents, setPhEvents] = useState([]);
-  const [phPendingQuestions, setPhPendingQuestions] = useState([]);
+
+  // ==================== PUBLIC HEALTH EDITOR FORM STATES ====================
+  const [newCampaign, setNewCampaign] = useState({
+    title: "",
+    summary: "",
+    startDate: "",
+    endDate: "",
+    organization: "",
+    isUrgent: false,
+  });
+  const [newNewsItem, setNewNewsItem] = useState({
+    title: "",
+    summary: "",
+    body: "",
+    urgencyLevel: "normal",
+    sourceName: "",
+  });
+  const [newTip, setNewTip] = useState({
+    title: "",
+    shortText: "",
+    category: "",
+    type: "quick_tip",
+  });
+  const [newEvent, setNewEvent] = useState({
+    title: "",
+    description: "",
+    hostName: "",
+    hostRole: "doctor",
+    organization: "",
+    scheduledAt: "",
+    endAt: "",
+  });
 
   // ---------------- Fetchers ----------------
   const fetchReports = useCallback(async () => {
@@ -226,10 +256,7 @@ export default function Admin() {
       if (!selectedLiveId && items[0]?._id) {
         setSelectedLiveId(items[0]._id);
       }
-      if (
-        selectedLiveId &&
-        !items.some((item) => String(item._id) === String(selectedLiveId))
-      ) {
+      if (selectedLiveId && !items.some((item) => String(item._id) === String(selectedLiveId))) {
         setSelectedLiveId(items[0]?._id || "");
         setLiveSessionDetail(null);
       }
@@ -311,7 +338,7 @@ export default function Admin() {
     }
   }, []);
 
-  // ---------------- NEW PUBLIC HEALTH FETCHERS ----------------
+  // ---------------- PUBLIC HEALTH FETCHERS (exact backend endpoints) ----------------
   const fetchPhCampaigns = useCallback(async () => {
     try {
       const res = await api.get("/public-health/manage/campaigns");
@@ -340,13 +367,6 @@ export default function Admin() {
     } catch (e) {}
   }, []);
 
-  const fetchPhPendingQuestions = useCallback(async () => {
-    try {
-      const res = await api.get("/public-health/manage/questions?status=pending");
-      setPhPendingQuestions(Array.isArray(res.data) ? res.data : []);
-    } catch (e) {}
-  }, []);
-
   const fetchPublicHealth = useCallback(async () => {
     setLoading(true);
     try {
@@ -355,14 +375,13 @@ export default function Admin() {
         fetchPhNews(),
         fetchPhTips(),
         fetchPhEvents(),
-        fetchPhPendingQuestions(),
       ]);
     } catch (e) {
       setError("Failed to load Public Health data");
     } finally {
       setLoading(false);
     }
-  }, [fetchPhCampaigns, fetchPhNews, fetchPhTips, fetchPhEvents, fetchPhPendingQuestions]);
+  }, [fetchPhCampaigns, fetchPhNews, fetchPhTips, fetchPhEvents]);
 
   // ---------------- Current tab refresh ----------------
   const refreshCurrentTab = useCallback(() => {
@@ -373,9 +392,7 @@ export default function Admin() {
     if (tab === "categories") return fetchForumCategories();
     if (tab === "circles") {
       fetchCircles();
-      if (selectedCircleIdForRequests) {
-        fetchCircleJoinRequests(selectedCircleIdForRequests, true);
-      }
+      if (selectedCircleIdForRequests) fetchCircleJoinRequests(selectedCircleIdForRequests, true);
       return;
     }
     if (tab === "live-sessions") {
@@ -423,7 +440,7 @@ export default function Admin() {
     }
   }, [tab, selectedLiveId, fetchLiveSessionDetail]);
 
-  // ---------------- LIVE sockets ----------------
+  // ---------------- LIVE sockets (updated to catch backend’s real events) ----------------
   useEffect(() => {
     const s = connectSocket();
     joinAdmin();
@@ -455,9 +472,7 @@ export default function Admin() {
       }
       if (action.includes("circle.")) {
         fetchCircles();
-        if (selectedCircleIdForRequests) {
-          fetchCircleJoinRequests(selectedCircleIdForRequests, true);
-        }
+        if (selectedCircleIdForRequests) fetchCircleJoinRequests(selectedCircleIdForRequests, true);
       }
       if (action.includes("live_session.")) {
         fetchLiveSessions();
@@ -466,7 +481,7 @@ export default function Admin() {
       if (action.includes("report.create")) {
         fetchReports();
       }
-      if (action.includes("publicHealth")) {
+      if (action.includes("public_health.")) {
         if (tab === "public-health") fetchPublicHealth();
       }
     };
@@ -480,9 +495,7 @@ export default function Admin() {
 
     const onCircleChanged = () => {
       fetchCircles();
-      if (selectedCircleIdForRequests) {
-        fetchCircleJoinRequests(selectedCircleIdForRequests, true);
-      }
+      if (selectedCircleIdForRequests) fetchCircleJoinRequests(selectedCircleIdForRequests, true);
     };
 
     const onLiveChanged = () => {
@@ -490,7 +503,8 @@ export default function Admin() {
       if (selectedLiveId) fetchLiveSessionDetail(selectedLiveId);
     };
 
-    const onPublicHealthUpdate = () => {
+    // Backend-specific public health events
+    const onPhUpdate = () => {
       if (tab === "public-health") fetchPublicHealth();
     };
 
@@ -506,7 +520,14 @@ export default function Admin() {
     s.on("liveSession:updated", onLiveChanged);
     s.on("liveSession:ended", onLiveChanged);
     s.on("liveSession:state", onLiveChanged);
-    s.on("publicHealth:update", onPublicHealthUpdate);
+
+    // Catch every public-health event the backend actually emits
+    s.on("publicHealth:campaignUpdated", onPhUpdate);
+    s.on("publicHealth:newsUpdated", onPhUpdate);
+    s.on("publicHealth:tipUpdated", onPhUpdate);
+    s.on("publicHealth:eventUpdated", onPhUpdate);
+    s.on("publicHealth:eventStarted", onPhUpdate);
+    s.on("publicHealth:eventEnded", onPhUpdate);
 
     return () => {
       leaveAdmin();
@@ -522,7 +543,12 @@ export default function Admin() {
       s.off("liveSession:updated", onLiveChanged);
       s.off("liveSession:ended", onLiveChanged);
       s.off("liveSession:state", onLiveChanged);
-      s.off("publicHealth:update", onPublicHealthUpdate);
+      s.off("publicHealth:campaignUpdated", onPhUpdate);
+      s.off("publicHealth:newsUpdated", onPhUpdate);
+      s.off("publicHealth:tipUpdated", onPhUpdate);
+      s.off("publicHealth:eventUpdated", onPhUpdate);
+      s.off("publicHealth:eventStarted", onPhUpdate);
+      s.off("publicHealth:eventEnded", onPhUpdate);
     };
   }, [
     tab,
@@ -541,7 +567,7 @@ export default function Admin() {
     fetchPublicHealth,
   ]);
 
-  // ---------------- Actions ----------------
+  // ---------------- ALL ORIGINAL ACTIONS ----------------
   const handleCreateProf = async (e) => {
     e.preventDefault();
     setError("");
@@ -661,9 +687,7 @@ export default function Admin() {
     try {
       await api.patch(`/forum/circles/${id}/approve`, { note });
       fetchCircles();
-      if (selectedCircleIdForRequests === id) {
-        fetchCircleJoinRequests(id, true);
-      }
+      if (selectedCircleIdForRequests === id) fetchCircleJoinRequests(id, true);
       setSuccess("Circle approved");
     } catch (err) {
       setError(err.response?.data?.msg || "Circle approval failed");
@@ -821,7 +845,7 @@ export default function Admin() {
     }
   };
 
-  // ---------------- NEW PUBLIC HEALTH ACTIONS ----------------
+  // ---------------- PUBLIC HEALTH ACTIONS (exact backend) ----------------
   const archiveCampaign = async (id) => {
     setError("");
     setSuccess("");
@@ -870,27 +894,60 @@ export default function Admin() {
     }
   };
 
-  const approveQuestion = async (questionId) => {
+  // ---------------- PUBLIC HEALTH CREATE ACTIONS (fixed to match backend required fields) ----------------
+  const createCampaign = async (e) => {
+    e.preventDefault();
     setError("");
     setSuccess("");
     try {
-      await api.patch(`/public-health/manage/questions/${questionId}/approve`);
-      fetchPhPendingQuestions();
-      setSuccess("Question approved");
+      await api.post("/public-health/manage/campaigns", newCampaign);
+      fetchPhCampaigns();
+      setNewCampaign({ title: "", summary: "", startDate: "", endDate: "", organization: "", isUrgent: false });
+      setSuccess("Campaign created");
     } catch (err) {
-      setError(err.response?.data?.msg || "Approve failed");
+      setError(err.response?.data?.msg || "Create failed");
     }
   };
 
-  const rejectQuestion = async (questionId) => {
+  const createNews = async (e) => {
+    e.preventDefault();
     setError("");
     setSuccess("");
     try {
-      await api.patch(`/public-health/manage/questions/${questionId}/reject`);
-      fetchPhPendingQuestions();
-      setSuccess("Question rejected");
+      await api.post("/public-health/manage/news", newNewsItem);
+      fetchPhNews();
+      setNewNewsItem({ title: "", summary: "", body: "", urgencyLevel: "normal", sourceName: "" });
+      setSuccess("News created");
     } catch (err) {
-      setError(err.response?.data?.msg || "Reject failed");
+      setError(err.response?.data?.msg || "Create failed");
+    }
+  };
+
+  const createTip = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    try {
+      await api.post("/public-health/manage/tips", newTip);
+      fetchPhTips();
+      setNewTip({ title: "", shortText: "", category: "", type: "quick_tip" });
+      setSuccess("Tip created");
+    } catch (err) {
+      setError(err.response?.data?.msg || "Create failed");
+    }
+  };
+
+  const createEvent = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    try {
+      await api.post("/public-health/manage/events", newEvent);
+      fetchPhEvents();
+      setNewEvent({ title: "", description: "", hostName: "", hostRole: "doctor", organization: "", scheduledAt: "", endAt: "" });
+      setSuccess("Event created");
+    } catch (err) {
+      setError(err.response?.data?.msg || "Create failed");
     }
   };
 
@@ -910,6 +967,8 @@ export default function Admin() {
     ],
     []
   );
+
+  const phSubTabs = useMemo(() => ["campaigns", "news", "tips", "events"], []);
 
   const auditPages = Math.max(1, Math.ceil(auditTotal / auditLimit));
 
@@ -1017,6 +1076,7 @@ export default function Admin() {
 
         {/* Middle Content */}
         <div className="lg:col-span-2 space-y-4">
+          {/* All original tabs (reports, reported-posts, discussions, professionals, categories, circles, live-sessions, audit, videos) are unchanged from previous working version */}
           {tab === "reports" && (
             <div className="glass-card p-5">
               <h2 className="text-xl font-bold text-gray-900 mb-3">Moderation Queue</h2>
@@ -1295,8 +1355,7 @@ export default function Admin() {
                 ) : (
                   <div className="space-y-3">
                     {circles.map((circle) => {
-                      const requestsOpen =
-                        String(selectedCircleIdForRequests) === String(circle._id);
+                      const requestsOpen = String(selectedCircleIdForRequests) === String(circle._id);
                       return (
                         <div
                           key={circle._id}
@@ -1790,7 +1849,7 @@ export default function Admin() {
             </div>
           )}
 
-          {/* ==================== PUBLIC HEALTH HUB TAB ==================== */}
+          {/* ==================== PUBLIC HEALTH HUB (fully fixed to match backend) ==================== */}
           {tab === "public-health" && (
             <div className="space-y-6">
               <div className="glass-card p-6 flex justify-between items-center">
@@ -1799,7 +1858,7 @@ export default function Admin() {
                   Public Health Hub — Editor Console
                 </h2>
                 <div className="flex gap-2">
-                  {["campaigns", "news", "tips", "events", "questions"].map((t) => (
+                  {phSubTabs.map((t) => (
                     <button
                       key={t}
                       onClick={() => setPhTab(t)}
@@ -1813,128 +1872,345 @@ export default function Admin() {
                 </div>
               </div>
 
+              {/* CAMPAIGNS */}
               {phTab === "campaigns" && (
-                <div className="glass-card p-6">
-                  <h3 className="font-bold text-xl mb-4">Campaigns</h3>
-                  {phCampaigns.length === 0 ? (
-                    <p className="text-gray-600">No campaigns yet.</p>
-                  ) : (
-                    phCampaigns.map((c) => (
-                      <div key={c._id} className="bg-white/60 p-5 rounded-2xl mb-4 flex justify-between items-center">
-                        <div>
-                          <p className="font-semibold">{c.title}</p>
-                          <p className="text-sm text-gray-600">{c.summary}</p>
-                        </div>
-                        <button
-                          onClick={() => archiveCampaign(c._id)}
-                          className="px-4 py-2 rounded-xl bg-orange-600 text-white hover:bg-orange-700"
+                <div className="space-y-6">
+                  <div className="glass-card p-5">
+                    <h3 className="font-bold mb-3 flex items-center gap-2">
+                      <PlusCircle size={18} /> Create Campaign
+                    </h3>
+                    <form onSubmit={createCampaign} className="grid grid-cols-2 gap-4">
+                      <input
+                        className="input-field"
+                        placeholder="Title"
+                        value={newCampaign.title}
+                        onChange={(e) => setNewCampaign({ ...newCampaign, title: e.target.value })}
+                        required
+                      />
+                      <input
+                        className="input-field"
+                        placeholder="Organization"
+                        value={newCampaign.organization}
+                        onChange={(e) =>
+                          setNewCampaign({ ...newCampaign, organization: e.target.value })
+                        }
+                        required
+                      />
+                      <input
+                        type="date"
+                        className="input-field"
+                        value={newCampaign.startDate}
+                        onChange={(e) => setNewCampaign({ ...newCampaign, startDate: e.target.value })}
+                        required
+                      />
+                      <input
+                        type="date"
+                        className="input-field"
+                        value={newCampaign.endDate}
+                        onChange={(e) => setNewCampaign({ ...newCampaign, endDate: e.target.value })}
+                        required
+                      />
+                      <textarea
+                        className="input-field col-span-2"
+                        placeholder="Summary"
+                        value={newCampaign.summary}
+                        onChange={(e) => setNewCampaign({ ...newCampaign, summary: e.target.value })}
+                        required
+                      />
+                      <label className="flex items-center gap-2 col-span-2">
+                        <input
+                          type="checkbox"
+                          checked={newCampaign.isUrgent}
+                          onChange={(e) =>
+                            setNewCampaign({ ...newCampaign, isUrgent: e.target.checked })
+                          }
+                        />
+                        Urgent Campaign
+                      </label>
+                      <button type="submit" className="btn-primary col-span-2">
+                        Create Campaign
+                      </button>
+                    </form>
+                  </div>
+
+                  <div className="glass-card p-6">
+                    <h3 className="font-bold text-xl mb-4">Existing Campaigns</h3>
+                    {phCampaigns.length === 0 ? (
+                      <p className="text-gray-600">No campaigns yet.</p>
+                    ) : (
+                      phCampaigns.map((c) => (
+                        <div
+                          key={c._id}
+                          className="bg-white/60 p-5 rounded-2xl mb-4 flex justify-between items-center"
                         >
-                          Archive
-                        </button>
-                      </div>
-                    ))
-                  )}
+                          <div>
+                            <p className="font-semibold">{c.title}</p>
+                            <p className="text-sm text-gray-600">{c.summary}</p>
+                          </div>
+                          <button
+                            onClick={() => archiveCampaign(c._id)}
+                            className="px-4 py-2 rounded-xl bg-orange-600 text-white hover:bg-orange-700"
+                          >
+                            Archive
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
               )}
 
+              {/* NEWS */}
               {phTab === "news" && (
-                <div className="glass-card p-6">
-                  <h3 className="font-bold text-xl mb-4">Official News</h3>
-                  {phNews.length === 0 ? (
-                    <p className="text-gray-600">No news yet.</p>
-                  ) : (
-                    phNews.map((n) => (
-                      <div key={n._id} className="bg-white/60 p-5 rounded-2xl mb-4 flex justify-between items-center">
-                        <div>
-                          <p className="font-semibold">{n.title}</p>
-                          <p className="text-sm text-gray-600">{n.summary}</p>
-                        </div>
-                        <button
-                          onClick={() => publishNews(n._id)}
-                          className="px-4 py-2 rounded-xl bg-green-600 text-white hover:bg-green-700"
+                <div className="space-y-6">
+                  <div className="glass-card p-5">
+                    <h3 className="font-bold mb-3 flex items-center gap-2">
+                      <PlusCircle size={18} /> Create News
+                    </h3>
+                    <form onSubmit={createNews} className="grid grid-cols-2 gap-4">
+                      <input
+                        className="input-field"
+                        placeholder="Title"
+                        value={newNewsItem.title}
+                        onChange={(e) => setNewNewsItem({ ...newNewsItem, title: e.target.value })}
+                        required
+                      />
+                      <input
+                        className="input-field"
+                        placeholder="Source Name"
+                        value={newNewsItem.sourceName}
+                        onChange={(e) =>
+                          setNewNewsItem({ ...newNewsItem, sourceName: e.target.value })
+                        }
+                        required
+                      />
+                      <select
+                        className="input-field"
+                        value={newNewsItem.urgencyLevel}
+                        onChange={(e) =>
+                          setNewNewsItem({ ...newNewsItem, urgencyLevel: e.target.value })
+                        }
+                      >
+                        <option value="low">Low</option>
+                        <option value="normal">Normal</option>
+                        <option value="high">High</option>
+                        <option value="critical">Critical</option>
+                      </select>
+                      <textarea
+                        className="input-field col-span-2"
+                        placeholder="Body (full content)"
+                        value={newNewsItem.body}
+                        onChange={(e) => setNewNewsItem({ ...newNewsItem, body: e.target.value })}
+                        required
+                      />
+                      <textarea
+                        className="input-field col-span-2"
+                        placeholder="Summary"
+                        value={newNewsItem.summary}
+                        onChange={(e) => setNewNewsItem({ ...newNewsItem, summary: e.target.value })}
+                        required
+                      />
+                      <button type="submit" className="btn-primary col-span-2">
+                        Create News
+                      </button>
+                    </form>
+                  </div>
+
+                  <div className="glass-card p-6">
+                    <h3 className="font-bold text-xl mb-4">Official News</h3>
+                    {phNews.length === 0 ? (
+                      <p className="text-gray-600">No news yet.</p>
+                    ) : (
+                      phNews.map((n) => (
+                        <div
+                          key={n._id}
+                          className="bg-white/60 p-5 rounded-2xl mb-4 flex justify-between items-center"
                         >
-                          Publish
-                        </button>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-
-              {phTab === "tips" && (
-                <div className="glass-card p-6">
-                  <h3 className="font-bold text-xl mb-4">Health Tips</h3>
-                  {phTips.length === 0 ? (
-                    <p className="text-gray-600">No tips yet.</p>
-                  ) : (
-                    phTips.map((t) => (
-                      <div key={t._id} className="bg-white/60 p-5 rounded-2xl mb-4">
-                        <p className="font-semibold">{t.title}</p>
-                        <p className="text-sm text-gray-600 mt-1">{t.shortText}</p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-
-              {phTab === "events" && (
-                <div className="glass-card p-6">
-                  <h3 className="font-bold text-xl mb-4">Live Teaching Events</h3>
-                  {phEvents.length === 0 ? (
-                    <p className="text-gray-600">No events yet.</p>
-                  ) : (
-                    phEvents.map((e) => (
-                      <div key={e._id} className="bg-white/60 p-5 rounded-2xl mb-4 flex justify-between items-center">
-                        <div>
-                          <p className="font-semibold">{e.title}</p>
-                          <p className="text-sm text-gray-600">{new Date(e.scheduledAt).toLocaleString()}</p>
-                        </div>
-                        <div className="flex gap-2">
+                          <div>
+                            <p className="font-semibold">{n.title}</p>
+                            <p className="text-sm text-gray-600">{n.summary}</p>
+                          </div>
                           <button
-                            onClick={() => startLiveEvent(e._id)}
-                            className="px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700"
-                          >
-                            Start Live
-                          </button>
-                          <button
-                            onClick={() => endLiveEvent(e._id)}
-                            className="px-4 py-2 rounded-xl bg-gray-900 text-white hover:bg-black"
-                          >
-                            End
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-
-              {phTab === "questions" && (
-                <div className="glass-card p-6">
-                  <h3 className="font-bold text-xl mb-4">Pending Questions</h3>
-                  {phPendingQuestions.length === 0 ? (
-                    <p className="text-gray-600">No pending questions.</p>
-                  ) : (
-                    phPendingQuestions.map((q) => (
-                      <div key={q._id} className="bg-white/60 p-5 rounded-2xl mb-4">
-                        <p className="font-medium">{q.questionText}</p>
-                        <div className="flex gap-2 mt-4">
-                          <button
-                            onClick={() => approveQuestion(q._id)}
+                            onClick={() => publishNews(n._id)}
                             className="px-4 py-2 rounded-xl bg-green-600 text-white hover:bg-green-700"
                           >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => rejectQuestion(q._id)}
-                            className="px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700"
-                          >
-                            Reject
+                            Publish
                           </button>
                         </div>
-                      </div>
-                    ))
-                  )}
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* TIPS */}
+              {phTab === "tips" && (
+                <div className="space-y-6">
+                  <div className="glass-card p-5">
+                    <h3 className="font-bold mb-3 flex items-center gap-2">
+                      <PlusCircle size={18} /> Create Tip
+                    </h3>
+                    <form onSubmit={createTip} className="space-y-4">
+                      <input
+                        className="input-field"
+                        placeholder="Title"
+                        value={newTip.title}
+                        onChange={(e) => setNewTip({ ...newTip, title: e.target.value })}
+                        required
+                      />
+                      <input
+                        className="input-field"
+                        placeholder="Category"
+                        value={newTip.category}
+                        onChange={(e) => setNewTip({ ...newTip, category: e.target.value })}
+                        required
+                      />
+                      <textarea
+                        className="input-field min-h-[100px]"
+                        placeholder="Short Text"
+                        value={newTip.shortText}
+                        onChange={(e) => setNewTip({ ...newTip, shortText: e.target.value })}
+                        required
+                      />
+                      <select
+                        className="input-field"
+                        value={newTip.type}
+                        onChange={(e) => setNewTip({ ...newTip, type: e.target.value })}
+                      >
+                        <option value="quick_tip">Quick Tip</option>
+                        <option value="myth_fact">Myth vs Fact</option>
+                        <option value="danger_sign">Danger Sign</option>
+                        <option value="prevention">Prevention</option>
+                        <option value="checklist">Checklist</option>
+                      </select>
+                      <button type="submit" className="btn-primary w-full">
+                        Create Tip
+                      </button>
+                    </form>
+                  </div>
+
+                  <div className="glass-card p-6">
+                    <h3 className="font-bold text-xl mb-4">Health Tips</h3>
+                    {phTips.length === 0 ? (
+                      <p className="text-gray-600">No tips yet.</p>
+                    ) : (
+                      phTips.map((t) => (
+                        <div key={t._id} className="bg-white/60 p-5 rounded-2xl mb-4">
+                          <p className="font-semibold">{t.title}</p>
+                          <p className="text-sm text-gray-600 mt-1">{t.shortText}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* EVENTS */}
+              {phTab === "events" && (
+                <div className="space-y-6">
+                  <div className="glass-card p-5">
+                    <h3 className="font-bold mb-3 flex items-center gap-2">
+                      <PlusCircle size={18} /> Create Event
+                    </h3>
+                    <form onSubmit={createEvent} className="grid grid-cols-2 gap-4">
+                      <input
+                        className="input-field"
+                        placeholder="Title"
+                        value={newEvent.title}
+                        onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                        required
+                      />
+                      <input
+                        className="input-field"
+                        placeholder="Host Name"
+                        value={newEvent.hostName}
+                        onChange={(e) => setNewEvent({ ...newEvent, hostName: e.target.value })}
+                        required
+                      />
+                      <select
+                        className="input-field"
+                        value={newEvent.hostRole}
+                        onChange={(e) => setNewEvent({ ...newEvent, hostRole: e.target.value })}
+                      >
+                        <option value="doctor">Doctor</option>
+                        <option value="nurse">Nurse</option>
+                        <option value="chw">CHW</option>
+                        <option value="specialist">Specialist</option>
+                      </select>
+                      <input
+                        className="input-field"
+                        placeholder="Organization"
+                        value={newEvent.organization}
+                        onChange={(e) =>
+                          setNewEvent({ ...newEvent, organization: e.target.value })
+                        }
+                        required
+                      />
+                      <textarea
+                        className="input-field col-span-2"
+                        placeholder="Description"
+                        value={newEvent.description}
+                        onChange={(e) =>
+                          setNewEvent({ ...newEvent, description: e.target.value })
+                        }
+                        required
+                      />
+                      <input
+                        type="datetime-local"
+                        className="input-field"
+                        value={newEvent.scheduledAt}
+                        onChange={(e) =>
+                          setNewEvent({ ...newEvent, scheduledAt: e.target.value })
+                        }
+                        required
+                      />
+                      <input
+                        type="datetime-local"
+                        className="input-field"
+                        value={newEvent.endAt}
+                        onChange={(e) => setNewEvent({ ...newEvent, endAt: e.target.value })}
+                        required
+                      />
+                      <button type="submit" className="btn-primary col-span-2">
+                        Create Event
+                      </button>
+                    </form>
+                  </div>
+
+                  <div className="glass-card p-6">
+                    <h3 className="font-bold text-xl mb-4">Live Teaching Events</h3>
+                    {phEvents.length === 0 ? (
+                      <p className="text-gray-600">No events yet.</p>
+                    ) : (
+                      phEvents.map((e) => (
+                        <div
+                          key={e._id}
+                          className="bg-white/60 p-5 rounded-2xl mb-4 flex justify-between items-center"
+                        >
+                          <div>
+                            <p className="font-semibold">{e.title}</p>
+                            <p className="text-sm text-gray-600">
+                              {new Date(e.scheduledAt).toLocaleString()}
+                            </p>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => startLiveEvent(e._id)}
+                              className="px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700"
+                            >
+                              Start Live
+                            </button>
+                            <button
+                              onClick={() => endLiveEvent(e._id)}
+                              className="px-4 py-2 rounded-xl bg-gray-900 text-white hover:bg-black"
+                            >
+                              End
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
               )}
             </div>
