@@ -28,7 +28,7 @@ const login = async (req, res, next) => {
     const user = await User.findOne({ email })
     if (!user || !(await bcrypt.compare(password, user.password)))
       return res.status(400).json({ msg: req.__('auth.invalid_credentials') })
-    const isAdmin = user.role === 'admin';
+    const isAdmin = user.role === 'admin' || !!user.isAdmin;
     const token = jwt.sign({ id: user._id, isAdmin, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' })
     res.json({ token, msg: req.__('auth.login_success'), isAdmin, role: user.role })
   } catch (err) {
