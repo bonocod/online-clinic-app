@@ -14,8 +14,110 @@ import {
   Video,
   AlertCircle,
 } from "lucide-react";
-import { LiveKitRoom, VideoConference } from "@livekit/components-react";
+import {
+  LiveKitRoom,
+  useTracks,
+  VideoTrack,
+  RoomAudioRenderer,
+  useParticipants,
+} from "@livekit/components-react";
 import "@livekit/components-styles";
+import { Track } from "livekit-client";
+
+function TvViewer() {
+  const allTracks = useTracks(
+    [{ source: Track.Source.Camera, withPlaceholder: false }],
+    { onlySubscribed: true }
+  );
+  const participants = useParticipants();
+  const remoteTracks = allTracks.filter((t) => !t.participant.isLocal);
+  const viewerCount = Math.max(0, participants.length - 1);
+
+  return (
+    <div
+      style={{
+        background: "#000",
+        height: "100%",
+        width: "100%",
+        position: "relative",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <RoomAudioRenderer />
+      {remoteTracks.length > 0 ? (
+        <>
+          <VideoTrack
+            trackRef={remoteTracks[0]}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          />
+          <div style={{ position: "absolute", top: 14, left: 14, display: "flex", gap: 8, alignItems: "center" }}>
+            <span
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                background: "#dc2626",
+                color: "#fff",
+                fontSize: 12,
+                fontWeight: 700,
+                padding: "4px 10px",
+                borderRadius: 999,
+              }}
+            >
+              <Radio size={12} /> LIVE
+            </span>
+          </div>
+          {viewerCount > 0 && (
+            <div style={{ position: "absolute", top: 14, right: 14 }}>
+              <span
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
+                  background: "rgba(0,0,0,0.55)",
+                  backdropFilter: "blur(4px)",
+                  color: "#fff",
+                  fontSize: 12,
+                  padding: "4px 10px",
+                  borderRadius: 999,
+                }}
+              >
+                <Users size={12} /> {viewerCount} watching
+              </span>
+            </div>
+          )}
+        </>
+      ) : (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 12,
+            color: "rgba(255,255,255,0.4)",
+          }}
+        >
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: "50%",
+              border: "3px solid rgba(255,255,255,0.15)",
+              borderTopColor: "rgba(255,255,255,0.7)",
+              animation: "spin 0.9s linear infinite",
+            }}
+          />
+          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.55)" }}>Connecting to live stream…</p>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>
+            Host is setting up the broadcast
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const PublicHealthEventDetail = () => {
   const { id } = useParams();
@@ -64,9 +166,7 @@ const PublicHealthEventDetail = () => {
       setLivekitToken(res.data.token);
       setLivekitUrl(res.data.livekitUrl);
     } catch (e) {
-      setLivekitError(
-        e.response?.data?.msg || "Unable to connect to live stream"
-      );
+      setLivekitError(e.response?.data?.msg || "Unable to connect to live stream");
     } finally {
       setTokenLoading(false);
     }
@@ -79,18 +179,14 @@ const PublicHealthEventDetail = () => {
     joinPublicHealthEvent(id);
 
     s.on("publicHealth:eventStarted", (data) => {
-      if (String(data.eventId) === String(id)) {
-        fetchEvent();
-      }
+      if (String(data.eventId) === String(id)) fetchEvent();
     });
-
     s.on("publicHealth:eventEnded", (data) => {
       if (String(data.eventId) === String(id)) {
         fetchEvent();
         setLivekitToken(null);
       }
     });
-
     s.on("publicHealth:eventQuestionApproved", (data) => {
       if (String(data.eventId) === String(id)) {
         const q = data.question;
@@ -101,7 +197,6 @@ const PublicHealthEventDetail = () => {
         });
       }
     });
-
     s.on("publicHealth:eventQuestionAnswered", (data) => {
       if (String(data.eventId) === String(id)) {
         const q = data.question;
@@ -211,48 +306,63 @@ const PublicHealthEventDetail = () => {
 
         {event.description && (
           <div className="mt-6 pt-6 border-t border-white/40">
-            <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-              {event.description}
-            </p>
+            <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{event.description}</p>
           </div>
         )}
       </div>
 
-      {/* LiveKit Video Room */}
+      {/* LiveKit TV Viewer */}
       {event.status === "live" && (
-        <div className="glass-card p-6">
-          <h2 className="font-bold text-xl mb-4 flex items-center gap-2">
-            <Video className="text-red-600" size={20} />
-            Live Stream
-          </h2>
+        <div className="glass-card overflow-hidden p-0">
+          {/* TV-style header bar */}
+          <div className="flex items-center justify-between px-5 py-3 bg-gray-900">
+            <div className="flex items-center gap-2">
+              <span className="flex items-center gap-1.5 bg-red-600 text-white text-xs px-2.5 py-1 rounded-full animate-pulse font-semibold">
+                <Radio size={11} /> LIVE
+              </span>
+              <span className="text-white text-sm font-medium">{event.title}</span>
+            </div>
+            <span className="text-white/50 text-xs flex items-center gap-1.5">
+              <Video size={13} /> Live Stream
+            </span>
+          </div>
 
-          {!isLoggedIn ? (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-6 text-center">
-              <p className="text-yellow-800 font-medium">
-                Please{" "}
-                <Link to="/login" className="text-primary underline">
-                  log in
-                </Link>{" "}
-                to watch the live stream.
-              </p>
-            </div>
-          ) : tokenLoading ? (
-            <div className="flex items-center justify-center h-48 bg-gray-50 rounded-2xl">
-              <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent" />
-            </div>
-          ) : livekitError ? (
-            <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
-              <AlertCircle className="mx-auto text-red-500 mb-2" size={28} />
-              <p className="text-red-700 font-medium">{livekitError}</p>
-              <button
-                onClick={fetchLiveKitToken}
-                className="mt-3 btn-primary text-sm"
-              >
-                Retry Connection
-              </button>
-            </div>
-          ) : livekitToken && livekitUrl ? (
-            <div className="rounded-2xl overflow-hidden" style={{ height: "520px" }}>
+          {/* Video player area */}
+          <div style={{ height: 520, background: "#000" }}>
+            {!isLoggedIn ? (
+              <div className="flex items-center justify-center h-full bg-gray-900">
+                <div className="text-center">
+                  <Video className="mx-auto text-white/30 mb-3" size={40} />
+                  <p className="text-white/70 font-medium">
+                    Please{" "}
+                    <Link to="/login" className="text-blue-400 underline">
+                      log in
+                    </Link>{" "}
+                    to watch the live stream.
+                  </p>
+                </div>
+              </div>
+            ) : tokenLoading ? (
+              <div className="flex items-center justify-center h-full bg-gray-900">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="animate-spin rounded-full h-10 w-10 border-3 border-white/20 border-t-white" />
+                  <p className="text-white/50 text-sm">Connecting to stream…</p>
+                </div>
+              </div>
+            ) : livekitError ? (
+              <div className="flex items-center justify-center h-full bg-gray-900">
+                <div className="text-center">
+                  <AlertCircle className="mx-auto text-red-400 mb-3" size={36} />
+                  <p className="text-red-300 font-medium mb-4">{livekitError}</p>
+                  <button
+                    onClick={fetchLiveKitToken}
+                    className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm transition-colors"
+                  >
+                    Retry Connection
+                  </button>
+                </div>
+              </div>
+            ) : livekitToken && livekitUrl ? (
               <LiveKitRoom
                 token={livekitToken}
                 serverUrl={livekitUrl}
@@ -262,14 +372,14 @@ const PublicHealthEventDetail = () => {
                 data-lk-theme="default"
                 style={{ height: "100%" }}
               >
-                <VideoConference />
+                <TvViewer />
               </LiveKitRoom>
-            </div>
-          ) : (
-            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 text-center">
-              <p className="text-gray-500">Stream not available yet.</p>
-            </div>
-          )}
+            ) : (
+              <div className="flex items-center justify-center h-full bg-gray-900">
+                <p className="text-white/40 text-sm">Stream not available yet.</p>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -280,11 +390,7 @@ const PublicHealthEventDetail = () => {
             <Play size={20} className="text-primary" />
             Event Recording
           </h2>
-          <video
-            controls
-            className="w-full rounded-2xl"
-            src={event.replayUrl}
-          />
+          <video controls className="w-full rounded-2xl" src={event.replayUrl} />
         </div>
       )}
 
@@ -299,21 +405,17 @@ const PublicHealthEventDetail = () => {
             </span>
           </h2>
 
-          {/* Submit Question Form */}
           {event.status === "live" && (
             <div className="mb-8">
               {!isLoggedIn ? (
                 <p className="text-sm text-gray-500">
-                  <Link to="/login" className="text-primary underline">
-                    Log in
-                  </Link>{" "}
-                  to ask a question.
+                  <Link to="/login" className="text-primary underline">Log in</Link> to ask a question.
                 </p>
               ) : (
                 <form onSubmit={handleSubmitQuestion} className="space-y-3">
                   <textarea
                     className="input-field min-h-[100px] resize-none"
-                    placeholder="Type your question here..."
+                    placeholder="Type your question here…"
                     value={questionText}
                     onChange={(e) => setQuestionText(e.target.value)}
                     maxLength={2000}
@@ -335,19 +437,17 @@ const PublicHealthEventDetail = () => {
                       className="btn-primary flex items-center gap-2 disabled:opacity-50"
                     >
                       <Send size={16} />
-                      {submitting ? "Sending..." : "Submit Question"}
+                      {submitting ? "Sending…" : "Submit Question"}
                     </button>
                   </div>
                   {submitSuccess && (
                     <div className="flex items-center gap-2 text-green-700 bg-green-50 border border-green-200 rounded-xl p-3 text-sm">
-                      <CheckCircle2 size={16} />
-                      {submitSuccess}
+                      <CheckCircle2 size={16} /> {submitSuccess}
                     </div>
                   )}
                   {submitError && (
                     <div className="flex items-center gap-2 text-red-700 bg-red-50 border border-red-200 rounded-xl p-3 text-sm">
-                      <AlertCircle size={16} />
-                      {submitError}
+                      <AlertCircle size={16} /> {submitError}
                     </div>
                   )}
                 </form>
@@ -355,7 +455,6 @@ const PublicHealthEventDetail = () => {
             </div>
           )}
 
-          {/* Questions List */}
           {questions.length === 0 ? (
             <p className="text-gray-500 text-sm">
               {event.status === "live"
@@ -365,10 +464,7 @@ const PublicHealthEventDetail = () => {
           ) : (
             <div className="space-y-5">
               {questions.map((q) => (
-                <div
-                  key={q._id}
-                  className="border-l-4 border-primary pl-4 py-1"
-                >
+                <div key={q._id} className="border-l-4 border-primary pl-4 py-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-sm font-medium text-gray-700">
                       {q.askedBy?.name || "Anonymous"}
@@ -379,10 +475,7 @@ const PublicHealthEventDetail = () => {
                       </span>
                     )}
                     <span className="text-xs text-gray-400 ml-auto">
-                      {new Date(q.createdAt).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {new Date(q.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                     </span>
                   </div>
                   <p className="text-gray-900 font-medium">{q.questionText}</p>
@@ -402,7 +495,6 @@ const PublicHealthEventDetail = () => {
         </div>
       )}
 
-      {/* Upcoming info */}
       {event.status === "upcoming" && (
         <div className="glass-card p-8 text-center">
           <Calendar className="mx-auto text-primary mb-3" size={40} />
