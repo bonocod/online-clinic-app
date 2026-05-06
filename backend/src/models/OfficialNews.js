@@ -26,6 +26,8 @@ const officialNewsSchema = new mongoose.Schema(
       index: true,
     },
     archivedAt: { type: Date, default: null },
+    institutionName: { type: String, trim: true, maxlength: 200, default: '' },
+    institutionBadge: { type: String, trim: true, maxlength: 2000, default: '' },
     relatedCampaigns: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Campaign' }],
     relatedTips: [{ type: mongoose.Schema.Types.ObjectId, ref: 'HealthTip' }],
     relatedLiveEvents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'LiveTeachingEvent' }],
@@ -35,5 +37,6 @@ const officialNewsSchema = new mongoose.Schema(
 
 officialNewsSchema.index({ isPublished: 1, status: 1, publishedAt: -1 })
 officialNewsSchema.index({ category: 1, urgencyLevel: 1 })
+officialNewsSchema.index({ institutionName: 1 })
 
 module.exports = mongoose.model('OfficialNews', officialNewsSchema)

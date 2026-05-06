@@ -102,7 +102,7 @@ export default function Admin() {
   const [activityFeed, setActivityFeed] = useState([]);
 
   // ==================== PUBLIC HEALTH HUB STATES ====================
-  const [phTab, setPhTab] = useState("campaigns");
+  const [phTab, setPhTab] = useState("news");
   const [phCampaigns, setPhCampaigns] = useState([]);
   const [phNews, setPhNews] = useState([]);
   const [phTips, setPhTips] = useState([]);
@@ -123,6 +123,8 @@ export default function Admin() {
     body: "",
     urgencyLevel: "normal",
     sourceName: "",
+    institutionName: "",
+    institutionBadge: "",
   });
   const [newTip, setNewTip] = useState({
     title: "",
@@ -870,11 +872,23 @@ export default function Admin() {
     }
   };
 
+  const publishEvent = async (id) => {
+    setError("");
+    setSuccess("");
+    try {
+      await api.patch(`/public-health/manage/events/${id}/publish`);
+      fetchPhEvents();
+      setSuccess("Event published");
+    } catch (err) {
+      setError(err.response?.data?.msg || "Publish failed");
+    }
+  };
+
   const startLiveEvent = async (id) => {
     setError("");
     setSuccess("");
     try {
-      await api.post(`/public-health/manage/events/${id}/start`);
+      await api.patch(`/public-health/manage/events/${id}/start`);
       fetchPhEvents();
       setSuccess("Live event started");
     } catch (err) {
@@ -886,7 +900,7 @@ export default function Admin() {
     setError("");
     setSuccess("");
     try {
-      await api.post(`/public-health/manage/events/${id}/end`);
+      await api.patch(`/public-health/manage/events/${id}/end`);
       fetchPhEvents();
       setSuccess("Live event ended");
     } catch (err) {
@@ -916,8 +930,8 @@ export default function Admin() {
     try {
       await api.post("/public-health/manage/news", newNewsItem);
       fetchPhNews();
-      setNewNewsItem({ title: "", summary: "", body: "", urgencyLevel: "normal", sourceName: "" });
-      setSuccess("News created");
+      setNewNewsItem({ title: "", summary: "", body: "", urgencyLevel: "normal", sourceName: "", institutionName: "", institutionBadge: "" });
+      setSuccess("News / update created");
     } catch (err) {
       setError(err.response?.data?.msg || "Create failed");
     }
@@ -968,7 +982,7 @@ export default function Admin() {
     []
   );
 
-  const phSubTabs = useMemo(() => ["campaigns", "news", "tips", "events"], []);
+  const phSubTabs = useMemo(() => ["news", "events"], []);
 
   const auditPages = Math.max(1, Math.ceil(auditTotal / auditLimit));
 
@@ -1960,16 +1974,16 @@ export default function Admin() {
                 </div>
               )}
 
-              {/* NEWS */}
+              {/* NEWS / UPDATES */}
               {phTab === "news" && (
                 <div className="space-y-6">
                   <div className="glass-card p-5">
                     <h3 className="font-bold mb-3 flex items-center gap-2">
-                      <PlusCircle size={18} /> Create News
+                      <PlusCircle size={18} /> Create Update / Alert
                     </h3>
                     <form onSubmit={createNews} className="grid grid-cols-2 gap-4">
                       <input
-                        className="input-field"
+                        className="input-field col-span-2"
                         placeholder="Title"
                         value={newNewsItem.title}
                         onChange={(e) => setNewNewsItem({ ...newNewsItem, title: e.target.value })}
@@ -1977,7 +1991,7 @@ export default function Admin() {
                       />
                       <input
                         className="input-field"
-                        placeholder="Source Name"
+                        placeholder="Source Name (e.g. MOH Rwanda)"
                         value={newNewsItem.sourceName}
                         onChange={(e) =>
                           setNewNewsItem({ ...newNewsItem, sourceName: e.target.value })
@@ -1996,46 +2010,80 @@ export default function Admin() {
                         <option value="high">High</option>
                         <option value="critical">Critical</option>
                       </select>
-                      <textarea
-                        className="input-field col-span-2"
-                        placeholder="Body (full content)"
-                        value={newNewsItem.body}
-                        onChange={(e) => setNewNewsItem({ ...newNewsItem, body: e.target.value })}
-                        required
+                      <input
+                        className="input-field"
+                        placeholder="Institution Name (e.g. MOH, RSSB)"
+                        value={newNewsItem.institutionName}
+                        onChange={(e) =>
+                          setNewNewsItem({ ...newNewsItem, institutionName: e.target.value })
+                        }
+                      />
+                      <input
+                        className="input-field"
+                        placeholder="Institution Badge / Logo URL (optional)"
+                        value={newNewsItem.institutionBadge}
+                        onChange={(e) =>
+                          setNewNewsItem({ ...newNewsItem, institutionBadge: e.target.value })
+                        }
                       />
                       <textarea
-                        className="input-field col-span-2"
-                        placeholder="Summary"
+                        className="input-field col-span-2 min-h-[80px]"
+                        placeholder="Summary (short description)"
                         value={newNewsItem.summary}
                         onChange={(e) => setNewNewsItem({ ...newNewsItem, summary: e.target.value })}
                         required
                       />
+                      <textarea
+                        className="input-field col-span-2 min-h-[120px]"
+                        placeholder="Full body / content"
+                        value={newNewsItem.body}
+                        onChange={(e) => setNewNewsItem({ ...newNewsItem, body: e.target.value })}
+                        required
+                      />
                       <button type="submit" className="btn-primary col-span-2">
-                        Create News
+                        Create Update
                       </button>
                     </form>
                   </div>
 
                   <div className="glass-card p-6">
-                    <h3 className="font-bold text-xl mb-4">Official News</h3>
+                    <h3 className="font-bold text-xl mb-4">Health Updates & Alerts</h3>
                     {phNews.length === 0 ? (
-                      <p className="text-gray-600">No news yet.</p>
+                      <p className="text-gray-600">No updates yet.</p>
                     ) : (
                       phNews.map((n) => (
                         <div
                           key={n._id}
-                          className="bg-white/60 p-5 rounded-2xl mb-4 flex justify-between items-center"
+                          className="bg-white/60 p-5 rounded-2xl mb-4"
                         >
-                          <div>
-                            <p className="font-semibold">{n.title}</p>
-                            <p className="text-sm text-gray-600">{n.summary}</p>
+                          <div className="flex justify-between items-start gap-3">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold">{n.title}</p>
+                              {n.institutionName && (
+                                <p className="text-xs text-blue-600 mt-0.5">
+                                  In partnership with {n.institutionName}
+                                </p>
+                              )}
+                              <p className="text-sm text-gray-600 mt-1 line-clamp-2">{n.summary}</p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                Status: <span className="font-medium">{n.status}</span>
+                                {" · "}Urgency: <span className="font-medium">{n.urgencyLevel}</span>
+                              </p>
+                            </div>
+                            {n.status !== "published" && (
+                              <button
+                                onClick={() => publishNews(n._id)}
+                                className="px-4 py-2 rounded-xl bg-green-600 text-white hover:bg-green-700 text-sm flex-shrink-0"
+                              >
+                                Publish
+                              </button>
+                            )}
+                            {n.status === "published" && (
+                              <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium flex-shrink-0">
+                                Published
+                              </span>
+                            )}
                           </div>
-                          <button
-                            onClick={() => publishNews(n._id)}
-                            className="px-4 py-2 rounded-xl bg-green-600 text-white hover:bg-green-700"
-                          >
-                            Publish
-                          </button>
                         </div>
                       ))
                     )}
@@ -2110,12 +2158,12 @@ export default function Admin() {
                 <div className="space-y-6">
                   <div className="glass-card p-5">
                     <h3 className="font-bold mb-3 flex items-center gap-2">
-                      <PlusCircle size={18} /> Create Event
+                      <PlusCircle size={18} /> Schedule Live Event
                     </h3>
                     <form onSubmit={createEvent} className="grid grid-cols-2 gap-4">
                       <input
                         className="input-field"
-                        placeholder="Title"
+                        placeholder="Event Title"
                         value={newEvent.title}
                         onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                         required
@@ -2147,7 +2195,7 @@ export default function Admin() {
                         required
                       />
                       <textarea
-                        className="input-field col-span-2"
+                        className="input-field col-span-2 min-h-[90px]"
                         placeholder="Description"
                         value={newEvent.description}
                         onChange={(e) =>
@@ -2155,24 +2203,30 @@ export default function Admin() {
                         }
                         required
                       />
-                      <input
-                        type="datetime-local"
-                        className="input-field"
-                        value={newEvent.scheduledAt}
-                        onChange={(e) =>
-                          setNewEvent({ ...newEvent, scheduledAt: e.target.value })
-                        }
-                        required
-                      />
-                      <input
-                        type="datetime-local"
-                        className="input-field"
-                        value={newEvent.endAt}
-                        onChange={(e) => setNewEvent({ ...newEvent, endAt: e.target.value })}
-                        required
-                      />
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Start Time</label>
+                        <input
+                          type="datetime-local"
+                          className="input-field"
+                          value={newEvent.scheduledAt}
+                          onChange={(e) =>
+                            setNewEvent({ ...newEvent, scheduledAt: e.target.value })
+                          }
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">End Time</label>
+                        <input
+                          type="datetime-local"
+                          className="input-field"
+                          value={newEvent.endAt}
+                          onChange={(e) => setNewEvent({ ...newEvent, endAt: e.target.value })}
+                          required
+                        />
+                      </div>
                       <button type="submit" className="btn-primary col-span-2">
-                        Create Event
+                        Schedule Event
                       </button>
                     </form>
                   </div>
@@ -2185,27 +2239,54 @@ export default function Admin() {
                       phEvents.map((e) => (
                         <div
                           key={e._id}
-                          className="bg-white/60 p-5 rounded-2xl mb-4 flex justify-between items-center"
+                          className="bg-white/60 p-5 rounded-2xl mb-4"
                         >
-                          <div>
-                            <p className="font-semibold">{e.title}</p>
-                            <p className="text-sm text-gray-600">
-                              {new Date(e.scheduledAt).toLocaleString()}
-                            </p>
-                          </div>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => startLiveEvent(e._id)}
-                              className="px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700"
-                            >
-                              Start Live
-                            </button>
-                            <button
-                              onClick={() => endLiveEvent(e._id)}
-                              className="px-4 py-2 rounded-xl bg-gray-900 text-white hover:bg-black"
-                            >
-                              End
-                            </button>
+                          <div className="flex flex-wrap justify-between items-start gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <p className="font-semibold">{e.title}</p>
+                                <span className={`text-xs px-2 py-0.5 rounded-full text-white ${
+                                  e.status === "live" ? "bg-red-600 animate-pulse" :
+                                  e.status === "upcoming" ? "bg-blue-600" :
+                                  e.status === "past" ? "bg-gray-400" :
+                                  "bg-gray-300"
+                                }`}>
+                                  {e.status?.toUpperCase()}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-600">
+                                {e.hostName} · {e.organization}
+                              </p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                {new Date(e.scheduledAt).toLocaleString()}
+                              </p>
+                            </div>
+                            <div className="flex flex-wrap gap-2 flex-shrink-0">
+                              {!e.isPublished && (
+                                <button
+                                  onClick={() => publishEvent(e._id)}
+                                  className="px-3 py-1.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700 text-sm"
+                                >
+                                  Publish
+                                </button>
+                              )}
+                              {e.status !== "live" && e.status !== "past" && (
+                                <button
+                                  onClick={() => startLiveEvent(e._id)}
+                                  className="px-3 py-1.5 rounded-xl bg-red-600 text-white hover:bg-red-700 text-sm flex items-center gap-1"
+                                >
+                                  <Radio size={14} /> Go Live
+                                </button>
+                              )}
+                              {e.status === "live" && (
+                                <button
+                                  onClick={() => endLiveEvent(e._id)}
+                                  className="px-3 py-1.5 rounded-xl bg-gray-900 text-white hover:bg-black text-sm"
+                                >
+                                  End Stream
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       ))

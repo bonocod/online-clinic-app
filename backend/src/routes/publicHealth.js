@@ -51,6 +51,9 @@ const {
   listSavedItems,
   updateSavedItem,
   deleteSavedItem,
+
+  getLiveKitToken,
+  getHostLiveKitToken,
 } = require('../controllers/publicHealthController')
 
 const router = express.Router()
@@ -70,6 +73,8 @@ router.get('/events', listEvents)
 router.get('/events/:id', getEvent)
 router.get('/events/:id/questions', listEventQuestions)
 router.post('/events/:id/questions', auth, submitEventQuestion)
+
+router.get('/events/:id/livekit-token', auth, getLiveKitToken)
 
 router.get('/saved-items', auth, listSavedItems)
 router.post('/saved-items', auth, saveItem)
@@ -106,6 +111,8 @@ router.patch('/manage/events/:id/publish', publishEvent)
 router.patch('/manage/events/:id/start', startEvent)
 router.patch('/manage/events/:id/end', endEvent)
 router.patch('/manage/events/:id/cancel', cancelEvent)
+
+router.get('/manage/events/:id/host-token', getHostLiveKitToken)
 
 router.get('/manage/events/:id/questions', manageEventQuestions)
 router.patch('/manage/events/:id/questions/:questionId/moderate', moderateEventQuestion)

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const { AccessToken } = require('livekit-server-sdk')
 
 const Campaign = require('../models/Campaign')
 const OfficialNews = require('../models/OfficialNews')
@@ -208,7 +209,7 @@ const syncEventStatus = async (event) => {
   const nextStatus = computeEventStatus(event)
   if (event.status !== nextStatus) {
     event.status = nextStatus
-    await event.save()
+    await LiveTeachingEvent.updateOne({ _id: event._id }, { $set: { status: nextStatus } })
   }
   return event
 }
@@ -742,6 +743,8 @@ const createNews = async (req, res, next) => {
       return res.status(400).json({ msg: 'title, summary, body and sourceName are required' })
     }
 
+    const { institutionName, institutionBadge } = req.body
+
     const news = await OfficialNews.create({
       title: String(title).trim(),
       slug: await generateUniqueSlug(OfficialNews, title),
@@ -755,6 +758,8 @@ const createNews = async (req, res, next) => {
         : 'normal',
       coverImage: String(coverImage || '').trim(),
       isOfficial: isOfficial === undefined ? true : !!isOfficial,
+      institutionName: String(institutionName || '').trim(),
+      institutionBadge: String(institutionBadge || '').trim(),
       relatedCampaigns: toObjectIdArray(relatedCampaigns),
       relatedTips: toObjectIdArray(relatedTips),
       relatedLiveEvents: toObjectIdArray(relatedLiveEvents),
@@ -785,7 +790,7 @@ const updateNews = async (req, res, next) => {
     const news = await OfficialNews.findById(req.params.id)
     if (!news) return res.status(404).json({ msg: 'News item not found' })
 
-    const fields = ['title', 'summary', 'body', 'category', 'sourceName', 'sourceUrl', 'coverImage']
+    const fields = ['title', 'summary', 'body', 'category', 'sourceName', 'sourceUrl', 'coverImage', 'institutionName', 'institutionBadge']
 
     fields.forEach((field) => {
       if (req.body[field] !== undefined) news[field] = String(req.body[field] || '').trim()
@@ -1767,6 +1772,101 @@ const deleteSavedItem = async (req, res, next) => {
   }
 }
 
+const getLiveKitToken = async (req, res, next) => {
+  try {
+    const event = await LiveTeachingEvent.findById(req.params.id)
+    if (!event) return res.status(404).json({ msg: 'Live teaching event not found' })
+
+    if (event.status !== 'live') {
+      return res.status(400).json({ msg: 'This event is not currently live' })
+    }
+
+    const apiKey = process.env.LIVEKIT_API_KEY
+    const apiSecret = process.env.LIVEKIT_API_SECRET
+    const livekitUrl = process.env.LIVEKIT_URL
+
+    if (!apiKey || !apiSecret || !livekitUrl) {
+      return res.status(500).json({ msg: 'LiveKit is not configured on the server' })
+    }
+
+    const roomName = `health_event_${event._id}`
+    const identity = req.user?.id ? `user_${req.user.id}` : `guest_${Date.now()}`
+
+    const at = new AccessToken(apiKey, apiSecret, {
+      identity,
+      name: req.user?.name || identity,
+      ttl: 3600,
+    })
+
+    at.addGrant({
+      roomJoin: true,
+      room: roomName,
+      canPublish: false,
+      canSubscribe: true,
+      canPublishData: true,
+    })
+
+    const token = await at.toJwt()
+
+    await logAudit(req, {
+      action: 'public_health.event.livekit_join',
+      targetType: 'live_teaching_event',
+      targetId: event._id,
+      metadata: { roomName, identity },
+    })
+
+    res.json({ token, roomName, livekitUrl, eventId: event._id })
+  } catch (err) {
+    next(err)
+  }
+}
+
+const getHostLiveKitToken = async (req, res, next) => {
+  try {
+    const event = await LiveTeachingEvent.findById(req.params.id)
+    if (!event) return res.status(404).json({ msg: 'Live teaching event not found' })
+
+    const apiKey = process.env.LIVEKIT_API_KEY
+    const apiSecret = process.env.LIVEKIT_API_SECRET
+    const livekitUrl = process.env.LIVEKIT_URL
+
+    if (!apiKey || !apiSecret || !livekitUrl) {
+      return res.status(500).json({ msg: 'LiveKit is not configured on the server' })
+    }
+
+    const roomName = `health_event_${event._id}`
+    const identity = `host_${req.user.id}`
+
+    const at = new AccessToken(apiKey, apiSecret, {
+      identity,
+      name: req.user?.name || 'Host',
+      ttl: 7200,
+    })
+
+    at.addGrant({
+      roomJoin: true,
+      room: roomName,
+      canPublish: true,
+      canSubscribe: true,
+      canPublishData: true,
+      roomAdmin: true,
+    })
+
+    const token = await at.toJwt()
+
+    await logAudit(req, {
+      action: 'public_health.event.livekit_host',
+      targetType: 'live_teaching_event',
+      targetId: event._id,
+      metadata: { roomName, identity },
+    })
+
+    res.json({ token, roomName, livekitUrl, eventId: event._id })
+  } catch (err) {
+    next(err)
+  }
+}
+
 module.exports = {
   getPublicHealthHome,
 
@@ -1817,4 +1917,7 @@ module.exports = {
   listSavedItems,
   updateSavedItem,
   deleteSavedItem,
+
+  getLiveKitToken,
+  getHostLiveKitToken,
 }
