@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import api from "../services/api";
 import {
@@ -51,6 +52,7 @@ const circleStatusPill = (status) => {
 };
 
 export default function Admin() {
+  const navigate = useNavigate();
   const [tab, setTab] = useState("reports");
   const [loading, setLoading] = useState(false);
   const [joinRequestsLoading, setJoinRequestsLoading] = useState(false);
@@ -889,8 +891,7 @@ export default function Admin() {
     setSuccess("");
     try {
       await api.patch(`/public-health/manage/events/${id}/start`);
-      fetchPhEvents();
-      setSuccess("Live event started");
+      navigate(`/admin/events/${id}/broadcast`);
     } catch (err) {
       setError(err.response?.data?.msg || "Start failed");
     }
@@ -2279,12 +2280,20 @@ export default function Admin() {
                                 </button>
                               )}
                               {e.status === "live" && (
-                                <button
-                                  onClick={() => endLiveEvent(e._id)}
-                                  className="px-3 py-1.5 rounded-xl bg-gray-900 text-white hover:bg-black text-sm"
-                                >
-                                  End Stream
-                                </button>
+                                <>
+                                  <button
+                                    onClick={() => navigate(`/admin/events/${e._id}/broadcast`)}
+                                    className="px-3 py-1.5 rounded-xl bg-red-600 text-white hover:bg-red-700 text-sm flex items-center gap-1 animate-pulse"
+                                  >
+                                    <Radio size={13} /> Open Studio
+                                  </button>
+                                  <button
+                                    onClick={() => endLiveEvent(e._id)}
+                                    className="px-3 py-1.5 rounded-xl bg-gray-900 text-white hover:bg-black text-sm"
+                                  >
+                                    End Stream
+                                  </button>
+                                </>
                               )}
                             </div>
                           </div>
