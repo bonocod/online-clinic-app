@@ -33,6 +33,7 @@ import PublicHealthEvents from "./pages/PublicHealthEvents";
 import PublicHealthEventDetail from "./pages/PublicHealthEventDetail";
 import PublicHealthSaved from "./pages/PublicHealthSaved";
 import AdminEventBroadcast from "./pages/AdminEventBroadcast";
+import PublicHealthNewsDetail from "./pages/PublicHealthNewsDetail";
 
 function App() {
   return (
@@ -70,6 +71,7 @@ function App() {
             <Route path="/public-health/news" element={<PublicHealthNews />} />
             <Route path="/public-health/tips" element={<PublicHealthTips />} />
             <Route path="/public-health/events" element={<PublicHealthEvents />} />
+            <Route path="/public-health/news/:id" element={<PublicHealthNewsDetail />} />
             <Route path="/public-health/events/:id" element={<PublicHealthEventDetail />} />
             <Route path="/public-health/saved" element={<PublicHealthSaved />} />
             <Route path="/admin/events/:id/broadcast" element={<AdminEventBroadcast />} />

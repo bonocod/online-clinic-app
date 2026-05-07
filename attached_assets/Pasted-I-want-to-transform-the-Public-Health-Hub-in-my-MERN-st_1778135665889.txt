@@ -1,0 +1,98 @@
+I want to transform the "Public Health Hub" in my MERN stack online clinic app into a modern, professional, highly interactive public health platform focused on the Rwandan population.
+
+The current system already works:
+
+* Admin can publish verified health updates
+* Updates are linked to institutions like MOH and RSSB
+* Live teaching events exist with streaming and questions
+
+Now I want you to enhance the entire Public Health Hub experience and turn it into a flagship feature of the application.
+
+GOALS:
+
+* Make it visually beautiful and modern
+* Make interactions smooth and responsive
+* Improve trust, accessibility, and usability
+* Design it for real-world use in Rwanda
+* Keep it professional, scalable, and production-ready
+
+IMPORTANT:
+
+* Do NOT break existing functionality
+* Keep using MERN stack
+* Keep MongoDB Atlas, Cloudinary, and LiveKit integrations
+* Maintain clean architecture and reusable components
+* Mobile-first responsive design is required
+
+I want you to improve ALL of the following areas creatively:
+
+1. UI/UX IMPROVEMENTS
+
+* Redesign the Public Health Hub page professionally
+* Improve spacing, typography, colors, cards, animations, and layout
+* Add loading skeletons and smooth transitions
+* Make it feel like a real government/public health platform
+* Use modern React UI patterns
+
+2. VERIFIED HEALTH UPDATES
+   Enhance updates/news system with:
+
+* Institution badges/logos
+* Verified indicators
+* Categories (alerts, announcements, prevention, emergencies)
+* Featured updates section
+* Trending or important updates
+* Search and filtering
+* Bookmark/save update feature
+* Share feature
+* Better readability for long content
+* Time formatting (“2 hours ago”)
+
+3. RWANDA-FOCUSED EXPERIENCE
+   Design for Rwandan users:
+
+* Support Kinyarwanda and English structure
+* Consider low-bandwidth optimization
+* Make UI accessible and easy to understand
+* Use Rwanda-relevant health communication styles
+* Add emergency hotlines section if useful
+* Add community-focused health education ideas
+
+4. LIVE TEACHING EVENTS
+   Improve live events with:
+
+* Better live event cards and countdowns
+* “Live Now” indicators
+* Scheduled events section
+* Join reminders/notifications structure
+* Better live chat/questions UI
+* Pinned questions for hosts
+* Event replay structure for future support
+* Viewer counts if possible
+
+5. PROFESSIONAL FEATURES
+   You are free to creatively add useful features such as:
+
+* Health awareness banners
+* Emergency alerts
+* Institution profile pages
+* Recommended updates
+* Public engagement metrics
+* Accessibility improvements
+* Offline/cache support ideas
+* Better admin workflows
+
+6. CODE QUALITY
+
+* Refactor messy code if needed
+* Remove duplicated code
+* Improve folder structure if necessary
+* Optimize frontend rendering and backend queries
+* Improve API organization
+* Improve error handling and validation
+* Keep everything maintainable and scalable
+
+7. OUTPUT STYLE
+   Work feature-by-feature and explain changes clearly.
+   Prefer modifying existing files instead of rewriting the whole project unnecessarily.
+   Only add dependencies if truly needed.
