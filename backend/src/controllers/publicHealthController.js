@@ -331,34 +331,32 @@ const getPublicHealthHome = async (req, res, next) => {
   try {
     const language = String(req.query.language || req.getLocale() || 'en').toLowerCase()
 
-    let campaigns = await Campaign.find({ isPublished: true })
-      .sort({ isUrgent: -1, isFeatured: -1, startDate: 1 })
-      .limit(20)
+    // Fetch all four collections in parallel for speed
+    const [campaignsRaw, newsRaw, tipsRaw, eventsRaw] = await Promise.all([
+      Campaign.find({ isPublished: true })
+        .sort({ isUrgent: -1, isFeatured: -1, startDate: 1 })
+        .limit(20),
+      OfficialNews.find({ isPublished: true, status: { $ne: 'archived' } })
+        .sort({ urgencyLevel: -1, publishedAt: -1 })
+        .limit(8),
+      HealthTip.find({
+        isPublished: true,
+        status: { $ne: 'archived' },
+        ...(language !== 'all' ? { language: { $in: [language, 'multi'] } } : {}),
+      }).sort({ isFeatured: -1, createdAt: -1 }).limit(8),
+      LiveTeachingEvent.find({ isPublished: true }).sort({ scheduledAt: 1 }).limit(12),
+    ])
 
-    campaigns = await Promise.all(campaigns.map(syncCampaignStatus))
-    campaigns = campaigns.filter((item) => ['active', 'upcoming'].includes(item.status)).slice(0, 6)
-
-    let news = await OfficialNews.find({ isPublished: true, status: { $ne: 'archived' } })
-      .sort({ urgencyLevel: -1, publishedAt: -1 })
-      .limit(8)
-
-    news = await Promise.all(news.map(syncPublishStatus))
-
-    let tips = await HealthTip.find({
-      isPublished: true,
-      status: { $ne: 'archived' },
-      ...(language !== 'all' ? { language: { $in: [language, 'multi'] } } : {}),
-    })
-      .sort({ isFeatured: -1, createdAt: -1 })
-      .limit(8)
-
-    tips = await Promise.all(tips.map(syncPublishStatus))
-
-    let events = await LiveTeachingEvent.find({ isPublished: true }).sort({ scheduledAt: 1 }).limit(12)
-    events = await Promise.all(events.map(syncEventStatus))
+    // Sync statuses in parallel
+    const [campaigns, news, tips, events] = await Promise.all([
+      Promise.all(campaignsRaw.map(syncCampaignStatus)),
+      Promise.all(newsRaw.map(syncPublishStatus)),
+      Promise.all(tipsRaw.map(syncPublishStatus)),
+      Promise.all(eventsRaw.map(syncEventStatus)),
+    ])
 
     res.json({
-      campaigns,
+      campaigns: campaigns.filter((item) => ['active', 'upcoming'].includes(item.status)).slice(0, 6),
       urgentNews: news.filter((item) => ['high', 'critical'].includes(item.urgencyLevel)).slice(0, 4),
       latestNews: news.slice(0, 6),
       featuredTips: tips.slice(0, 6),
